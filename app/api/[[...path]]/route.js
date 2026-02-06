@@ -97,8 +97,26 @@ export async function GET(request) {
       
       const skip = (page - 1) * limit;
       
+      // Optimized: Use projection to fetch only needed fields
+      const projection = {
+        name: 1,
+        slug: 1,
+        shortDescription: 1,
+        logo: 1,
+        categories: 1,
+        tags: 1,
+        pricing: 1,
+        rating: 1,
+        votes: 1,
+        status: 1,
+        featured: 1,
+        trending: 1,
+        website: 1,
+        createdAt: 1
+      };
+      
       const toolsList = await toolsCollection
-        .find(query)
+        .find(query, { projection })
         .sort(sortQuery)
         .skip(skip)
         .limit(limit)
