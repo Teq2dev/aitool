@@ -337,6 +337,36 @@ export async function POST(request) {
       return NextResponse.json({ success: true, tool: newTool });
     }
     
+    // POST /api/blogs - Submit blog
+    if (pathname === '/api/blogs' || pathname === '/api/blogs/') {
+      const { userId } = await auth();
+      
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      const body = await request.json();
+      const blogsCollection = await getCollection('blogs');
+      
+      const newBlog = {
+        _id: uuidv4(),
+        ...body,
+        slug: body.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        status: 'pending',
+        featured: false,
+        views: 0,
+        author: body.author || 'User',
+        authorId: userId,
+        readTime: Math.ceil((body.content?.length || 0) / 1000), // Rough estimate
+        publishedAt: null,
+        createdAt: new Date(),
+      };
+      
+      await blogsCollection.insertOne(newBlog);
+      
+      return NextResponse.json({ success: true, blog: newBlog });
+    }
+    
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   } catch (error) {
     console.error('POST Error:', error);
