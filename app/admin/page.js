@@ -1,0 +1,303 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CheckCircle, XCircle, Eye, Star, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+
+export default function AdminPage() {
+  const { user, isLoaded, isSignedIn } = useUser();
+  const router = useRouter();
+  const [tools, setTools] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push('/');
+      return;
+    }
+    if (isSignedIn) {
+      fetchTools();
+    }
+  }, [isLoaded, isSignedIn]);
+
+  const fetchTools = async () => {
+    try {
+      const res = await fetch('/api/admin/tools?status=all');
+      const data = await res.json();
+      setTools(data);
+    } catch (error) {
+      console.error('Error fetching tools:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApprove = async (toolId) => {
+    try {
+      await fetch(`/api/admin/tools/${toolId}/approve`, { method: 'PUT' });
+      fetchTools();
+    } catch (error) {
+      console.error('Error approving tool:', error);
+    }
+  };
+
+  const handleReject = async (toolId) => {
+    try {
+      await fetch(`/api/admin/tools/${toolId}/reject`, { method: 'PUT' });
+      fetchTools();
+    } catch (error) {
+      console.error('Error rejecting tool:', error);
+    }
+  };
+
+  const handleToggleFeatured = async (toolId, currentFeatured) => {
+    try {
+      await fetch(`/api/admin/tools/${toolId}/featured`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ featured: !currentFeatured }),
+      });
+      fetchTools();
+    } catch (error) {
+      console.error('Error toggling featured:', error);
+    }
+  };
+
+  const handleDelete = async (toolId) => {
+    if (!confirm('Are you sure you want to delete this tool?')) return;
+    try {
+      await fetch(`/api/tools/${toolId}`, { method: 'DELETE' });
+      fetchTools();
+    } catch (error) {
+      console.error('Error deleting tool:', error);
+    }
+  };
+
+  if (!isLoaded || !isSignedIn) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const pendingTools = tools.filter((t) => t.status === 'pending');
+  const approvedTools = tools.filter((t) => t.status === 'approved');
+  const rejectedTools = tools.filter((t) => t.status === 'rejected');
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="container mx-auto px-4">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-black mb-2">Admin Dashboard</h1>
+          <p className="text-gray-600">Manage all AI tools and submissions</p>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center">
+                <p className="text-sm text-gray-600 mb-1">Total Tools</p>
+                <p className="text-3xl font-bold text-blue-600">{tools.length}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center">
+                <p className="text-sm text-gray-600 mb-1">Pending Review</p>
+                <p className="text-3xl font-bold text-orange-600">{pendingTools.length}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center">
+                <p className="text-sm text-gray-600 mb-1">Approved</p>
+                <p className="text-3xl font-bold text-green-600">{approvedTools.length}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center">
+                <p className="text-sm text-gray-600 mb-1">Rejected</p>
+                <p className="text-3xl font-bold text-red-600">{rejectedTools.length}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tools Management */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Tools Management</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="pending">
+              <TabsList>
+                <TabsTrigger value="pending">Pending ({pendingTools.length})</TabsTrigger>
+                <TabsTrigger value="approved">Approved ({approvedTools.length})</TabsTrigger>
+                <TabsTrigger value="rejected">Rejected ({rejectedTools.length})</TabsTrigger>
+                <TabsTrigger value="all">All ({tools.length})</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="pending" className="mt-6">
+                <AdminToolList
+                  tools={pendingTools}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                  onToggleFeatured={handleToggleFeatured}
+                  onDelete={handleDelete}
+                />
+              </TabsContent>
+              <TabsContent value="approved" className="mt-6">
+                <AdminToolList
+                  tools={approvedTools}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                  onToggleFeatured={handleToggleFeatured}
+                  onDelete={handleDelete}
+                />
+              </TabsContent>
+              <TabsContent value="rejected" className="mt-6">
+                <AdminToolList
+                  tools={rejectedTools}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                  onToggleFeatured={handleToggleFeatured}
+                  onDelete={handleDelete}
+                />
+              </TabsContent>
+              <TabsContent value="all" className="mt-6">
+                <AdminToolList
+                  tools={tools}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                  onToggleFeatured={handleToggleFeatured}
+                  onDelete={handleDelete}
+                />
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onDelete }) {
+  if (tools.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500">No tools found</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {tools.map((tool) => (
+        <div key={tool._id} className="flex items-start gap-4 p-4 border rounded-lg">
+          <img src={tool.logo} alt={tool.name} className="w-20 h-20 rounded-lg object-cover flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <h3 className="font-semibold text-black mb-1">{tool.name}</h3>
+                <p className="text-sm text-gray-600 mb-2">{tool.shortDescription}</p>
+              </div>
+              <div className="flex gap-2">
+                <Badge
+                  variant={
+                    tool.status === 'approved'
+                      ? 'default'
+                      : tool.status === 'pending'
+                      ? 'secondary'
+                      : 'destructive'
+                  }
+                >
+                  {tool.status}
+                </Badge>
+                {tool.featured && <Badge className="bg-yellow-500 text-black">Featured</Badge>}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2 mb-3">
+              {tool.categories?.slice(0, 3).map((cat) => (
+                <Badge key={cat} variant="outline" className="text-xs">
+                  {cat}
+                </Badge>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <span>{tool.pricing}</span>
+              <span>•</span>
+              <span>⭐ {tool.rating}</span>
+              <span>•</span>
+              <span>{tool.votes} votes</span>
+              <span>•</span>
+              <span>Added {new Date(tool.createdAt).toLocaleDateString()}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            {tool.status === 'pending' && (
+              <>
+                <Button size="sm" onClick={() => onApprove(tool._id)} className="bg-green-600 hover:bg-green-700">
+                  <CheckCircle className="w-4 h-4 mr-1" />
+                  Approve
+                </Button>
+                <Button size="sm" variant="destructive" onClick={() => onReject(tool._id)}>
+                  <XCircle className="w-4 h-4 mr-1" />
+                  Reject
+                </Button>
+              </>
+            )}
+            {tool.status === 'approved' && (
+              <>
+                <Button
+                  size="sm"
+                  variant={tool.featured ? 'default' : 'outline'}
+                  onClick={() => onToggleFeatured(tool._id, tool.featured)}
+                >
+                  <Star className="w-4 h-4 mr-1" />
+                  {tool.featured ? 'Unfeature' : 'Feature'}
+                </Button>
+                <Link href={`/tools/${tool.slug}`}>
+                  <Button size="sm" variant="outline" className="w-full">
+                    <Eye className="w-4 h-4 mr-1" />
+                    View
+                  </Button>
+                </Link>
+              </>
+            )}
+            {tool.status === 'rejected' && (
+              <Button size="sm" onClick={() => onApprove(tool._id)} variant="outline">
+                <CheckCircle className="w-4 h-4 mr-1" />
+                Approve
+              </Button>
+            )}
+            <Button size="sm" variant="ghost" onClick={() => onDelete(tool._id)} className="text-red-600 hover:text-red-700 hover:bg-red-50">
+              <Trash2 className="w-4 h-4 mr-1" />
+              Delete
+            </Button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
