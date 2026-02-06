@@ -119,18 +119,27 @@ export async function GET(request) {
       const categoriesCollection = await getCollection('categories');
       const toolsCollection = await getCollection('tools');
       
-      const categoriesList = await categoriesCollection.find({}).toArray();
+      // Limit categories to 100 max
+      const categoriesList = await categoriesCollection.find({}).limit(100).toArray();
       
-      // Count tools for each category
-      const categoriesWithCount = await Promise.all(
-        categoriesList.map(async (cat) => {
-          const count = await toolsCollection.countDocuments({
-            categories: cat.slug,
-            status: 'approved',
-          });
-          return { ...cat, toolCount: count };
-        })
-      );
+      // Optimized: Get tool counts using aggregation instead of N+1 queries
+      const toolCounts = await toolsCollection.aggregate([
+        { $match: { status: 'approved' } },
+        { $unwind: '$categories' },
+        { $group: { _id: '$categories', count: { $sum: 1 } } }
+      ]).toArray();
+      
+      // Create a map for quick lookup
+      const countMap = {};
+      toolCounts.forEach(item => {
+        countMap[item._id] = item.count;
+      });
+      
+      // Merge counts with categories
+      const categoriesWithCount = categoriesList.map(cat => ({
+        ...cat,
+        toolCount: countMap[cat.slug] || 0
+      }));
       
       return NextResponse.json(categoriesWithCount);
     }
