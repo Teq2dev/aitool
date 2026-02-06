@@ -37,6 +37,9 @@ export default function RootLayout({ children }) {
                     <Link href="/categories" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
                       Categories
                     </Link>
+                    <Link href="/blogs" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+                      Blogs
+                    </Link>
                     <SignedIn>
                       <Link href="/dashboard" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
                         My Dashboard
