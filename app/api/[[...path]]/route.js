@@ -176,6 +176,98 @@ export async function GET(request) {
       return NextResponse.json(submissions);
     }
     
+    // GET /api/blogs - List all blogs
+    if (pathname.startsWith('/api/blogs')) {
+      const slug = pathname.split('/api/blogs/')[1];
+      
+      // Get single blog by slug
+      if (slug) {
+        const blogsCollection = await getCollection('blogs');
+        const blog = await blogsCollection.findOne({ slug });
+        
+        if (!blog) {
+          return NextResponse.json({ error: 'Blog not found' }, { status: 404 });
+        }
+        
+        // Increment views
+        await blogsCollection.updateOne(
+          { _id: blog._id },
+          { $inc: { views: 1 } }
+        );
+        
+        return NextResponse.json(blog);
+      }
+      
+      // List blogs with filters
+      const blogsCollection = await getCollection('blogs');
+      const category = searchParams.get('category');
+      const search = searchParams.get('search');
+      const status = searchParams.get('status') || 'published';
+      const limit = parseInt(searchParams.get('limit') || '10');
+      const page = parseInt(searchParams.get('page') || '1');
+      
+      let query = { status };
+      
+      if (category) {
+        query.category = category;
+      }
+      
+      if (search) {
+        query.$or = [
+          { title: { $regex: search, $options: 'i' } },
+          { excerpt: { $regex: search, $options: 'i' } },
+          { content: { $regex: search, $options: 'i' } },
+        ];
+      }
+      
+      const skip = (page - 1) * limit;
+      
+      const blogsList = await blogsCollection
+        .find(query)
+        .sort({ publishedAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .toArray();
+      
+      const total = await blogsCollection.countDocuments(query);
+      
+      return NextResponse.json({
+        blogs: blogsList,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit),
+      });
+    }
+    
+    // GET /api/featured-blogs - Get featured blogs
+    if (pathname === '/api/featured-blogs') {
+      const blogsCollection = await getCollection('blogs');
+      const featured = await blogsCollection
+        .find({ status: 'published', featured: true })
+        .sort({ publishedAt: -1 })
+        .limit(3)
+        .toArray();
+      
+      return NextResponse.json(featured);
+    }
+    
+    // GET /api/my-blog-submissions - Get user's blog submissions
+    if (pathname === '/api/my-blog-submissions') {
+      const { userId } = await auth();
+      
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      const blogsCollection = await getCollection('blogs');
+      const submissions = await blogsCollection
+        .find({ authorId: userId })
+        .sort({ createdAt: -1 })
+        .toArray();
+      
+      return NextResponse.json(submissions);
+    }
+    
     // GET /api/admin/tools - Get all tools for admin
     if (pathname === '/api/admin/tools') {
       const { userId } = await auth();
