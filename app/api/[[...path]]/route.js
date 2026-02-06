@@ -440,6 +440,62 @@ export async function PUT(request) {
       return NextResponse.json({ success: true });
     }
     
+    // Blog admin endpoints
+    if (pathname.includes('/api/admin/blogs/') && pathname.includes('/approve')) {
+      const { userId } = await auth();
+      
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      const id = pathname.split('/api/admin/blogs/')[1].replace('/approve', '');
+      const blogsCollection = await getCollection('blogs');
+      
+      await blogsCollection.updateOne(
+        { _id: id },
+        { $set: { status: 'published', publishedAt: new Date() } }
+      );
+      
+      return NextResponse.json({ success: true });
+    }
+    
+    if (pathname.includes('/api/admin/blogs/') && pathname.includes('/reject')) {
+      const { userId } = await auth();
+      
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      const id = pathname.split('/api/admin/blogs/')[1].replace('/reject', '');
+      const blogsCollection = await getCollection('blogs');
+      
+      await blogsCollection.updateOne(
+        { _id: id },
+        { $set: { status: 'rejected' } }
+      );
+      
+      return NextResponse.json({ success: true });
+    }
+    
+    if (pathname.includes('/api/admin/blogs/') && pathname.includes('/featured')) {
+      const { userId } = await auth();
+      
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      const id = pathname.split('/api/admin/blogs/')[1].replace('/featured', '');
+      const body = await request.json();
+      const blogsCollection = await getCollection('blogs');
+      
+      await blogsCollection.updateOne(
+        { _id: id },
+        { $set: { featured: body.featured } }
+      );
+      
+      return NextResponse.json({ success: true });
+    }
+    
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   } catch (error) {
     console.error('PUT Error:', error);
