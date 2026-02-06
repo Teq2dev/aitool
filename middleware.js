@@ -6,13 +6,17 @@ const isPublicRoute = createRouteMatcher([
   '/categories(.*)',
   '/api/tools(.*)',
   '/api/categories(.*)',
+  '/api/featured(.*)',
+  '/api/trending(.*)',
+  '/api/init(.*)',
+  '/api',
   '/sign-in(.*)',
   '/sign-up(.*)',
 ]);
 
-export default clerkMiddleware((auth, request) => {
+export default clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
-    auth().protect();
+    await auth().protect();
   }
 });
 
