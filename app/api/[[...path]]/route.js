@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCollection } from '@/lib/db';
-import { categories, tools } from '@/lib/sample-data';
+import { categories, tools, blogs } from '@/lib/sample-data';
 import { auth } from '@clerk/nextjs/server';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -9,9 +9,11 @@ async function initializeDatabase() {
   try {
     const categoriesCollection = await getCollection('categories');
     const toolsCollection = await getCollection('tools');
+    const blogsCollection = await getCollection('blogs');
     
     const categoryCount = await categoriesCollection.countDocuments();
     const toolCount = await toolsCollection.countDocuments();
+    const blogCount = await blogsCollection.countDocuments();
     
     if (categoryCount === 0) {
       await categoriesCollection.insertMany(categories);
@@ -21,6 +23,11 @@ async function initializeDatabase() {
     if (toolCount === 0) {
       await toolsCollection.insertMany(tools);
       console.log('✅ Tools initialized');
+    }
+    
+    if (blogCount === 0) {
+      await blogsCollection.insertMany(blogs);
+      console.log('✅ Blogs initialized');
     }
   } catch (error) {
     console.error('Database initialization error:', error);
