@@ -506,7 +506,7 @@ export async function PUT(request) {
   }
 }
 
-// DELETE /api/tools/:id - Delete tool
+// DELETE /api/tools/:id - Delete tool or blog
 export async function DELETE(request) {
   const { pathname } = new URL(request.url);
   
@@ -517,12 +517,27 @@ export async function DELETE(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const id = pathname.split('/api/tools/')[1];
-    const toolsCollection = await getCollection('tools');
+    // Delete tool
+    if (pathname.startsWith('/api/tools/')) {
+      const id = pathname.split('/api/tools/')[1];
+      const toolsCollection = await getCollection('tools');
+      
+      await toolsCollection.deleteOne({ _id: id });
+      
+      return NextResponse.json({ success: true });
+    }
     
-    await toolsCollection.deleteOne({ _id: id });
+    // Delete blog
+    if (pathname.startsWith('/api/blogs/')) {
+      const id = pathname.split('/api/blogs/')[1];
+      const blogsCollection = await getCollection('blogs');
+      
+      await blogsCollection.deleteOne({ _id: id });
+      
+      return NextResponse.json({ success: true });
+    }
     
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
   } catch (error) {
     console.error('DELETE Error:', error);
     return NextResponse.json(
