@@ -48,10 +48,10 @@ export default function RootLayout({ children }) {
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
                         <span className="text-white font-bold">AI</span>
                       </div>
-                      <span className="font-bold text-lg">AI Directory</span>
+                      <span className="font-bold text-lg">Best AI Tools Free</span>
                     </div>
                     <p className="text-sm text-gray-600">
-                      Discover and explore the best AI tools for your needs.
+                      Discover and explore the best free AI tools for your needs.
                     </p>
                   </div>
                   
