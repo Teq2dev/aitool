@@ -85,7 +85,7 @@ export default function RootLayout({ children }) {
                 </div>
                 
                 <div className="mt-8 pt-8 border-t text-center text-sm text-gray-600">
-                  <p>© 2025 AI Directory. All rights reserved.</p>
+                  <p>© 2025 Best AI Tools Free. All rights reserved.</p>
                 </div>
               </div>
             </footer>
