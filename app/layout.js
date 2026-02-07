@@ -6,8 +6,29 @@ import Navigation from '@/components/Navigation';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'AI Tools Directory - Discover the Best AI Tools',
-  description: 'Browse 3000+ AI Tools across multiple categories. Find the perfect AI tool for your needs.',
+  title: 'Best AI Tools Free - Discover Top AI Tools Directory',
+  description: 'Browse 3000+ Best Free AI Tools across multiple categories. Find the perfect AI tool for your needs. Compare AI tools, read reviews, and discover trending AI solutions.',
+  keywords: 'best ai tools, free ai tools, ai tools directory, artificial intelligence tools, ai software, machine learning tools, chatgpt alternatives, ai image generators, ai writing tools',
+  authors: [{ name: 'Best AI Tools Free' }],
+  openGraph: {
+    title: 'Best AI Tools Free - Top AI Tools Directory',
+    description: 'Discover 3000+ best free AI tools. Compare and find the perfect AI solution for your needs.',
+    type: 'website',
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Best AI Tools Free - AI Tools Directory',
+    description: 'Browse 3000+ best free AI tools and discover the perfect solution.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
 };
 
 export default function RootLayout({ children }) {
