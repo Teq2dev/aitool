@@ -43,7 +43,8 @@ export default function SubmitToolPage() {
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
       router.push('/?signin=true');
-    }\n    fetchCategories();
+    }
+    fetchCategories();
   }, [isLoaded, isSignedIn]);
 
   const fetchCategories = async () => {
