@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { SignInButton, SignUpButton, UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
+import { SignInButton, UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Upload } from 'lucide-react';
 
@@ -17,7 +17,7 @@ export default function Navigation() {
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <span className="font-bold text-xl text-black">AI Directory</span>
+            <span className="font-bold text-xl text-black">Best AI Tools Free</span>
           </Link>
 
           <nav className="hidden md:flex items-center space-x-6">
@@ -52,7 +52,7 @@ export default function Navigation() {
               </Link>
               <Link 
                 href="/admin" 
-                className={`transition-colors font-medium ${pathname === '/admin' ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'}`}
+                className={`transition-colors font-medium ${pathname === '/admin' ? 'text-blue-600' : 'text-blue-700 hover:text-blue-600'}`}
                 prefetch={true}
               >
                 Admin
@@ -71,16 +71,27 @@ export default function Navigation() {
               <UserButton afterSignOutUrl="/" />
             </SignedIn>
             <SignedOut>
-              <SignInButton mode="modal">
+              {/* Submit Tool button for non-authenticated users */}
+              <SignInButton 
+                mode="modal" 
+                redirectUrl="/submit"
+                signUpUrl="/sign-up"
+              >
                 <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
+                  <Upload className="w-4 h-4 mr-2" />
+                  Submit Tool
+                </Button>
+              </SignInButton>
+              
+              {/* Single Sign In button */}
+              <SignInButton 
+                mode="modal"
+                signUpUrl="/sign-up"
+              >
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                   Sign In
                 </Button>
               </SignInButton>
-              <SignUpButton mode="modal">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                  Sign Up
-                </Button>
-              </SignUpButton>
             </SignedOut>
           </div>
         </div>
