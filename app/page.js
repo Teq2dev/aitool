@@ -243,6 +243,67 @@ export default function Home() {
         </section>
       )}
 
+      {/* Newest Blogs Section */}
+      {blogs.length > 0 && (
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-3xl font-bold text-black mb-2 flex items-center gap-3">
+                  <FileText className="w-8 h-8 text-blue-600" />
+                  Latest from Our Blog
+                </h2>
+                <p className="text-gray-600">Stay updated with the latest AI news and tutorials</p>
+              </div>
+              <Link href="/blogs">
+                <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
+                  View All <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {blogs.map((blog) => (
+                <Link key={blog._id} href={`/blogs/${blog.slug}`}>
+                  <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer group overflow-hidden">
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={blog.coverImage || 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=400&fit=crop'}
+                        alt={blog.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <Badge className="absolute top-3 left-3 bg-blue-600 text-white">
+                        {blog.category}
+                      </Badge>
+                    </div>
+                    <CardContent className="p-5">
+                      <h3 className="font-bold text-lg text-black mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                        {blog.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                        {blog.excerpt}
+                      </p>
+                      <div className="flex items-center justify-between text-sm text-gray-500">
+                        <div className="flex items-center gap-4">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-4 h-4" />
+                            {blog.readTime} min read
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Eye className="w-4 h-4" />
+                            {blog.views?.toLocaleString() || 0}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-blue-600 to-blue-800 text-white">
         <div className="container mx-auto px-4 text-center">
