@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import SearchBar from '@/components/SearchBar';
 import ToolCard from '@/components/ToolCard';
 import CategoryCard from '@/components/CategoryCard';
-import { ArrowRight, Sparkles, TrendingUp, Zap, LayoutGrid } from 'lucide-react';
+import { ArrowRight, Sparkles, TrendingUp, Zap, LayoutGrid, FileText, Clock, Eye } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Home() {
