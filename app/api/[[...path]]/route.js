@@ -572,6 +572,56 @@ export async function PUT(request) {
       return NextResponse.json({ success: true });
     }
     
+    // User admin endpoints
+    if (pathname.includes('/api/admin/users/') && pathname.includes('/make-admin')) {
+      const { userId: currentUserId } = await auth();
+      
+      if (!currentUserId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      const targetUserId = pathname.split('/api/admin/users/')[1].replace('/make-admin', '');
+      const usersCollection = await getCollection('users');
+      
+      // Check if target user already exists
+      const existing = await usersCollection.findOne({ userId: targetUserId });
+      
+      if (existing) {
+        await usersCollection.updateOne(
+          { userId: targetUserId },
+          { $set: { role: 'admin', updatedAt: new Date() } }
+        );
+      } else {
+        await usersCollection.insertOne({
+          _id: uuidv4(),
+          userId: targetUserId,
+          role: 'admin',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
+      
+      return NextResponse.json({ success: true });
+    }
+    
+    if (pathname.includes('/api/admin/users/') && pathname.includes('/remove-admin')) {
+      const { userId: currentUserId } = await auth();
+      
+      if (!currentUserId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      const targetUserId = pathname.split('/api/admin/users/')[1].replace('/remove-admin', '');
+      const usersCollection = await getCollection('users');
+      
+      await usersCollection.updateOne(
+        { userId: targetUserId },
+        { $set: { role: 'user', updatedAt: new Date() } }
+      );
+      
+      return NextResponse.json({ success: true });
+    }
+    
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   } catch (error) {
     console.error('PUT Error:', error);
