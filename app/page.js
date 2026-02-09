@@ -15,6 +15,7 @@ export default function Home() {
   const [trending, setTrending] = useState([]);
   const [categories, setCategories] = useState([]);
   const [latest, setLatest] = useState([]);
+  const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,24 +25,27 @@ export default function Home() {
         await fetch('/api/init');
         
         // Fetch all data
-        const [featuredRes, trendingRes, categoriesRes, latestRes] = await Promise.all([
+        const [featuredRes, trendingRes, categoriesRes, latestRes, blogsRes] = await Promise.all([
           fetch('/api/featured'),
           fetch('/api/trending'),
           fetch('/api/categories'),
           fetch('/api/tools?sort=newest&limit=6'),
+          fetch('/api/blogs?limit=3'),
         ]);
 
-        const [featuredData, trendingData, categoriesData, latestData] = await Promise.all([
+        const [featuredData, trendingData, categoriesData, latestData, blogsData] = await Promise.all([
           featuredRes.json(),
           trendingRes.json(),
           categoriesRes.json(),
           latestRes.json(),
+          blogsRes.json(),
         ]);
 
         setFeatured(featuredData);
         setTrending(trendingData);
         setCategories(categoriesData.slice(0, 12));
         setLatest(latestData.tools || []);
+        setBlogs(blogsData.blogs || []);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
