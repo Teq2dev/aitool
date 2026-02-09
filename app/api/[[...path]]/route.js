@@ -295,6 +295,55 @@ export async function GET(request) {
       return NextResponse.json(submissions);
     }
     
+    // GET /api/admin/users - Get all users (admin only)
+    if (pathname === '/api/admin/users') {
+      const { userId } = await auth();
+      
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      try {
+        const { clerkClient } = await import('@clerk/nextjs/server');
+        const users = await clerkClient.users.getUserList({ limit: 100 });
+        
+        // Get admin users from database
+        const usersCollection = await getCollection('users');
+        const adminUsers = await usersCollection.find({ role: 'admin' }).toArray();
+        const adminUserIds = new Set(adminUsers.map(u => u.userId));
+        
+        // Add role info to users
+        const usersWithRoles = users.map(user => ({
+          id: user.id,
+          email: user.emailAddresses[0]?.emailAddress,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          imageUrl: user.imageUrl,
+          createdAt: user.createdAt,
+          isAdmin: adminUserIds.has(user.id),
+        }));
+        
+        return NextResponse.json(usersWithRoles);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
+      }
+    }
+    
+    // GET /api/admin/check - Check if current user is admin
+    if (pathname === '/api/admin/check') {
+      const { userId } = await auth();
+      
+      if (!userId) {
+        return NextResponse.json({ isAdmin: false });
+      }
+      
+      const usersCollection = await getCollection('users');
+      const user = await usersCollection.findOne({ userId, role: 'admin' });
+      
+      return NextResponse.json({ isAdmin: !!user });
+    }
+    
     // GET /api/admin/tools - Get all tools for admin
     if (pathname === '/api/admin/tools') {
       const { userId } = await auth();
