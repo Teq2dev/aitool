@@ -10,7 +10,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Upload, CheckCircle, X, Image as ImageIcon } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Upload, CheckCircle, X, Image as ImageIcon, Globe } from 'lucide-react';
 
 export default function SubmitToolPage() {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -26,15 +27,13 @@ export default function SubmitToolPage() {
     tags: [],
     pricing: 'Free',
     features: [],
-    seoTitle: '',
-    seoKeywords: '',
-    seoTags: [],
   });
   const [tagInput, setTagInput] = useState('');
-  const [seoTagInput, setSeoTagInput] = useState('');
   const [featureInput, setFeatureInput] = useState('');
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState('');
+  const [logoOption, setLogoOption] = useState('upload');
+  const [fetchingFavicon, setFetchingFavicon] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -75,8 +74,39 @@ export default function SubmitToolPage() {
     const reader = new FileReader();
     reader.onloadend = () => {
       setLogoPreview(reader.result);
+      setFormData({ ...formData, logo: '' });
     };
     reader.readAsDataURL(file);
+  };
+
+  const fetchFavicon = async () => {
+    if (!formData.website) {
+      alert('Please enter website URL first');
+      return;
+    }
+
+    setFetchingFavicon(true);
+    try {
+      const res = await fetch('/api/fetch-favicon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: formData.website }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setLogoPreview(data.faviconUrl);
+        setFormData({ ...formData, logo: data.faviconUrl });
+        setLogoFile(null);
+      } else {
+        alert('Failed to fetch favicon');
+      }
+    } catch (error) {
+      console.error('Favicon fetch error:', error);
+      alert('Failed to fetch favicon');
+    } finally {
+      setFetchingFavicon(false);
+    }
   };
 
   const uploadLogo = async () => {
@@ -111,7 +141,8 @@ export default function SubmitToolPage() {
 
     try {
       let logoUrl = formData.logo;
-      if (logoFile) {
+      
+      if (logoOption === 'upload' && logoFile) {
         logoUrl = await uploadLogo();
         if (!logoUrl) {
           setSubmitting(false);
@@ -119,15 +150,12 @@ export default function SubmitToolPage() {
         }
       }
 
-      const seoTitle = formData.seoTitle || `${formData.name} - Best AI Tool`;
-
       const res = await fetch('/api/tools', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
           logo: logoUrl,
-          seoTitle,
         }),
       });
 
@@ -211,27 +239,69 @@ export default function SubmitToolPage() {
               </div>
 
               <div>
-                <Label>Logo Upload * (150x150px)</Label>
-                <div className="mt-2 flex items-center gap-4">
-                  <label 
-                    htmlFor="logo-upload" 
-                    className="cursor-pointer inline-flex items-center gap-2 rounded-md text-sm font-medium border border-blue-600 bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2"
-                  >
-                    <ImageIcon className="w-4 h-4" />
-                    Choose Image
-                  </label>
-                  <input
-                    id="logo-upload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleLogoChange}
-                    required={!formData.logo}
-                  />
-                  {logoPreview && (
-                    <img src={logoPreview} alt="Preview" className="w-16 h-16 border rounded" />
-                  )}
-                </div>
+                <Label>Logo * (Choose one option)</Label>
+                <Tabs value={logoOption} onValueChange={setLogoOption} className="mt-2">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="upload">
+                      <ImageIcon className="w-4 h-4 mr-2" />
+                      Upload Image
+                    </TabsTrigger>
+                    <TabsTrigger value="favicon">
+                      <Globe className="w-4 h-4 mr-2" />
+                      Auto-fetch Favicon
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="upload" className="space-y-2">
+                    <div className="flex items-center gap-4">
+                      <label 
+                        htmlFor="logo-upload" 
+                        className="cursor-pointer inline-flex items-center gap-2 rounded-md text-sm font-medium border border-blue-600 bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2"
+                      >
+                        <ImageIcon className="w-4 h-4" />
+                        Choose Image
+                      </label>
+                      <input
+                        id="logo-upload"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleLogoChange}
+                      />
+                      {logoPreview && logoOption === 'upload' && (
+                        <img src={logoPreview} alt="Preview" className="w-16 h-16 border rounded" />
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500">Upload 150x150px image. Max 2MB</p>
+                  </TabsContent>
+                  
+                  <TabsContent value="favicon" className="space-y-2">
+                    <div className="flex items-center gap-4">
+                      <Button 
+                        type="button"
+                        onClick={fetchFavicon}
+                        disabled={fetchingFavicon || !formData.website}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        {fetchingFavicon ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                            Fetching...
+                          </>
+                        ) : (
+                          <>
+                            <Globe className="w-4 h-4 mr-2" />
+                            Fetch Favicon
+                          </>
+                        )}
+                      </Button>
+                      {logoPreview && logoOption === 'favicon' && (
+                        <img src={logoPreview} alt="Preview" className="w-16 h-16 border rounded" />
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500">Automatically fetch logo from website</p>
+                  </TabsContent>
+                </Tabs>
               </div>
 
               <div>
@@ -243,6 +313,7 @@ export default function SubmitToolPage() {
                   placeholder="One-line description"
                   maxLength={100}
                 />
+                <p className="text-xs text-gray-500 mt-1">{formData.shortDescription.length}/100</p>
               </div>
 
               <div>
@@ -271,10 +342,37 @@ export default function SubmitToolPage() {
             </CardContent>
           </Card>
 
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Categories</CardTitle>
+              <CardDescription>Select up to 3 categories</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {categories.slice(0, 20).map((cat) => (
+                  <Badge
+                    key={cat._id}
+                    variant={formData.categories.includes(cat.slug) ? 'default' : 'outline'}
+                    className="cursor-pointer"
+                    onClick={() => {
+                      if (formData.categories.includes(cat.slug)) {
+                        setFormData({ ...formData, categories: formData.categories.filter(c => c !== cat.slug) });
+                      } else if (formData.categories.length < 3) {
+                        setFormData({ ...formData, categories: [...formData.categories, cat.slug] });
+                      }
+                    }}
+                  >
+                    {cat.name}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="flex gap-4">
             <Button 
               type="submit" 
-              disabled={submitting || uploading} 
+              disabled={submitting || uploading || fetchingFavicon || !logoPreview} 
               className="bg-blue-600 hover:bg-blue-700 text-white flex-1"
             >
               {submitting || uploading ? 'Submitting...' : 'Submit Tool'}
