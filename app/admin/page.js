@@ -7,14 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CheckCircle, XCircle, Eye, Star, Trash2 } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Star, Trash2, Users, Shield, ShieldOff } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminPage() {
   const { user, isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const [tools, setTools] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('tools');
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
@@ -23,6 +25,7 @@ export default function AdminPage() {
     }
     if (isSignedIn) {
       fetchTools();
+      fetchUsers();
     }
   }, [isLoaded, isSignedIn]);
 
@@ -35,6 +38,34 @@ export default function AdminPage() {
       console.error('Error fetching tools:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch('/api/admin/users');
+      const data = await res.json();
+      setUsers(data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  const handleMakeAdmin = async (userId) => {
+    try {
+      await fetch(`/api/admin/users/${userId}/make-admin`, { method: 'PUT' });
+      fetchUsers();
+    } catch (error) {
+      console.error('Error making admin:', error);
+    }
+  };
+
+  const handleRemoveAdmin = async (userId) => {
+    try {
+      await fetch(`/api/admin/users/${userId}/remove-admin`, { method: 'PUT' });
+      fetchUsers();
+    } catch (error) {
+      console.error('Error removing admin:', error);
     }
   };
 
@@ -93,16 +124,16 @@ export default function AdminPage() {
   const pendingTools = tools.filter((t) => t.status === 'pending');
   const approvedTools = tools.filter((t) => t.status === 'approved');
   const rejectedTools = tools.filter((t) => t.status === 'rejected');
+  const adminUsers = users.filter((u) => u.isAdmin);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-black mb-2">Admin Dashboard</h1>
-          <p className="text-gray-600">Manage all AI tools and submissions</p>
+          <p className="text-gray-600">Manage all content and users</p>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
@@ -125,8 +156,8 @@ export default function AdminPage() {
           <Card>
             <CardContent className="p-6">
               <div className="text-center">
-                <p className="text-sm text-gray-600 mb-1">Approved</p>
-                <p className="text-3xl font-bold text-green-600">{approvedTools.length}</p>
+                <p className="text-sm text-gray-600 mb-1">Total Users</p>
+                <p className="text-3xl font-bold text-purple-600">{users.length}</p>
               </div>
             </CardContent>
           </Card>
@@ -134,67 +165,152 @@ export default function AdminPage() {
           <Card>
             <CardContent className="p-6">
               <div className="text-center">
-                <p className="text-sm text-gray-600 mb-1">Rejected</p>
-                <p className="text-3xl font-bold text-red-600">{rejectedTools.length}</p>
+                <p className="text-sm text-gray-600 mb-1">Admin Users</p>
+                <p className="text-3xl font-bold text-green-600">{adminUsers.length}</p>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Tools Management */}
         <Card>
           <CardHeader>
-            <CardTitle>Tools Management</CardTitle>
+            <CardTitle>Management</CardTitle>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="pending">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList>
-                <TabsTrigger value="pending">Pending ({pendingTools.length})</TabsTrigger>
-                <TabsTrigger value="approved">Approved ({approvedTools.length})</TabsTrigger>
-                <TabsTrigger value="rejected">Rejected ({rejectedTools.length})</TabsTrigger>
-                <TabsTrigger value="all">All ({tools.length})</TabsTrigger>
+                <TabsTrigger value="tools">
+                  <Eye className="w-4 h-4 mr-2" />
+                  Tools ({tools.length})
+                </TabsTrigger>
+                <TabsTrigger value="users">
+                  <Users className="w-4 h-4 mr-2" />
+                  Users ({users.length})
+                </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="pending" className="mt-6">
-                <AdminToolList
-                  tools={pendingTools}
-                  onApprove={handleApprove}
-                  onReject={handleReject}
-                  onToggleFeatured={handleToggleFeatured}
-                  onDelete={handleDelete}
-                />
+              <TabsContent value="tools" className="mt-6">
+                <Tabs defaultValue="pending">
+                  <TabsList>
+                    <TabsTrigger value="pending">Pending ({pendingTools.length})</TabsTrigger>
+                    <TabsTrigger value="approved">Approved ({approvedTools.length})</TabsTrigger>
+                    <TabsTrigger value="rejected">Rejected ({rejectedTools.length})</TabsTrigger>
+                    <TabsTrigger value="all">All ({tools.length})</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="pending" className="mt-6">
+                    <AdminToolList
+                      tools={pendingTools}
+                      onApprove={handleApprove}
+                      onReject={handleReject}
+                      onToggleFeatured={handleToggleFeatured}
+                      onDelete={handleDelete}
+                    />
+                  </TabsContent>
+                  <TabsContent value="approved" className="mt-6">
+                    <AdminToolList
+                      tools={approvedTools}
+                      onApprove={handleApprove}
+                      onReject={handleReject}
+                      onToggleFeatured={handleToggleFeatured}
+                      onDelete={handleDelete}
+                    />
+                  </TabsContent>
+                  <TabsContent value="rejected" className="mt-6">
+                    <AdminToolList
+                      tools={rejectedTools}
+                      onApprove={handleApprove}
+                      onReject={handleReject}
+                      onToggleFeatured={handleToggleFeatured}
+                      onDelete={handleDelete}
+                    />
+                  </TabsContent>
+                  <TabsContent value="all" className="mt-6">
+                    <AdminToolList
+                      tools={tools}
+                      onApprove={handleApprove}
+                      onReject={handleReject}
+                      onToggleFeatured={handleToggleFeatured}
+                      onDelete={handleDelete}
+                    />
+                  </TabsContent>
+                </Tabs>
               </TabsContent>
-              <TabsContent value="approved" className="mt-6">
-                <AdminToolList
-                  tools={approvedTools}
-                  onApprove={handleApprove}
-                  onReject={handleReject}
-                  onToggleFeatured={handleToggleFeatured}
-                  onDelete={handleDelete}
-                />
-              </TabsContent>
-              <TabsContent value="rejected" className="mt-6">
-                <AdminToolList
-                  tools={rejectedTools}
-                  onApprove={handleApprove}
-                  onReject={handleReject}
-                  onToggleFeatured={handleToggleFeatured}
-                  onDelete={handleDelete}
-                />
-              </TabsContent>
-              <TabsContent value="all" className="mt-6">
-                <AdminToolList
-                  tools={tools}
-                  onApprove={handleApprove}
-                  onReject={handleReject}
-                  onToggleFeatured={handleToggleFeatured}
-                  onDelete={handleDelete}
+
+              <TabsContent value="users" className="mt-6">
+                <UsersList 
+                  users={users} 
+                  onMakeAdmin={handleMakeAdmin}
+                  onRemoveAdmin={handleRemoveAdmin}
                 />
               </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
       </div>
+    </div>
+  );
+}
+
+function UsersList({ users, onMakeAdmin, onRemoveAdmin }) {
+  if (users.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500">No users found</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {users.map((user) => (
+        <div key={user.id} className="flex items-center gap-4 p-4 border rounded-lg bg-white">
+          <img 
+            src={user.imageUrl} 
+            alt={user.email} 
+            className="w-12 h-12 rounded-full"
+          />
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-black">
+                {user.firstName} {user.lastName}
+              </h3>
+              {user.isAdmin && (
+                <Badge className="bg-green-600 text-white">
+                  <Shield className="w-3 h-3 mr-1" />
+                  Admin
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm text-gray-600">{user.email}</p>
+            <p className="text-xs text-gray-500">
+              Joined {new Date(user.createdAt).toLocaleDateString()}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            {user.isAdmin ? (
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => onRemoveAdmin(user.id)}
+                className="text-red-600 border-red-600 hover:bg-red-50"
+              >
+                <ShieldOff className="w-4 h-4 mr-1" />
+                Remove Admin
+              </Button>
+            ) : (
+              <Button 
+                size="sm"
+                onClick={() => onMakeAdmin(user.id)}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Shield className="w-4 h-4 mr-1" />
+                Make Admin
+              </Button>
+            )}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
