@@ -151,35 +151,50 @@ function SubmissionList({ tools }) {
   return (
     <div className="space-y-4">
       {tools.map((tool) => (
-        <div key={tool._id} className="flex items-center gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-          <img src={tool.logo} alt={tool.name} className="w-16 h-16 rounded-lg object-cover" />
-          <div className="flex-1">
-            <h3 className="font-semibold text-black mb-1">{tool.name}</h3>
-            <p className="text-sm text-gray-600 mb-2">{tool.shortDescription}</p>
-            <div className="flex items-center gap-2">
-              <Badge
-                variant={
-                  tool.status === 'approved'
-                    ? 'default'
-                    : tool.status === 'pending'
-                    ? 'secondary'
-                    : 'destructive'
-                }
-              >
-                {tool.status}
-              </Badge>
-              <span className="text-xs text-gray-500">
-                Submitted {new Date(tool.createdAt).toLocaleDateString()}
-              </span>
+        <div key={tool._id} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+          <div className="flex items-center gap-4">
+            <img src={tool.logo} alt={tool.name} className="w-16 h-16 rounded-lg object-cover" />
+            <div className="flex-1">
+              <h3 className="font-semibold text-black mb-1">{tool.name}</h3>
+              <p className="text-sm text-gray-600 mb-2">{tool.shortDescription}</p>
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant={
+                    tool.status === 'approved'
+                      ? 'default'
+                      : tool.status === 'pending'
+                      ? 'secondary'
+                      : 'destructive'
+                  }
+                >
+                  {tool.status}
+                </Badge>
+                <span className="text-xs text-gray-500">
+                  Submitted {new Date(tool.createdAt).toLocaleDateString()}
+                </span>
+              </div>
             </div>
+            {tool.status === 'approved' && (
+              <Link href={`/tools/${tool.slug}`}>
+                <Button variant="outline" size="sm">
+                  <Eye className="w-4 h-4 mr-2" />
+                  View
+                </Button>
+              </Link>
+            )}
           </div>
-          {tool.status === 'approved' && (
-            <Link href={`/tools/${tool.slug}`}>
-              <Button variant="outline" size="sm">
-                <Eye className="w-4 h-4 mr-2" />
-                View
-              </Button>
-            </Link>
+          
+          {/* Show rejection reason */}
+          {tool.status === 'rejected' && tool.rejectionComment && (
+            <div className="mt-3 ml-20 bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-sm font-medium text-red-700 mb-1">Rejection Reason:</p>
+              <p className="text-sm text-red-600">{tool.rejectionComment}</p>
+              {tool.rejectedAt && (
+                <p className="text-xs text-red-500 mt-2">
+                  Rejected on {new Date(tool.rejectedAt).toLocaleDateString()}
+                </p>
+              )}
+            </div>
           )}
         </div>
       ))}
