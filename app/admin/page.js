@@ -7,7 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CheckCircle, XCircle, Eye, Star, Trash2, Users, Shield, ShieldOff, Upload, FileSpreadsheet, Download } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { CheckCircle, XCircle, Eye, Star, Trash2, Users, Shield, ShieldOff, Upload, FileSpreadsheet, Download, Edit, X } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminPage() {
@@ -20,6 +22,12 @@ export default function AdminPage() {
   const [bulkUploadStatus, setBulkUploadStatus] = useState(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
+  
+  // Modal states
+  const [rejectModal, setRejectModal] = useState({ open: false, toolId: null, toolName: '' });
+  const [rejectComment, setRejectComment] = useState('');
+  const [editModal, setEditModal] = useState({ open: false, tool: null });
+  const [editForm, setEditForm] = useState({});
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
