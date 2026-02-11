@@ -445,6 +445,69 @@ export async function POST(request) {
       return NextResponse.json({ success: true, blog: newBlog });
     }
     
+    // POST /api/admin/bulk-tools - Bulk upload tools from CSV data
+    if (pathname === '/api/admin/bulk-tools') {
+      const { userId } = await auth();
+      
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      const body = await request.json();
+      const { tools: toolsData } = body;
+      
+      if (!toolsData || !Array.isArray(toolsData)) {
+        return NextResponse.json({ error: 'Invalid data format. Expected { tools: [...] }' }, { status: 400 });
+      }
+      
+      const toolsCollection = await getCollection('tools');
+      const results = { success: 0, failed: 0, errors: [] };
+      
+      for (const tool of toolsData) {
+        try {
+          // Validate required fields
+          if (!tool.name || !tool.website) {
+            results.failed++;
+            results.errors.push(`Missing required fields for tool: ${tool.name || 'Unknown'}`);
+            continue;
+          }
+          
+          const newTool = {
+            _id: uuidv4(),
+            name: tool.name,
+            slug: tool.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+            shortDescription: tool.shortDescription || tool.description?.substring(0, 150) || '',
+            description: tool.description || '',
+            logo: tool.logo || `https://www.google.com/s2/favicons?domain=${tool.website}&sz=128`,
+            website: tool.website,
+            categories: Array.isArray(tool.categories) ? tool.categories : (tool.categories ? tool.categories.split(',').map(c => c.trim()) : ['AI Tools']),
+            tags: Array.isArray(tool.tags) ? tool.tags : (tool.tags ? tool.tags.split(',').map(t => t.trim()) : []),
+            pricing: tool.pricing || 'Free',
+            status: 'approved', // Admin uploaded tools are auto-approved
+            featured: tool.featured === 'true' || tool.featured === true || false,
+            sponsored: false,
+            trending: false,
+            rating: parseFloat(tool.rating) || 4.5,
+            votes: parseInt(tool.votes) || 0,
+            submittedBy: userId,
+            createdAt: new Date(),
+          };
+          
+          await toolsCollection.insertOne(newTool);
+          results.success++;
+        } catch (err) {
+          results.failed++;
+          results.errors.push(`Error adding tool ${tool.name}: ${err.message}`);
+        }
+      }
+      
+      return NextResponse.json({
+        success: true,
+        message: `Bulk upload complete. ${results.success} tools added, ${results.failed} failed.`,
+        results
+      });
+    }
+    
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   } catch (error) {
     console.error('POST Error:', error);
