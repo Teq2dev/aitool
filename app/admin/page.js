@@ -89,12 +89,63 @@ export default function AdminPage() {
     }
   };
 
-  const handleReject = async (toolId) => {
+  // Open reject modal
+  const openRejectModal = (toolId, toolName) => {
+    setRejectModal({ open: true, toolId, toolName });
+    setRejectComment('');
+  };
+
+  // Submit rejection with comment
+  const handleReject = async () => {
+    if (!rejectModal.toolId) return;
     try {
-      await fetch(`/api/admin/tools/${toolId}/reject`, { method: 'PUT' });
+      await fetch(`/api/admin/tools/${rejectModal.toolId}/reject`, { 
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comment: rejectComment })
+      });
+      setRejectModal({ open: false, toolId: null, toolName: '' });
+      setRejectComment('');
       fetchTools();
     } catch (error) {
       console.error('Error rejecting tool:', error);
+    }
+  };
+
+  // Open edit modal
+  const openEditModal = (tool) => {
+    setEditModal({ open: true, tool });
+    setEditForm({
+      name: tool.name || '',
+      shortDescription: tool.shortDescription || '',
+      description: tool.description || '',
+      website: tool.website || '',
+      logo: tool.logo || '',
+      categories: tool.categories?.join(', ') || '',
+      tags: tool.tags?.join(', ') || '',
+      pricing: tool.pricing || 'Free',
+      status: tool.status || 'pending',
+      featured: tool.featured || false,
+    });
+  };
+
+  // Submit edit
+  const handleEdit = async () => {
+    if (!editModal.tool) return;
+    try {
+      await fetch(`/api/admin/tools/${editModal.tool._id}/edit`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...editForm,
+          categories: editForm.categories.split(',').map(c => c.trim()).filter(c => c),
+          tags: editForm.tags.split(',').map(t => t.trim()).filter(t => t),
+        }),
+      });
+      setEditModal({ open: false, tool: null });
+      fetchTools();
+    } catch (error) {
+      console.error('Error editing tool:', error);
     }
   };
 
