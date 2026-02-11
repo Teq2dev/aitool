@@ -185,17 +185,6 @@ export async function GET(request) {
         totalResults: results.tools.length + results.blogs.length + results.categories.length
       });
     }
-            .limit(limit)
-            .toArray();
-        }
-      }
-      
-      return NextResponse.json({
-        query,
-        ...results,
-        totalResults: results.tools.length + results.blogs.length + results.categories.length
-      });
-    }
     
     // GET /api/tools - List all tools with filters
     if (pathname.startsWith('/api/tools')) {
