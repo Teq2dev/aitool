@@ -625,7 +625,31 @@ export async function POST(request) {
       }
       
       const toolsCollection = await getCollection('tools');
-      const results = { success: 0, failed: 0, errors: [] };
+      const results = { success: 0, failed: 0, skipped: 0, errors: [] };
+      
+      // Helper function to get favicon URL
+      const getFaviconUrl = (website) => {
+        try {
+          const url = new URL(website);
+          const domain = url.hostname;
+          // Use Google's high-quality favicon service
+          return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+        } catch {
+          return null;
+        }
+      };
+      
+      // Check for duplicates first
+      const existingTools = await toolsCollection.find({}).project({ website: 1 }).toArray();
+      const existingDomains = new Set(
+        existingTools.map(t => {
+          try {
+            return new URL(t.website).hostname.replace('www.', '');
+          } catch {
+            return null;
+          }
+        }).filter(Boolean)
+      );
       
       for (const tool of toolsData) {
         try {
@@ -636,13 +660,29 @@ export async function POST(request) {
             continue;
           }
           
+          // Check for duplicate domain
+          try {
+            const domain = new URL(tool.website).hostname.replace('www.', '');
+            if (existingDomains.has(domain)) {
+              results.skipped++;
+              results.errors.push(`Duplicate skipped: ${tool.name} (${domain})`);
+              continue;
+            }
+            existingDomains.add(domain); // Add to set to prevent duplicates within same upload
+          } catch {
+            // Invalid URL, continue anyway
+          }
+          
+          // Auto-fetch favicon if no logo provided
+          const logoUrl = tool.logo || getFaviconUrl(tool.website);
+          
           const newTool = {
             _id: uuidv4(),
             name: tool.name,
             slug: tool.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
             shortDescription: tool.shortDescription || tool.description?.substring(0, 150) || '',
             description: tool.description || '',
-            logo: tool.logo || `https://www.google.com/s2/favicons?domain=${tool.website}&sz=128`,
+            logo: logoUrl || 'https://via.placeholder.com/128?text=AI',
             website: tool.website,
             categories: Array.isArray(tool.categories) ? tool.categories : (tool.categories ? tool.categories.split(',').map(c => c.trim()) : ['AI Tools']),
             tags: Array.isArray(tool.tags) ? tool.tags : (tool.tags ? tool.tags.split(',').map(t => t.trim()) : []),
@@ -667,7 +707,7 @@ export async function POST(request) {
       
       return NextResponse.json({
         success: true,
-        message: `Bulk upload complete. ${results.success} tools added, ${results.failed} failed.`,
+        message: `Bulk upload complete. ${results.success} added, ${results.skipped} duplicates skipped, ${results.failed} failed.`,
         results
       });
     }
