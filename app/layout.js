@@ -42,7 +42,7 @@ export default function RootLayout({ children }) {
 
             <footer className="border-t bg-gray-50 mt-20">
               <div className="container mx-auto px-4 py-12">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   <div>
                     <div className="flex items-center space-x-2 mb-4">
                       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
@@ -73,19 +73,10 @@ export default function RootLayout({ children }) {
                       <li><a href="#" className="hover:text-blue-600">Privacy Policy</a></li>
                     </ul>
                   </div>
-                  
-                  <div>
-                    <h3 className="font-semibold mb-3">Connect</h3>
-                    <ul className="space-y-2 text-sm text-gray-600">
-                      <li><a href="#" className="hover:text-blue-600">Twitter</a></li>
-                      <li><a href="#" className="hover:text-blue-600">LinkedIn</a></li>
-                      <li><a href="#" className="hover:text-blue-600">GitHub</a></li>
-                    </ul>
-                  </div>
                 </div>
                 
                 <div className="mt-8 pt-8 border-t text-center text-sm text-gray-600">
-                  <p>© 2025 Best AI Tools Free. All rights reserved.</p>
+                  <p>© 2026 Best AI Tools Free. All rights reserved.</p>
                 </div>
               </div>
             </footer>
