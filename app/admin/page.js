@@ -422,13 +422,16 @@ export default function AdminPage() {
                   </div>
 
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h4 className="font-medium text-blue-800 mb-2">CSV Format Requirements:</h4>
+                    <h4 className="font-medium text-blue-800 mb-2">CSV Format:</h4>
                     <ul className="text-sm text-blue-700 space-y-1">
-                      <li>• <strong>Required columns:</strong> name, website</li>
-                      <li>• <strong>Optional columns:</strong> shortDescription, description, categories, tags, pricing, featured</li>
-                      <li>• Categories and tags can be comma-separated</li>
-                      <li>• Pricing options: Free, Freemium, Paid, Contact for Pricing</li>
+                      <li>• <strong>Required columns:</strong> Name, Website (Original)</li>
+                      <li>• <strong>Optional columns:</strong> Category, Pricing, Description</li>
+                      <li>• Favicon/logo is automatically fetched from website</li>
+                      <li>• Duplicate domains are automatically skipped</li>
                     </ul>
+                    <div className="mt-3 bg-white/50 rounded p-2 font-mono text-xs">
+                      Name, Category, Pricing, Website (Original), Description
+                    </div>
                   </div>
 
                   <div className="flex gap-4 mb-6">
