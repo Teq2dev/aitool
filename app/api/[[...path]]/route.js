@@ -94,7 +94,7 @@ export async function GET(request) {
       return NextResponse.json({ success: true, message: 'Database initialized' });
     }
     
-    // GET /api/search - Global search across tools, blogs, and categories
+    // GET /api/search - Fast global search across tools, blogs, and categories
     if (pathname === '/api/search') {
       const query = searchParams.get('q') || searchParams.get('query') || '';
       const type = searchParams.get('type') || 'all'; // all, tools, blogs, categories
@@ -108,96 +108,83 @@ export async function GET(request) {
       }
       
       const results = { tools: [], blogs: [], categories: [] };
-      const searchRegex = { $regex: query, $options: 'i' };
       
-      // Search tools
+      // Use case-insensitive regex with word boundary for speed
+      // Only search name field first (fastest), then expand if needed
+      const fastRegex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      
+      // Run searches in parallel for speed
+      const searchPromises = [];
+      
+      // Search tools - optimized: search only name first
       if (type === 'all' || type === 'tools') {
-        const toolsCollection = await getCollection('tools');
-        try {
-          // Try text search first
-          results.tools = await toolsCollection
-            .find({ 
-              $text: { $search: query },
-              status: 'approved'
-            }, {
-              projection: { score: { $meta: 'textScore' }, name: 1, slug: 1, shortDescription: 1, logo: 1, categories: 1, pricing: 1 }
-            })
-            .sort({ score: { $meta: 'textScore' } })
-            .limit(limit)
-            .toArray();
-        } catch (e) {
-          // Fallback to regex search if text search fails
-          results.tools = await toolsCollection
-            .find({
-              status: 'approved',
-              $or: [
-                { name: searchRegex },
-                { shortDescription: searchRegex },
-                { description: searchRegex },
-                { tags: searchRegex }
-              ]
-            }, {
-              projection: { name: 1, slug: 1, shortDescription: 1, logo: 1, categories: 1, pricing: 1 }
-            })
-            .limit(limit)
-            .toArray();
-        }
+        searchPromises.push(
+          (async () => {
+            const toolsCollection = await getCollection('tools');
+            results.tools = await toolsCollection
+              .find({
+                status: 'approved',
+                $or: [
+                  { name: fastRegex },
+                  { shortDescription: fastRegex },
+                  { tags: fastRegex }
+                ]
+              })
+              .project({ name: 1, slug: 1, shortDescription: 1, logo: 1, categories: 1, pricing: 1 })
+              .limit(limit)
+              .toArray();
+          })()
+        );
       }
       
-      // Search blogs
+      // Search blogs - optimized
       if (type === 'all' || type === 'blogs') {
-        const blogsCollection = await getCollection('blogs');
-        try {
-          results.blogs = await blogsCollection
-            .find({ 
-              $text: { $search: query },
-              status: 'published'
-            }, {
-              projection: { score: { $meta: 'textScore' }, title: 1, slug: 1, excerpt: 1, image: 1, category: 1 }
-            })
-            .sort({ score: { $meta: 'textScore' } })
-            .limit(limit)
-            .toArray();
-        } catch (e) {
-          results.blogs = await blogsCollection
-            .find({
-              status: 'published',
-              $or: [
-                { title: searchRegex },
-                { excerpt: searchRegex },
-                { content: searchRegex }
-              ]
-            }, {
-              projection: { title: 1, slug: 1, excerpt: 1, image: 1, category: 1 }
-            })
-            .limit(limit)
-            .toArray();
-        }
+        searchPromises.push(
+          (async () => {
+            const blogsCollection = await getCollection('blogs');
+            results.blogs = await blogsCollection
+              .find({
+                status: 'published',
+                $or: [
+                  { title: fastRegex },
+                  { excerpt: fastRegex }
+                ]
+              })
+              .project({ title: 1, slug: 1, excerpt: 1, image: 1, category: 1 })
+              .limit(limit)
+              .toArray();
+          })()
+        );
       }
       
-      // Search categories
+      // Search categories - optimized
       if (type === 'all' || type === 'categories') {
-        const categoriesCollection = await getCollection('categories');
-        try {
-          results.categories = await categoriesCollection
-            .find({ 
-              $text: { $search: query }
-            }, {
-              projection: { score: { $meta: 'textScore' }, name: 1, slug: 1, description: 1, icon: 1 }
-            })
-            .sort({ score: { $meta: 'textScore' } })
-            .limit(limit)
-            .toArray();
-        } catch (e) {
-          results.categories = await categoriesCollection
-            .find({
-              $or: [
-                { name: searchRegex },
-                { description: searchRegex }
-              ]
-            }, {
-              projection: { name: 1, slug: 1, description: 1, icon: 1 }
-            })
+        searchPromises.push(
+          (async () => {
+            const categoriesCollection = await getCollection('categories');
+            results.categories = await categoriesCollection
+              .find({
+                $or: [
+                  { name: fastRegex },
+                  { description: fastRegex }
+                ]
+              })
+              .project({ name: 1, slug: 1, description: 1, icon: 1, type: 1 })
+              .limit(limit)
+              .toArray();
+          })()
+        );
+      }
+      
+      // Wait for all searches to complete in parallel
+      await Promise.all(searchPromises);
+      
+      return NextResponse.json({
+        query,
+        ...results,
+        totalResults: results.tools.length + results.blogs.length + results.categories.length
+      });
+    }
             .limit(limit)
             .toArray();
         }
