@@ -192,9 +192,7 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Admin Users API - GET /api/admin/users"
-    - "Admin Tools API - GET /api/admin/tools"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
