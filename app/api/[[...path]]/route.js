@@ -4,6 +4,47 @@ import { categories, tools, blogs } from '@/lib/sample-data';
 import { auth } from '@clerk/nextjs/server';
 import { v4 as uuidv4 } from 'uuid';
 
+// Helper function to create text indexes for search
+async function createSearchIndexes() {
+  try {
+    const toolsCollection = await getCollection('tools');
+    const blogsCollection = await getCollection('blogs');
+    const categoriesCollection = await getCollection('categories');
+    
+    // Create text indexes for full-text search
+    try {
+      await toolsCollection.createIndex(
+        { name: 'text', shortDescription: 'text', description: 'text', tags: 'text' },
+        { name: 'tools_text_search', weights: { name: 10, shortDescription: 5, tags: 3, description: 1 } }
+      );
+    } catch (e) {
+      // Index might already exist
+    }
+    
+    try {
+      await blogsCollection.createIndex(
+        { title: 'text', excerpt: 'text', content: 'text' },
+        { name: 'blogs_text_search', weights: { title: 10, excerpt: 5, content: 1 } }
+      );
+    } catch (e) {
+      // Index might already exist
+    }
+    
+    try {
+      await categoriesCollection.createIndex(
+        { name: 'text', description: 'text' },
+        { name: 'categories_text_search', weights: { name: 10, description: 1 } }
+      );
+    } catch (e) {
+      // Index might already exist
+    }
+    
+    console.log('✅ Search indexes created');
+  } catch (error) {
+    console.error('Error creating search indexes:', error);
+  }
+}
+
 // Helper function to initialize database with sample data
 async function initializeDatabase() {
   try {
@@ -29,6 +70,9 @@ async function initializeDatabase() {
       await blogsCollection.insertMany(blogs);
       console.log('✅ Blogs initialized');
     }
+    
+    // Create search indexes
+    await createSearchIndexes();
   } catch (error) {
     console.error('Database initialization error:', error);
   }
