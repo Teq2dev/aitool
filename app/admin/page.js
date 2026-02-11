@@ -366,36 +366,40 @@ export default function AdminPage() {
                     <AdminToolList
                       tools={pendingTools}
                       onApprove={handleApprove}
-                      onReject={handleReject}
+                      onReject={openRejectModal}
                       onToggleFeatured={handleToggleFeatured}
                       onDelete={handleDelete}
+                      onEdit={openEditModal}
                     />
                   </TabsContent>
                   <TabsContent value="approved" className="mt-6">
                     <AdminToolList
                       tools={approvedTools}
                       onApprove={handleApprove}
-                      onReject={handleReject}
+                      onReject={openRejectModal}
                       onToggleFeatured={handleToggleFeatured}
                       onDelete={handleDelete}
+                      onEdit={openEditModal}
                     />
                   </TabsContent>
                   <TabsContent value="rejected" className="mt-6">
                     <AdminToolList
                       tools={rejectedTools}
                       onApprove={handleApprove}
-                      onReject={handleReject}
+                      onReject={openRejectModal}
                       onToggleFeatured={handleToggleFeatured}
                       onDelete={handleDelete}
+                      onEdit={openEditModal}
                     />
                   </TabsContent>
                   <TabsContent value="all" className="mt-6">
                     <AdminToolList
                       tools={tools}
                       onApprove={handleApprove}
-                      onReject={handleReject}
+                      onReject={openRejectModal}
                       onToggleFeatured={handleToggleFeatured}
                       onDelete={handleDelete}
+                      onEdit={openEditModal}
                     />
                   </TabsContent>
                 </Tabs>
