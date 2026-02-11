@@ -1,13 +1,35 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { SignInButton, UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
+import { SignInButton, UserButton, SignedIn, SignedOut, useUser } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Upload } from 'lucide-react';
 
 export default function Navigation() {
   const pathname = usePathname();
+  const { user, isSignedIn } = useUser();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (isSignedIn) {
+        try {
+          const res = await fetch('/api/admin/check');
+          const data = await res.json();
+          setIsAdmin(data.isAdmin);
+        } catch (error) {
+          console.error('Error checking admin status:', error);
+          setIsAdmin(false);
+        }
+      } else {
+        setIsAdmin(false);
+      }
+    };
+    checkAdminStatus();
+  }, [isSignedIn]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
@@ -50,13 +72,15 @@ export default function Navigation() {
               >
                 My Dashboard
               </Link>
-              <Link 
-                href="/admin" 
-                className={`transition-colors font-medium ${pathname === '/admin' ? 'text-blue-600' : 'text-blue-700 hover:text-blue-600'}`}
-                prefetch={true}
-              >
-                Admin
-              </Link>
+              {isAdmin && (
+                <Link 
+                  href="/admin" 
+                  className={`transition-colors font-medium ${pathname === '/admin' ? 'text-blue-600' : 'text-blue-700 hover:text-blue-600'}`}
+                  prefetch={true}
+                >
+                  Admin
+                </Link>
+              )}
             </SignedIn>
           </nav>
 
