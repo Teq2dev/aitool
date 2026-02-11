@@ -697,7 +697,7 @@ function UsersList({ users, onMakeAdmin, onRemoveAdmin }) {
   );
 }
 
-function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onDelete }) {
+function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onDelete, onEdit }) {
   if (tools.length === 0) {
     return (
       <div className="text-center py-12">
@@ -733,6 +733,14 @@ function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onDelete 
               </div>
             </div>
 
+            {/* Show rejection comment if rejected */}
+            {tool.status === 'rejected' && tool.rejectionComment && (
+              <div className="bg-red-50 border border-red-200 rounded p-2 mb-3">
+                <p className="text-xs text-red-600 font-medium">Rejection Reason:</p>
+                <p className="text-sm text-red-700">{tool.rejectionComment}</p>
+              </div>
+            )}
+
             <div className="flex flex-wrap gap-2 mb-3">
               {tool.categories?.slice(0, 3).map((cat) => (
                 <Badge key={cat} variant="outline" className="text-xs">
@@ -759,7 +767,7 @@ function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onDelete 
                   <CheckCircle className="w-4 h-4 mr-1" />
                   Approve
                 </Button>
-                <Button size="sm" variant="destructive" onClick={() => onReject(tool._id)}>
+                <Button size="sm" variant="destructive" onClick={() => onReject(tool._id, tool.name)}>
                   <XCircle className="w-4 h-4 mr-1" />
                   Reject
                 </Button>
@@ -789,6 +797,11 @@ function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onDelete 
                 Approve
               </Button>
             )}
+            {/* Edit button - always visible */}
+            <Button size="sm" variant="outline" onClick={() => onEdit(tool)} className="text-blue-600 border-blue-600 hover:bg-blue-50">
+              <Edit className="w-4 h-4 mr-1" />
+              Edit
+            </Button>
             <Button size="sm" variant="ghost" onClick={() => onDelete(tool._id)} className="text-red-600 hover:text-red-700 hover:bg-red-50">
               <Trash2 className="w-4 h-4 mr-1" />
               Delete
