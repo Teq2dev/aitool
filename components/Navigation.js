@@ -39,7 +39,7 @@ export default function Navigation() {
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <span className="font-bold text-xl text-black">Best AI Tools Free</span>
+            <span className="font-bold text-xl text-black hidden sm:inline">Best AI Tools Free</span>
           </Link>
 
           <nav className="hidden md:flex items-center space-x-6">
