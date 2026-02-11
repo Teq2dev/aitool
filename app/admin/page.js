@@ -113,6 +113,104 @@ export default function AdminPage() {
     }
   };
 
+  // Parse CSV text into array of objects
+  const parseCSV = (csvText) => {
+    const lines = csvText.trim().split('\n');
+    if (lines.length < 2) return [];
+    
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+    const tools = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+      const values = [];
+      let currentValue = '';
+      let insideQuotes = false;
+      
+      for (const char of lines[i]) {
+        if (char === '"') {
+          insideQuotes = !insideQuotes;
+        } else if (char === ',' && !insideQuotes) {
+          values.push(currentValue.trim());
+          currentValue = '';
+        } else {
+          currentValue += char;
+        }
+      }
+      values.push(currentValue.trim());
+      
+      if (values.length >= headers.length) {
+        const tool = {};
+        headers.forEach((header, index) => {
+          tool[header] = values[index]?.replace(/^"|"$/g, '') || '';
+        });
+        tools.push(tool);
+      }
+    }
+    
+    return tools;
+  };
+
+  // Handle CSV file upload
+  const handleCSVUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    setUploading(true);
+    setBulkUploadStatus(null);
+    
+    try {
+      const text = await file.text();
+      const toolsData = parseCSV(text);
+      
+      if (toolsData.length === 0) {
+        setBulkUploadStatus({ type: 'error', message: 'No valid data found in CSV file.' });
+        setUploading(false);
+        return;
+      }
+      
+      const response = await fetch('/api/admin/bulk-tools', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tools: toolsData }),
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        setBulkUploadStatus({
+          type: 'success',
+          message: result.message,
+          details: result.results
+        });
+        fetchTools(); // Refresh tools list
+      } else {
+        setBulkUploadStatus({ type: 'error', message: result.error || 'Upload failed' });
+      }
+    } catch (error) {
+      setBulkUploadStatus({ type: 'error', message: `Error processing file: ${error.message}` });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  // Download sample CSV template
+  const downloadTemplate = () => {
+    const template = `name,website,shortDescription,description,categories,tags,pricing,featured
+"ChatGPT","https://chat.openai.com","AI-powered conversational assistant","ChatGPT is an AI language model developed by OpenAI...","AI Chatbots,Productivity","chatbot,AI,assistant","Free",false
+"Midjourney","https://midjourney.com","AI art generator","Create stunning AI-generated artwork...","Image Generation,Design","art,images,AI","Freemium",false`;
+    
+    const blob = new Blob([template], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'tools_template.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   if (!isLoaded || !isSignedIn) {
     return (
       <div className="flex items-center justify-center min-h-screen">
