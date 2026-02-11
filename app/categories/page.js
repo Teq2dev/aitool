@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import CategoryCard from '@/components/CategoryCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -10,25 +10,10 @@ export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState(null);
-  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     fetchCategories();
   }, []);
-
-  // Debounced search
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchQuery.length >= 2) {
-        performSearch(searchQuery);
-      } else {
-        setSearchResults(null);
-      }
-    }, 300);
-    
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
 
   const fetchCategories = async () => {
     try {
@@ -42,19 +27,17 @@ export default function CategoriesPage() {
     }
   };
 
-  const performSearch = async (query) => {
-    setSearching(true);
-    try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&type=categories`);
-      const data = await res.json();
-      setSearchResults(data.categories || []);
-    } catch (error) {
-      console.error('Error searching:', error);
-      setSearchResults([]);
-    } finally {
-      setSearching(false);
+  // Fast client-side filtering - instant results
+  const filteredCategories = useMemo(() => {
+    if (!searchQuery || searchQuery.length < 2) {
+      return categories;
     }
-  };
+    const query = searchQuery.toLowerCase();
+    return categories.filter(cat => 
+      cat.name?.toLowerCase().includes(query) ||
+      cat.description?.toLowerCase().includes(query)
+    );
+  }, [categories, searchQuery]);
 
   if (loading) {
     return (
@@ -67,10 +50,9 @@ export default function CategoriesPage() {
     );
   }
 
-  const displayCategories = searchResults !== null ? searchResults : categories;
-  const topicCategories = displayCategories.filter((c) => c.type === 'topic');
-  const taskCategories = displayCategories.filter((c) => c.type === 'task');
-  const roleCategories = displayCategories.filter((c) => c.type === 'role');
+  const topicCategories = filteredCategories.filter((c) => c.type === 'topic');
+  const taskCategories = filteredCategories.filter((c) => c.type === 'task');
+  const roleCategories = filteredCategories.filter((c) => c.type === 'role');
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -80,7 +62,7 @@ export default function CategoriesPage() {
           <p className="text-gray-600">Explore AI tools organized by topics, tasks, and roles</p>
         </div>
 
-        {/* Search Bar */}
+        {/* Search Bar - Instant filtering */}
         <div className="max-w-xl mx-auto mb-8">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -91,20 +73,15 @@ export default function CategoriesPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-12 pr-4 py-3 w-full rounded-full border-2 border-gray-200 focus:border-blue-500 focus:ring-0"
             />
-            {searching && (
-              <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              </div>
-            )}
           </div>
           {searchQuery.length > 0 && searchQuery.length < 2 && (
             <p className="text-sm text-gray-500 mt-2 text-center">Type at least 2 characters to search</p>
           )}
-          {searchResults !== null && (
+          {searchQuery.length >= 2 && (
             <p className="text-sm text-gray-600 mt-2 text-center">
-              Found {searchResults.length} categories matching "{searchQuery}"
+              Found {filteredCategories.length} categories matching "{searchQuery}"
               <button 
-                onClick={() => { setSearchQuery(''); setSearchResults(null); }}
+                onClick={() => setSearchQuery('')}
                 className="ml-2 text-blue-600 hover:underline"
               >
                 Clear search
@@ -115,20 +92,20 @@ export default function CategoriesPage() {
 
         <Tabs defaultValue="all" className="w-full">
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-4 mb-8">
-            <TabsTrigger value="all">All ({displayCategories.length})</TabsTrigger>
+            <TabsTrigger value="all">All ({filteredCategories.length})</TabsTrigger>
             <TabsTrigger value="topic">Topics ({topicCategories.length})</TabsTrigger>
             <TabsTrigger value="task">Tasks ({taskCategories.length})</TabsTrigger>
             <TabsTrigger value="role">Roles ({roleCategories.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all">
-            {displayCategories.length === 0 ? (
+            {filteredCategories.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-500">No categories found</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {displayCategories.map((category) => (
+                {filteredCategories.map((category) => (
                   <CategoryCard key={category._id} category={category} />
                 ))}
               </div>
