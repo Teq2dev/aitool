@@ -549,10 +549,39 @@ export default function AdminPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Logo URL</label>
-                <Input
-                  value={editForm.logo}
-                  onChange={(e) => setEditForm({ ...editForm, logo: e.target.value })}
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={editForm.logo}
+                    onChange={(e) => setEditForm({ ...editForm, logo: e.target.value })}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      if (editForm.website) {
+                        try {
+                          const url = new URL(editForm.website);
+                          const faviconUrl = `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=128`;
+                          setEditForm({ ...editForm, logo: faviconUrl });
+                        } catch {
+                          alert('Invalid website URL');
+                        }
+                      } else {
+                        alert('Please enter a website URL first');
+                      }
+                    }}
+                    className="whitespace-nowrap"
+                  >
+                    Fetch Favicon
+                  </Button>
+                </div>
+                {editForm.logo && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <img src={editForm.logo} alt="Logo preview" className="w-10 h-10 rounded object-cover border" />
+                    <span className="text-xs text-gray-500">Logo preview</span>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Short Description</label>
