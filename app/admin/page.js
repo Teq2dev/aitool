@@ -485,6 +485,151 @@ export default function AdminPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Reject Modal */}
+      {rejectModal.open && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Reject Tool</h3>
+              <button onClick={() => setRejectModal({ open: false, toolId: null, toolName: '' })}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Rejecting: <strong>{rejectModal.toolName}</strong>
+            </p>
+            <Textarea
+              placeholder="Enter rejection reason (will be visible to the user)..."
+              value={rejectComment}
+              onChange={(e) => setRejectComment(e.target.value)}
+              className="mb-4"
+              rows={4}
+            />
+            <div className="flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setRejectModal({ open: false, toolId: null, toolName: '' })}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleReject}>
+                Reject Tool
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editModal.open && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto py-8">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 my-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Edit Tool</h3>
+              <button onClick={() => setEditModal({ open: false, tool: null })}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+              <div>
+                <label className="block text-sm font-medium mb-1">Name</label>
+                <Input
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Website</label>
+                <Input
+                  value={editForm.website}
+                  onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Logo URL</label>
+                <Input
+                  value={editForm.logo}
+                  onChange={(e) => setEditForm({ ...editForm, logo: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Short Description</label>
+                <Textarea
+                  value={editForm.shortDescription}
+                  onChange={(e) => setEditForm({ ...editForm, shortDescription: e.target.value })}
+                  rows={2}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Full Description</label>
+                <Textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  rows={4}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Categories (comma-separated)</label>
+                  <Input
+                    value={editForm.categories}
+                    onChange={(e) => setEditForm({ ...editForm, categories: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Tags (comma-separated)</label>
+                  <Input
+                    value={editForm.tags}
+                    onChange={(e) => setEditForm({ ...editForm, tags: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Pricing</label>
+                  <select
+                    value={editForm.pricing}
+                    onChange={(e) => setEditForm({ ...editForm, pricing: e.target.value })}
+                    className="w-full border rounded-md px-3 py-2"
+                  >
+                    <option value="Free">Free</option>
+                    <option value="Freemium">Freemium</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Contact for Pricing">Contact for Pricing</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Status</label>
+                  <select
+                    value={editForm.status}
+                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                    className="w-full border rounded-md px-3 py-2"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="featured"
+                  checked={editForm.featured}
+                  onChange={(e) => setEditForm({ ...editForm, featured: e.target.checked })}
+                />
+                <label htmlFor="featured" className="text-sm font-medium">Featured Tool</label>
+              </div>
+            </div>
+            <div className="flex gap-3 justify-end mt-6">
+              <Button variant="outline" onClick={() => setEditModal({ open: false, tool: null })}>
+                Cancel
+              </Button>
+              <Button onClick={handleEdit} className="bg-blue-600 hover:bg-blue-700">
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
