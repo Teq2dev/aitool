@@ -645,19 +645,26 @@ export async function POST(request) {
       
       for (const tool of toolsData) {
         try {
+          // Support multiple column name formats
+          const name = tool.Name || tool.name;
+          const website = tool['Website (Original)'] || tool.website || tool.Website;
+          const category = tool.Category || tool.category || tool.categories;
+          const pricing = tool.Pricing || tool.pricing;
+          const description = tool.Description || tool.description || tool.shortDescription;
+          
           // Validate required fields
-          if (!tool.name || !tool.website) {
+          if (!name || !website) {
             results.failed++;
-            results.errors.push(`Missing required fields for tool: ${tool.name || 'Unknown'}`);
+            results.errors.push(`Missing required fields for tool: ${name || 'Unknown'}`);
             continue;
           }
           
           // Check for duplicate domain
           try {
-            const domain = new URL(tool.website).hostname.replace('www.', '');
+            const domain = new URL(website).hostname.replace('www.', '');
             if (existingDomains.has(domain)) {
               results.skipped++;
-              results.errors.push(`Duplicate skipped: ${tool.name} (${domain})`);
+              results.errors.push(`Duplicate skipped: ${name} (${domain})`);
               continue;
             }
             existingDomains.add(domain); // Add to set to prevent duplicates within same upload
@@ -665,26 +672,26 @@ export async function POST(request) {
             // Invalid URL, continue anyway
           }
           
-          // Auto-fetch favicon if no logo provided
-          const logoUrl = tool.logo || getFaviconUrl(tool.website);
+          // Auto-fetch favicon
+          const logoUrl = tool.logo || tool.Logo || getFaviconUrl(website);
           
           const newTool = {
             _id: uuidv4(),
-            name: tool.name,
-            slug: tool.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-            shortDescription: tool.shortDescription || tool.description?.substring(0, 150) || '',
-            description: tool.description || '',
+            name: name,
+            slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+            shortDescription: description?.substring(0, 150) || '',
+            description: description || '',
             logo: logoUrl || 'https://via.placeholder.com/128?text=AI',
-            website: tool.website,
-            categories: Array.isArray(tool.categories) ? tool.categories : (tool.categories ? tool.categories.split(',').map(c => c.trim()) : ['AI Tools']),
-            tags: Array.isArray(tool.tags) ? tool.tags : (tool.tags ? tool.tags.split(',').map(t => t.trim()) : []),
-            pricing: tool.pricing || 'Free',
+            website: website,
+            categories: Array.isArray(category) ? category : (category ? category.split(',').map(c => c.trim()) : ['AI Tools']),
+            tags: Array.isArray(tool.tags || tool.Tags) ? (tool.tags || tool.Tags) : (tool.tags || tool.Tags ? (tool.tags || tool.Tags).split(',').map(t => t.trim()) : []),
+            pricing: pricing || 'Free',
             status: 'approved', // Admin uploaded tools are auto-approved
-            featured: tool.featured === 'true' || tool.featured === true || false,
+            featured: tool.featured === 'true' || tool.featured === true || tool.Featured === 'true' || false,
             sponsored: false,
             trending: false,
-            rating: parseFloat(tool.rating) || 4.5,
-            votes: parseInt(tool.votes) || 0,
+            rating: parseFloat(tool.rating || tool.Rating) || 4.5,
+            votes: parseInt(tool.votes || tool.Votes) || 0,
             submittedBy: userId,
             createdAt: new Date(),
           };
@@ -693,7 +700,7 @@ export async function POST(request) {
           results.success++;
         } catch (err) {
           results.failed++;
-          results.errors.push(`Error adding tool ${tool.name}: ${err.message}`);
+          results.errors.push(`Error adding tool ${tool.Name || tool.name}: ${err.message}`);
         }
       }
       
