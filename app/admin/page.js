@@ -253,11 +253,12 @@ export default function AdminPage() {
     }
   };
 
-  // Download sample CSV template
+  // Download sample CSV template - matches user's format
   const downloadTemplate = () => {
-    const template = `name,website,shortDescription,description,categories,tags,pricing,featured
-"ChatGPT","https://chat.openai.com","AI-powered conversational assistant","ChatGPT is an AI language model developed by OpenAI...","AI Chatbots,Productivity","chatbot,AI,assistant","Free",false
-"Midjourney","https://midjourney.com","AI art generator","Create stunning AI-generated artwork...","Image Generation,Design","art,images,AI","Freemium",false`;
+    const template = `Name,Category,Pricing,Website (Original),Description
+"WriteGenius","Blog Content","Paid","https://writegenius.com/","AI assistant for generating SEO-friendly long-form blog content and optimization."
+"Dall E 2","Text To Image","Free","https://openai.com/dall-e-2","OpenAI's system that creates realistic images and art from natural language descriptions."
+"ChatGPT","AI Chatbots","Freemium","https://chat.openai.com","Conversational AI assistant by OpenAI for various tasks."`;
     
     const blob = new Blob([template], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
