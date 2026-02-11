@@ -305,7 +305,9 @@ export async function GET(request) {
       
       try {
         const { clerkClient } = await import('@clerk/nextjs/server');
-        const users = await clerkClient.users.getUserList({ limit: 100 });
+        const client = clerkClient();
+        const usersResponse = await client.users.getUserList({ limit: 100 });
+        const users = usersResponse.data || usersResponse;
         
         // Get admin users from database
         const usersCollection = await getCollection('users');
@@ -326,7 +328,7 @@ export async function GET(request) {
         return NextResponse.json(usersWithRoles);
       } catch (error) {
         console.error('Error fetching users:', error);
-        return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to fetch users', details: error.message }, { status: 500 });
       }
     }
     
