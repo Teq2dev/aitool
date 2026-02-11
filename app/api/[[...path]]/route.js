@@ -94,6 +94,122 @@ export async function GET(request) {
       return NextResponse.json({ success: true, message: 'Database initialized' });
     }
     
+    // GET /api/search - Global search across tools, blogs, and categories
+    if (pathname === '/api/search') {
+      const query = searchParams.get('q') || searchParams.get('query') || '';
+      const type = searchParams.get('type') || 'all'; // all, tools, blogs, categories
+      const limit = parseInt(searchParams.get('limit') || '10');
+      
+      if (!query || query.length < 2) {
+        return NextResponse.json({ 
+          error: 'Search query must be at least 2 characters',
+          tools: [], blogs: [], categories: [] 
+        });
+      }
+      
+      const results = { tools: [], blogs: [], categories: [] };
+      const searchRegex = { $regex: query, $options: 'i' };
+      
+      // Search tools
+      if (type === 'all' || type === 'tools') {
+        const toolsCollection = await getCollection('tools');
+        try {
+          // Try text search first
+          results.tools = await toolsCollection
+            .find({ 
+              $text: { $search: query },
+              status: 'approved'
+            }, {
+              projection: { score: { $meta: 'textScore' }, name: 1, slug: 1, shortDescription: 1, logo: 1, categories: 1, pricing: 1 }
+            })
+            .sort({ score: { $meta: 'textScore' } })
+            .limit(limit)
+            .toArray();
+        } catch (e) {
+          // Fallback to regex search if text search fails
+          results.tools = await toolsCollection
+            .find({
+              status: 'approved',
+              $or: [
+                { name: searchRegex },
+                { shortDescription: searchRegex },
+                { description: searchRegex },
+                { tags: searchRegex }
+              ]
+            }, {
+              projection: { name: 1, slug: 1, shortDescription: 1, logo: 1, categories: 1, pricing: 1 }
+            })
+            .limit(limit)
+            .toArray();
+        }
+      }
+      
+      // Search blogs
+      if (type === 'all' || type === 'blogs') {
+        const blogsCollection = await getCollection('blogs');
+        try {
+          results.blogs = await blogsCollection
+            .find({ 
+              $text: { $search: query },
+              status: 'published'
+            }, {
+              projection: { score: { $meta: 'textScore' }, title: 1, slug: 1, excerpt: 1, image: 1, category: 1 }
+            })
+            .sort({ score: { $meta: 'textScore' } })
+            .limit(limit)
+            .toArray();
+        } catch (e) {
+          results.blogs = await blogsCollection
+            .find({
+              status: 'published',
+              $or: [
+                { title: searchRegex },
+                { excerpt: searchRegex },
+                { content: searchRegex }
+              ]
+            }, {
+              projection: { title: 1, slug: 1, excerpt: 1, image: 1, category: 1 }
+            })
+            .limit(limit)
+            .toArray();
+        }
+      }
+      
+      // Search categories
+      if (type === 'all' || type === 'categories') {
+        const categoriesCollection = await getCollection('categories');
+        try {
+          results.categories = await categoriesCollection
+            .find({ 
+              $text: { $search: query }
+            }, {
+              projection: { score: { $meta: 'textScore' }, name: 1, slug: 1, description: 1, icon: 1 }
+            })
+            .sort({ score: { $meta: 'textScore' } })
+            .limit(limit)
+            .toArray();
+        } catch (e) {
+          results.categories = await categoriesCollection
+            .find({
+              $or: [
+                { name: searchRegex },
+                { description: searchRegex }
+              ]
+            }, {
+              projection: { name: 1, slug: 1, description: 1, icon: 1 }
+            })
+            .limit(limit)
+            .toArray();
+        }
+      }
+      
+      return NextResponse.json({
+        query,
+        ...results,
+        totalResults: results.tools.length + results.blogs.length + results.categories.length
+      });
+    }
+    
     // GET /api/tools - List all tools with filters
     if (pathname.startsWith('/api/tools')) {
       const slug = pathname.split('/api/tools/')[1];
