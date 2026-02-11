@@ -11,33 +11,25 @@ async function createSearchIndexes() {
     const blogsCollection = await getCollection('blogs');
     const categoriesCollection = await getCollection('categories');
     
-    // Create text indexes for full-text search
+    // Create regular indexes for faster queries
     try {
-      await toolsCollection.createIndex(
-        { name: 'text', shortDescription: 'text', description: 'text', tags: 'text' },
-        { name: 'tools_text_search', weights: { name: 10, shortDescription: 5, tags: 3, description: 1 } }
-      );
-    } catch (e) {
-      // Index might already exist
-    }
+      await toolsCollection.createIndex({ status: 1 });
+      await toolsCollection.createIndex({ name: 1 });
+      await toolsCollection.createIndex({ categories: 1 });
+      await toolsCollection.createIndex({ createdAt: -1 });
+      await toolsCollection.createIndex({ status: 1, name: 1 });
+    } catch (e) {}
     
     try {
-      await blogsCollection.createIndex(
-        { title: 'text', excerpt: 'text', content: 'text' },
-        { name: 'blogs_text_search', weights: { title: 10, excerpt: 5, content: 1 } }
-      );
-    } catch (e) {
-      // Index might already exist
-    }
+      await blogsCollection.createIndex({ status: 1 });
+      await blogsCollection.createIndex({ title: 1 });
+      await blogsCollection.createIndex({ createdAt: -1 });
+    } catch (e) {}
     
     try {
-      await categoriesCollection.createIndex(
-        { name: 'text', description: 'text' },
-        { name: 'categories_text_search', weights: { name: 10, description: 1 } }
-      );
-    } catch (e) {
-      // Index might already exist
-    }
+      await categoriesCollection.createIndex({ name: 1 });
+      await categoriesCollection.createIndex({ type: 1 });
+    } catch (e) {}
     
     console.log('✅ Search indexes created');
   } catch (error) {
