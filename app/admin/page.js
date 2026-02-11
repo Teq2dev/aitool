@@ -288,6 +288,10 @@ export default function AdminPage() {
                   <Users className="w-4 h-4 mr-2" />
                   Users ({users.length})
                 </TabsTrigger>
+                <TabsTrigger value="bulk">
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  Bulk Upload
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="tools" className="mt-6">
