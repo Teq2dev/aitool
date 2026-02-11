@@ -396,6 +396,34 @@ export async function POST(request) {
       const body = await request.json();
       const toolsCollection = await getCollection('tools');
       
+      // Check for duplicate domain
+      if (body.website) {
+        try {
+          const domain = new URL(body.website).hostname.replace('www.', '');
+          const existingTool = await toolsCollection.findOne({
+            $or: [
+              { website: { $regex: domain, $options: 'i' } },
+              { website: { $regex: `www.${domain}`, $options: 'i' } }
+            ]
+          });
+          
+          if (existingTool) {
+            return NextResponse.json({ 
+              error: 'Duplicate tool detected', 
+              message: `A tool with this domain already exists: "${existingTool.name}"`,
+              existingTool: {
+                name: existingTool.name,
+                slug: existingTool.slug,
+                status: existingTool.status
+              }
+            }, { status: 409 });
+          }
+        } catch (urlError) {
+          // Invalid URL format, continue with submission
+          console.warn('Invalid URL format for duplicate check:', body.website);
+        }
+      }
+      
       const newTool = {
         _id: uuidv4(),
         ...body,
