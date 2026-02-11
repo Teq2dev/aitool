@@ -552,11 +552,54 @@ export async function PUT(request) {
       }
       
       const id = pathname.split('/api/admin/tools/')[1].replace('/reject', '');
+      const body = await request.json();
       const toolsCollection = await getCollection('tools');
       
       await toolsCollection.updateOne(
         { _id: id },
-        { $set: { status: 'rejected' } }
+        { 
+          $set: { 
+            status: 'rejected',
+            rejectionComment: body.comment || 'No reason provided',
+            rejectedAt: new Date(),
+            rejectedBy: userId
+          } 
+        }
+      );
+      
+      return NextResponse.json({ success: true });
+    }
+    
+    // PUT /api/admin/tools/:id/edit - Edit tool details
+    if (pathname.includes('/api/admin/tools/') && pathname.includes('/edit')) {
+      const { userId } = await auth();
+      
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      const id = pathname.split('/api/admin/tools/')[1].replace('/edit', '');
+      const body = await request.json();
+      const toolsCollection = await getCollection('tools');
+      
+      // Build update object with only provided fields
+      const updateFields = {};
+      if (body.name) updateFields.name = body.name;
+      if (body.shortDescription) updateFields.shortDescription = body.shortDescription;
+      if (body.description) updateFields.description = body.description;
+      if (body.website) updateFields.website = body.website;
+      if (body.logo) updateFields.logo = body.logo;
+      if (body.categories) updateFields.categories = body.categories;
+      if (body.tags) updateFields.tags = body.tags;
+      if (body.pricing) updateFields.pricing = body.pricing;
+      if (body.status) updateFields.status = body.status;
+      if (typeof body.featured === 'boolean') updateFields.featured = body.featured;
+      updateFields.updatedAt = new Date();
+      updateFields.updatedBy = userId;
+      
+      await toolsCollection.updateOne(
+        { _id: id },
+        { $set: updateFields }
       );
       
       return NextResponse.json({ success: true });
