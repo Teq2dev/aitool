@@ -454,7 +454,7 @@ export default function AdminPage() {
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList>
+              <TabsList className="flex flex-wrap">
                 <TabsTrigger value="tools">
                   <Eye className="w-4 h-4 mr-2" />
                   Tools ({tools.length})
@@ -466,6 +466,14 @@ export default function AdminPage() {
                 <TabsTrigger value="bulk">
                   <FileSpreadsheet className="w-4 h-4 mr-2" />
                   Bulk Upload
+                </TabsTrigger>
+                <TabsTrigger value="bulkLogs">
+                  <History className="w-4 h-4 mr-2" />
+                  Upload Logs ({bulkLogs.length})
+                </TabsTrigger>
+                <TabsTrigger value="shop">
+                  <ShoppingBag className="w-4 h-4 mr-2" />
+                  Shop ({shopProducts.length})
                 </TabsTrigger>
               </TabsList>
 
