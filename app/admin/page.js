@@ -873,6 +873,157 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+
+      {/* Bulk Log Tools Modal */}
+      {bulkLogTools.open && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto py-8">
+          <div className="bg-white rounded-lg p-6 w-full max-w-4xl mx-4 my-auto max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Tools from Bulk Upload</h3>
+              <button onClick={() => setBulkLogTools({ open: false, logId: null, tools: [] })}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">Total: {bulkLogTools.tools.length} tools</p>
+            {bulkLogTools.tools.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">No tools found (may have been deleted or undone)</p>
+            ) : (
+              <div className="space-y-2 max-h-[50vh] overflow-y-auto">
+                {bulkLogTools.tools.map((tool) => (
+                  <div key={tool._id} className="flex items-center gap-3 p-3 border rounded">
+                    <img src={tool.logo} alt={tool.name} className="w-10 h-10 rounded object-cover" />
+                    <div className="flex-1">
+                      <p className="font-medium">{tool.name}</p>
+                      <p className="text-xs text-gray-500">{tool.website}</p>
+                    </div>
+                    <Badge variant={tool.status === 'approved' ? 'default' : 'secondary'}>{tool.status}</Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Shop Product Modal */}
+      {shopModal.open && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto py-8">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 my-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">
+                {shopModal.product ? 'Edit Product' : 'Add New Product'}
+              </h3>
+              <button onClick={() => setShopModal({ open: false, product: null })}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Product Name *</label>
+                  <Input
+                    value={shopForm.name}
+                    onChange={(e) => setShopForm({ ...shopForm, name: e.target.value })}
+                    placeholder="AI Tool Bundle"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Category</label>
+                  <Input
+                    value={shopForm.category}
+                    onChange={(e) => setShopForm({ ...shopForm, category: e.target.value })}
+                    placeholder="AI Tool"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Image URL</label>
+                <Input
+                  value={shopForm.image}
+                  onChange={(e) => setShopForm({ ...shopForm, image: e.target.value })}
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Short Description</label>
+                <Input
+                  value={shopForm.shortDescription}
+                  onChange={(e) => setShopForm({ ...shopForm, shortDescription: e.target.value })}
+                  placeholder="Brief description for listing"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Full Description</label>
+                <Textarea
+                  value={shopForm.description}
+                  onChange={(e) => setShopForm({ ...shopForm, description: e.target.value })}
+                  rows={4}
+                  placeholder="Detailed product description"
+                />
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Monthly Price ($)</label>
+                  <Input
+                    type="number"
+                    value={shopForm.monthlyPrice}
+                    onChange={(e) => setShopForm({ ...shopForm, monthlyPrice: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">6 Months Price ($)</label>
+                  <Input
+                    type="number"
+                    value={shopForm.halfYearlyPrice}
+                    onChange={(e) => setShopForm({ ...shopForm, halfYearlyPrice: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Yearly Price ($)</label>
+                  <Input
+                    type="number"
+                    value={shopForm.yearlyPrice}
+                    onChange={(e) => setShopForm({ ...shopForm, yearlyPrice: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Original Price ($)</label>
+                  <Input
+                    type="number"
+                    value={shopForm.originalPrice}
+                    onChange={(e) => setShopForm({ ...shopForm, originalPrice: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Discount % (e.g., 80)</label>
+                <Input
+                  type="number"
+                  value={shopForm.discount}
+                  onChange={(e) => setShopForm({ ...shopForm, discount: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Features (one per line)</label>
+                <Textarea
+                  value={shopForm.features}
+                  onChange={(e) => setShopForm({ ...shopForm, features: e.target.value })}
+                  rows={4}
+                  placeholder="Lifetime Access&#10;All Future Updates&#10;Priority Support"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 justify-end mt-6">
+              <Button variant="outline" onClick={() => setShopModal({ open: false, product: null })}>
+                Cancel
+              </Button>
+              <Button onClick={saveShopProduct} className="bg-blue-600 hover:bg-blue-700">
+                {shopModal.product ? 'Save Changes' : 'Add Product'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
