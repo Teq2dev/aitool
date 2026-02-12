@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SignInButton, UserButton, SignedIn, SignedOut, useUser } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Upload } from 'lucide-react';
+import { Sparkles, Upload, ShoppingBag } from 'lucide-react';
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -63,6 +63,18 @@ export default function Navigation() {
               prefetch={true}
             >
               Blogs
+            </Link>
+            {/* Shop with discount badge */}
+            <Link 
+              href="/shop" 
+              className={`relative transition-colors font-medium flex items-center gap-1 ${pathname === '/shop' || pathname.startsWith('/shop/') ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'}`}
+              prefetch={true}
+            >
+              <ShoppingBag className="w-4 h-4" />
+              Shop
+              <span className="absolute -top-2 -right-8 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-pulse">
+                80% OFF
+              </span>
             </Link>
             <SignedIn>
               <Link 
