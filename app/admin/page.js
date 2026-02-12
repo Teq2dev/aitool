@@ -69,6 +69,26 @@ export default function AdminPage() {
     }
   };
 
+  const fetchBulkLogs = async () => {
+    try {
+      const res = await fetch('/api/admin/bulk-logs');
+      const data = await res.json();
+      setBulkLogs(data);
+    } catch (error) {
+      console.error('Error fetching bulk logs:', error);
+    }
+  };
+
+  const fetchShopProducts = async () => {
+    try {
+      const res = await fetch('/api/admin/shop');
+      const data = await res.json();
+      setShopProducts(data);
+    } catch (error) {
+      console.error('Error fetching shop products:', error);
+    }
+  };
+
   const handleMakeAdmin = async (userId) => {
     try {
       await fetch(`/api/admin/users/${userId}/make-admin`, { method: 'PUT' });
@@ -93,6 +113,94 @@ export default function AdminPage() {
       fetchTools();
     } catch (error) {
       console.error('Error approving tool:', error);
+    }
+  };
+
+  // Bulk log handlers
+  const viewBulkLogTools = async (logId) => {
+    try {
+      const res = await fetch(`/api/admin/bulk-logs/${logId}/tools`);
+      const data = await res.json();
+      setBulkLogTools({ open: true, logId, tools: data });
+    } catch (error) {
+      console.error('Error fetching bulk log tools:', error);
+    }
+  };
+
+  const undoBulkUpload = async (logId) => {
+    if (!confirm('Are you sure you want to undo this bulk upload? All tools from this upload will be deleted.')) return;
+    try {
+      const res = await fetch(`/api/admin/bulk-logs/${logId}/undo`, { method: 'DELETE' });
+      const data = await res.json();
+      alert(data.message);
+      fetchBulkLogs();
+      fetchTools();
+    } catch (error) {
+      console.error('Error undoing bulk upload:', error);
+    }
+  };
+
+  // Shop handlers
+  const openShopModal = (product = null) => {
+    if (product) {
+      setShopForm({
+        name: product.name || '',
+        shortDescription: product.shortDescription || '',
+        description: product.description || '',
+        image: product.image || '',
+        monthlyPrice: product.monthlyPrice || 0,
+        halfYearlyPrice: product.halfYearlyPrice || 0,
+        yearlyPrice: product.yearlyPrice || 0,
+        originalPrice: product.originalPrice || 0,
+        discount: product.discount || 80,
+        features: product.features?.join('\n') || '',
+        category: product.category || 'AI Tool',
+      });
+      setShopModal({ open: true, product });
+    } else {
+      setShopForm({
+        name: '', shortDescription: '', description: '', image: '',
+        monthlyPrice: 0, halfYearlyPrice: 0, yearlyPrice: 0, originalPrice: 0,
+        discount: 80, features: '', category: 'AI Tool',
+      });
+      setShopModal({ open: true, product: null });
+    }
+  };
+
+  const saveShopProduct = async () => {
+    try {
+      const productData = {
+        ...shopForm,
+        features: shopForm.features.split('\n').filter(f => f.trim()),
+      };
+      
+      if (shopModal.product) {
+        await fetch(`/api/admin/shop/${shopModal.product._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(productData),
+        });
+      } else {
+        await fetch('/api/admin/shop', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(productData),
+        });
+      }
+      setShopModal({ open: false, product: null });
+      fetchShopProducts();
+    } catch (error) {
+      console.error('Error saving shop product:', error);
+    }
+  };
+
+  const deleteShopProduct = async (productId) => {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+    try {
+      await fetch(`/api/admin/shop/${productId}`, { method: 'DELETE' });
+      fetchShopProducts();
+    } catch (error) {
+      console.error('Error deleting product:', error);
     }
   };
 
