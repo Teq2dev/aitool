@@ -608,6 +608,93 @@ export default function AdminPage() {
                   )}
                 </div>
               </TabsContent>
+
+              {/* Bulk Upload Logs Tab */}
+              <TabsContent value="bulkLogs" className="mt-6">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Bulk Upload History</h3>
+                  {bulkLogs.length === 0 ? (
+                    <p className="text-gray-500 text-center py-8">No bulk uploads yet</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {bulkLogs.map((log) => (
+                        <div key={log._id} className={`p-4 border rounded-lg ${log.undone ? 'bg-gray-100 opacity-60' : 'bg-white'}`}>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium">
+                                {new Date(log.createdAt).toLocaleString()}
+                                {log.undone && <Badge className="ml-2 bg-gray-500">Undone</Badge>}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                <span className="text-green-600">{log.successCount} added</span>
+                                {log.skippedCount > 0 && <span className="text-yellow-600 ml-2">{log.skippedCount} skipped</span>}
+                                {log.failedCount > 0 && <span className="text-red-600 ml-2">{log.failedCount} failed</span>}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline" onClick={() => viewBulkLogTools(log._id)}>
+                                <Eye className="w-4 h-4 mr-1" />
+                                View Tools
+                              </Button>
+                              {!log.undone && (
+                                <Button size="sm" variant="destructive" onClick={() => undoBulkUpload(log._id)}>
+                                  <Undo2 className="w-4 h-4 mr-1" />
+                                  Undo
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+
+              {/* Shop Products Tab */}
+              <TabsContent value="shop" className="mt-6">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-semibold">Shop Products</h3>
+                    <Button onClick={() => openShopModal()} className="bg-blue-600 hover:bg-blue-700">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Product
+                    </Button>
+                  </div>
+                  {shopProducts.length === 0 ? (
+                    <p className="text-gray-500 text-center py-8">No shop products yet</p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {shopProducts.map((product) => (
+                        <div key={product._id} className="border rounded-lg p-4 bg-white">
+                          {product.image && (
+                            <img src={product.image} alt={product.name} className="w-full h-32 object-cover rounded mb-3" />
+                          )}
+                          <h4 className="font-semibold">{product.name}</h4>
+                          <p className="text-sm text-gray-600 mb-2">{product.shortDescription}</p>
+                          <div className="flex items-center gap-2 mb-3">
+                            <Badge>{product.category}</Badge>
+                            <Badge variant="outline" className="text-red-500">{product.discount}% OFF</Badge>
+                          </div>
+                          <p className="text-lg font-bold text-blue-600 mb-3">
+                            ${product.monthlyPrice}/mo | ${product.yearlyPrice}/yr
+                          </p>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" onClick={() => openShopModal(product)}>
+                              <Edit className="w-4 h-4 mr-1" />
+                              Edit
+                            </Button>
+                            <Button size="sm" variant="destructive" onClick={() => deleteShopProduct(product._id)}>
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
