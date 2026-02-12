@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle, XCircle, Eye, Star, Trash2, Users, Shield, ShieldOff, Upload, FileSpreadsheet, Download, Edit, X } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Star, Trash2, Users, Shield, ShieldOff, Upload, FileSpreadsheet, Download, Edit, X, ShoppingBag, History, Undo2, Plus } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminPage() {
@@ -17,6 +17,8 @@ export default function AdminPage() {
   const router = useRouter();
   const [tools, setTools] = useState([]);
   const [users, setUsers] = useState([]);
+  const [bulkLogs, setBulkLogs] = useState([]);
+  const [shopProducts, setShopProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('tools');
   const [bulkUploadStatus, setBulkUploadStatus] = useState(null);
@@ -28,6 +30,9 @@ export default function AdminPage() {
   const [rejectComment, setRejectComment] = useState('');
   const [editModal, setEditModal] = useState({ open: false, tool: null });
   const [editForm, setEditForm] = useState({});
+  const [shopModal, setShopModal] = useState({ open: false, product: null });
+  const [shopForm, setShopForm] = useState({});
+  const [bulkLogTools, setBulkLogTools] = useState({ open: false, logId: null, tools: [] });
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
@@ -37,6 +42,8 @@ export default function AdminPage() {
     if (isSignedIn) {
       fetchTools();
       fetchUsers();
+      fetchBulkLogs();
+      fetchShopProducts();
     }
   }, [isLoaded, isSignedIn]);
 
