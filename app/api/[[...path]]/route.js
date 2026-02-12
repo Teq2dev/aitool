@@ -620,14 +620,17 @@ export async function POST(request) {
       }
       
       const toolsCollection = await getCollection('tools');
-      const results = { success: 0, failed: 0, skipped: 0, errors: [] };
+      const bulkLogsCollection = await getCollection('bulk_upload_logs');
+      const results = { success: 0, failed: 0, skipped: 0, errors: [], toolIds: [] };
+      
+      // Create bulk upload log entry
+      const bulkLogId = uuidv4();
       
       // Helper function to get favicon URL
       const getFaviconUrl = (website) => {
         try {
           const url = new URL(website);
           const domain = url.hostname;
-          // Use Google's high-quality favicon service
           return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
         } catch {
           return null;
@@ -648,21 +651,18 @@ export async function POST(request) {
       
       for (const tool of toolsData) {
         try {
-          // Support multiple column name formats
           const name = tool.Name || tool.name;
           const website = tool['Website (Original)'] || tool.website || tool.Website;
           const category = tool.Category || tool.category || tool.categories;
           const pricing = tool.Pricing || tool.pricing;
           const description = tool.Description || tool.description || tool.shortDescription;
           
-          // Validate required fields
           if (!name || !website) {
             results.failed++;
             results.errors.push(`Missing required fields for tool: ${name || 'Unknown'}`);
             continue;
           }
           
-          // Check for duplicate domain
           try {
             const domain = new URL(website).hostname.replace('www.', '');
             if (existingDomains.has(domain)) {
@@ -670,16 +670,16 @@ export async function POST(request) {
               results.errors.push(`Duplicate skipped: ${name} (${domain})`);
               continue;
             }
-            existingDomains.add(domain); // Add to set to prevent duplicates within same upload
+            existingDomains.add(domain);
           } catch {
             // Invalid URL, continue anyway
           }
           
-          // Auto-fetch favicon
           const logoUrl = tool.logo || tool.Logo || getFaviconUrl(website);
+          const toolId = uuidv4();
           
           const newTool = {
-            _id: uuidv4(),
+            _id: toolId,
             name: name,
             slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
             shortDescription: description?.substring(0, 150) || '',
@@ -689,29 +689,78 @@ export async function POST(request) {
             categories: Array.isArray(category) ? category : (category ? category.split(',').map(c => c.trim()) : ['AI Tools']),
             tags: Array.isArray(tool.tags || tool.Tags) ? (tool.tags || tool.Tags) : (tool.tags || tool.Tags ? (tool.tags || tool.Tags).split(',').map(t => t.trim()) : []),
             pricing: pricing || 'Free',
-            status: 'approved', // Admin uploaded tools are auto-approved
+            status: 'approved',
             featured: tool.featured === 'true' || tool.featured === true || tool.Featured === 'true' || false,
             sponsored: false,
             trending: false,
             rating: parseFloat(tool.rating || tool.Rating) || 4.5,
             votes: parseInt(tool.votes || tool.Votes) || 0,
             submittedBy: userId,
+            bulkUploadId: bulkLogId,
             createdAt: new Date(),
           };
           
           await toolsCollection.insertOne(newTool);
           results.success++;
+          results.toolIds.push(toolId);
         } catch (err) {
           results.failed++;
           results.errors.push(`Error adding tool ${tool.Name || tool.name}: ${err.message}`);
         }
       }
       
+      // Save bulk upload log
+      await bulkLogsCollection.insertOne({
+        _id: bulkLogId,
+        userId,
+        totalTools: toolsData.length,
+        successCount: results.success,
+        failedCount: results.failed,
+        skippedCount: results.skipped,
+        toolIds: results.toolIds,
+        errors: results.errors.slice(0, 20), // Keep only first 20 errors
+        createdAt: new Date(),
+      });
+      
       return NextResponse.json({
         success: true,
         message: `Bulk upload complete. ${results.success} added, ${results.skipped} duplicates skipped, ${results.failed} failed.`,
+        logId: bulkLogId,
         results
       });
+    }
+    
+    // POST /api/admin/shop - Add shop product
+    if (pathname === '/api/admin/shop') {
+      const { userId } = await auth();
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      const body = await request.json();
+      const shopCollection = await getCollection('shop_products');
+      
+      const product = {
+        _id: uuidv4(),
+        name: body.name,
+        slug: body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        shortDescription: body.shortDescription || '',
+        description: body.description || '',
+        image: body.image || '',
+        monthlyPrice: parseFloat(body.monthlyPrice) || 0,
+        halfYearlyPrice: parseFloat(body.halfYearlyPrice) || 0,
+        yearlyPrice: parseFloat(body.yearlyPrice) || 0,
+        originalPrice: parseFloat(body.originalPrice) || 0,
+        discount: parseInt(body.discount) || 80,
+        features: body.features || [],
+        category: body.category || 'AI Tool',
+        status: 'active',
+        createdBy: userId,
+        createdAt: new Date(),
+      };
+      
+      await shopCollection.insertOne(product);
+      return NextResponse.json({ success: true, product });
     }
     
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
