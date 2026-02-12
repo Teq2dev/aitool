@@ -1060,6 +1060,36 @@ export async function PUT(request) {
       return NextResponse.json({ success: true });
     }
     
+    // PUT /api/admin/shop/:id - Update shop product
+    if (pathname.startsWith('/api/admin/shop/')) {
+      const { userId } = await auth();
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      const id = pathname.split('/api/admin/shop/')[1];
+      const body = await request.json();
+      const shopCollection = await getCollection('shop_products');
+      
+      const updateFields = {};
+      if (body.name) updateFields.name = body.name;
+      if (body.shortDescription !== undefined) updateFields.shortDescription = body.shortDescription;
+      if (body.description !== undefined) updateFields.description = body.description;
+      if (body.image) updateFields.image = body.image;
+      if (body.monthlyPrice !== undefined) updateFields.monthlyPrice = parseFloat(body.monthlyPrice);
+      if (body.halfYearlyPrice !== undefined) updateFields.halfYearlyPrice = parseFloat(body.halfYearlyPrice);
+      if (body.yearlyPrice !== undefined) updateFields.yearlyPrice = parseFloat(body.yearlyPrice);
+      if (body.originalPrice !== undefined) updateFields.originalPrice = parseFloat(body.originalPrice);
+      if (body.discount !== undefined) updateFields.discount = parseInt(body.discount);
+      if (body.features) updateFields.features = body.features;
+      if (body.category) updateFields.category = body.category;
+      if (body.status) updateFields.status = body.status;
+      updateFields.updatedAt = new Date();
+      
+      await shopCollection.updateOne({ _id: id }, { $set: updateFields });
+      return NextResponse.json({ success: true });
+    }
+    
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   } catch (error) {
     console.error('PUT Error:', error);
