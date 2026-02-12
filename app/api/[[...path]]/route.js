@@ -260,34 +260,37 @@ export async function GET(request) {
       });
     }
     
-    // GET /api/categories - List all categories
+    // GET /api/categories - Get all categories (dynamically from tools)
     if (pathname.startsWith('/api/categories')) {
-      const categoriesCollection = await getCollection('categories');
       const toolsCollection = await getCollection('tools');
       
-      // Limit categories to 100 max
-      const categoriesList = await categoriesCollection.find({}).limit(100).toArray();
-      
-      // Optimized: Get tool counts using aggregation instead of N+1 queries
-      const toolCounts = await toolsCollection.aggregate([
+      // Dynamically extract categories from approved tools
+      const categoryAggregation = await toolsCollection.aggregate([
         { $match: { status: 'approved' } },
         { $unwind: '$categories' },
-        { $group: { _id: '$categories', count: { $sum: 1 } } }
+        { 
+          $group: { 
+            _id: '$categories', 
+            count: { $sum: 1 },
+            // Get a sample tool for the category icon
+            sampleTool: { $first: '$$ROOT' }
+          } 
+        },
+        { $sort: { count: -1 } }
       ]).toArray();
       
-      // Create a map for quick lookup
-      const countMap = {};
-      toolCounts.forEach(item => {
-        countMap[item._id] = item.count;
-      });
-      
-      // Merge counts with categories
-      const categoriesWithCount = categoriesList.map(cat => ({
-        ...cat,
-        toolCount: countMap[cat.slug] || 0
+      // Transform to category format
+      const categories = categoryAggregation.map(item => ({
+        _id: item._id,
+        name: item._id,
+        slug: item._id.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        description: `Explore ${item.count} AI tools in ${item._id}`,
+        toolCount: item.count,
+        icon: '🤖', // Default icon
+        type: 'topic'
       }));
       
-      return NextResponse.json(categoriesWithCount);
+      return NextResponse.json(categories);
     }
     
     // GET /api/featured - Get featured tools
