@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import CategoryCard from '@/components/CategoryCard';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 
@@ -34,8 +33,7 @@ export default function CategoriesPage() {
     }
     const query = searchQuery.toLowerCase();
     return categories.filter(cat => 
-      cat.name?.toLowerCase().includes(query) ||
-      cat.description?.toLowerCase().includes(query)
+      cat.name?.toLowerCase().includes(query)
     );
   }, [categories, searchQuery]);
 
@@ -50,16 +48,12 @@ export default function CategoriesPage() {
     );
   }
 
-  const topicCategories = filteredCategories.filter((c) => c.type === 'topic');
-  const taskCategories = filteredCategories.filter((c) => c.type === 'task');
-  const roleCategories = filteredCategories.filter((c) => c.type === 'role');
-
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-black mb-2">AI Tool Categories</h1>
-          <p className="text-gray-600">Explore AI tools organized by topics, tasks, and roles</p>
+          <p className="text-gray-600">Browse {categories.length} categories with {categories.reduce((sum, c) => sum + (c.toolCount || 0), 0)} AI tools</p>
         </div>
 
         {/* Search Bar - Instant filtering */}
@@ -74,9 +68,6 @@ export default function CategoriesPage() {
               className="pl-12 pr-4 py-3 w-full rounded-full border-2 border-gray-200 focus:border-blue-500 focus:ring-0"
             />
           </div>
-          {searchQuery.length > 0 && searchQuery.length < 2 && (
-            <p className="text-sm text-gray-500 mt-2 text-center">Type at least 2 characters to search</p>
-          )}
           {searchQuery.length >= 2 && (
             <p className="text-sm text-gray-600 mt-2 text-center">
               Found {filteredCategories.length} categories matching "{searchQuery}"
@@ -84,79 +75,24 @@ export default function CategoriesPage() {
                 onClick={() => setSearchQuery('')}
                 className="ml-2 text-blue-600 hover:underline"
               >
-                Clear search
+                Clear
               </button>
             </p>
           )}
         </div>
 
-        <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-4 mb-8">
-            <TabsTrigger value="all">All ({filteredCategories.length})</TabsTrigger>
-            <TabsTrigger value="topic">Topics ({topicCategories.length})</TabsTrigger>
-            <TabsTrigger value="task">Tasks ({taskCategories.length})</TabsTrigger>
-            <TabsTrigger value="role">Roles ({roleCategories.length})</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="all">
-            {filteredCategories.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500">No categories found</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {filteredCategories.map((category) => (
-                  <CategoryCard key={category._id} category={category} />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="topic">
-            <h2 className="text-2xl font-bold text-black mb-6">By Topic / Context</h2>
-            {topicCategories.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500">No topic categories found</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {topicCategories.map((category) => (
-                  <CategoryCard key={category._id} category={category} />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="task">
-            <h2 className="text-2xl font-bold text-black mb-6">By Task / Action</h2>
-            {taskCategories.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500">No task categories found</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {taskCategories.map((category) => (
-                  <CategoryCard key={category._id} category={category} />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="role">
-            <h2 className="text-2xl font-bold text-black mb-6">By Job Role</h2>
-            {roleCategories.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500">No role categories found</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {roleCategories.map((category) => (
-                  <CategoryCard key={category._id} category={category} />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+        {/* Categories Grid */}
+        {filteredCategories.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No categories found</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {filteredCategories.map((category) => (
+              <CategoryCard key={category._id || category.slug} category={category} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
