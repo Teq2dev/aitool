@@ -501,6 +501,81 @@ export async function GET(request) {
       return NextResponse.json(allTools);
     }
     
+    // GET /api/admin/bulk-logs - Get bulk upload logs
+    if (pathname === '/api/admin/bulk-logs') {
+      const { userId } = await auth();
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      const bulkLogsCollection = await getCollection('bulk_upload_logs');
+      const logs = await bulkLogsCollection
+        .find({})
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .toArray();
+      
+      return NextResponse.json(logs);
+    }
+    
+    // GET /api/admin/bulk-logs/:id/tools - Get tools from a specific bulk upload
+    if (pathname.startsWith('/api/admin/bulk-logs/') && pathname.endsWith('/tools')) {
+      const { userId } = await auth();
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      const logId = pathname.split('/api/admin/bulk-logs/')[1].replace('/tools', '');
+      const toolsCollection = await getCollection('tools');
+      
+      const tools = await toolsCollection
+        .find({ bulkUploadId: logId })
+        .sort({ createdAt: -1 })
+        .toArray();
+      
+      return NextResponse.json(tools);
+    }
+    
+    // GET /api/shop - Get all shop products
+    if (pathname === '/api/shop') {
+      const shopCollection = await getCollection('shop_products');
+      const products = await shopCollection
+        .find({ status: 'active' })
+        .sort({ createdAt: -1 })
+        .toArray();
+      
+      return NextResponse.json(products);
+    }
+    
+    // GET /api/shop/:slug - Get single shop product
+    if (pathname.startsWith('/api/shop/')) {
+      const slug = pathname.split('/api/shop/')[1];
+      const shopCollection = await getCollection('shop_products');
+      const product = await shopCollection.findOne({ slug });
+      
+      if (!product) {
+        return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+      }
+      
+      return NextResponse.json(product);
+    }
+    
+    // GET /api/admin/shop - Get all shop products for admin
+    if (pathname === '/api/admin/shop') {
+      const { userId } = await auth();
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      const shopCollection = await getCollection('shop_products');
+      const products = await shopCollection
+        .find({})
+        .sort({ createdAt: -1 })
+        .toArray();
+      
+      return NextResponse.json(products);
+    }
+    
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   } catch (error) {
     console.error('API Error:', error);
