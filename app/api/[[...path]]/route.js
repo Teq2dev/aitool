@@ -1131,6 +1131,38 @@ export async function DELETE(request) {
       return NextResponse.json({ success: true });
     }
     
+    // Delete shop product
+    if (pathname.startsWith('/api/admin/shop/')) {
+      const id = pathname.split('/api/admin/shop/')[1];
+      const shopCollection = await getCollection('shop_products');
+      
+      await shopCollection.deleteOne({ _id: id });
+      
+      return NextResponse.json({ success: true });
+    }
+    
+    // Undo bulk upload - delete all tools from a bulk upload
+    if (pathname.startsWith('/api/admin/bulk-logs/') && pathname.endsWith('/undo')) {
+      const logId = pathname.split('/api/admin/bulk-logs/')[1].replace('/undo', '');
+      const toolsCollection = await getCollection('tools');
+      const bulkLogsCollection = await getCollection('bulk_upload_logs');
+      
+      // Delete all tools from this bulk upload
+      const result = await toolsCollection.deleteMany({ bulkUploadId: logId });
+      
+      // Update the log to mark as undone
+      await bulkLogsCollection.updateOne(
+        { _id: logId },
+        { $set: { undone: true, undoneAt: new Date(), deletedCount: result.deletedCount } }
+      );
+      
+      return NextResponse.json({ 
+        success: true, 
+        message: `Deleted ${result.deletedCount} tools from bulk upload`,
+        deletedCount: result.deletedCount 
+      });
+    }
+    
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   } catch (error) {
     console.error('DELETE Error:', error);
