@@ -954,6 +954,25 @@ export async function PUT(request) {
       return NextResponse.json({ success: true });
     }
     
+    if (pathname.includes('/api/admin/tools/') && pathname.includes('/trending')) {
+      const { userId } = await auth();
+      
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      const id = pathname.split('/api/admin/tools/')[1].replace('/trending', '');
+      const body = await request.json();
+      const toolsCollection = await getCollection('tools');
+      
+      await toolsCollection.updateOne(
+        { _id: id },
+        { $set: { trending: body.trending } }
+      );
+      
+      return NextResponse.json({ success: true });
+    }
+    
     // Blog admin endpoints
     if (pathname.includes('/api/admin/blogs/') && pathname.includes('/approve')) {
       const { userId } = await auth();
