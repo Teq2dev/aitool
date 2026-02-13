@@ -89,6 +89,7 @@ export default function ShopProductPage() {
       <head>
         <title>{product.name} - Buy at {product.discount}% OFF | Best AI Tools Free Shop</title>
         <meta name="description" content={product.shortDescription || `Get ${product.name} at ${product.discount}% discount. Premium AI tool with instant delivery.`} />
+        <meta name="robots" content="noindex, nofollow" />
       </head>
       <div className="min-h-screen bg-gray-50">
         {/* Back Link */}
