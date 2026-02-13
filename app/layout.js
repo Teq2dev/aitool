@@ -59,6 +59,14 @@ export default function RootLayout({ children }) {
     <ClerkProvider>
       <html lang="en">
         <head>
+          {/* Cookiebot - must be as high as possible */}
+          <Script 
+            id="Cookiebot" 
+            src="https://consent.cookiebot.com/uc.js" 
+            data-cbid="96f298ad-1d34-44ed-9f9b-820cd59d73be" 
+            strategy="beforeInteractive"
+          />
+          
           {/* Google Tag Manager */}
           <Script id="gtm-head" strategy="afterInteractive">
             {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
