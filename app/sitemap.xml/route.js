@@ -1,7 +1,7 @@
 import { getCollection } from '@/lib/db';
 
 export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://bestaitoolsfree.com';
+  const baseUrl = 'https://www.bestaitoolsfree.com';
   
   // Get all tools
   const toolsCollection = await getCollection('tools');
