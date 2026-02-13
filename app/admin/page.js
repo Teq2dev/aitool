@@ -1216,18 +1216,23 @@ export default function AdminPage() {
                       const formData = new FormData();
                       formData.append('file', file);
                       try {
+                        console.log('Uploading file:', file.name, file.size);
                         const res = await fetch('/api/upload', {
                           method: 'POST',
                           body: formData,
                         });
+                        console.log('Response status:', res.status);
                         const data = await res.json();
-                        if (data.url) {
-                          setShopForm({ ...shopForm, image: data.url });
+                        console.log('Response data:', data);
+                        if (data.success && data.url) {
+                          setShopForm(prev => ({ ...prev, image: data.url }));
                           alert('Image uploaded successfully!');
                         } else {
-                          alert('Upload failed: ' + (data.error || 'Unknown error'));
+                          alert('Upload failed: ' + (data.error || data.details || 'Unknown error'));
                         }
                       } catch (error) {
+                        console.error('Upload error:', error);
+                        alert('Upload failed: ' + error.message);
                         console.error('Upload error:', error);
                         alert('Upload failed: ' + error.message);
                       } finally {
