@@ -24,6 +24,7 @@ export default function AdminPage() {
   const [bulkUploadStatus, setBulkUploadStatus] = useState(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
+  const shopImageInputRef = useRef(null);
   
   // Modal states
   const [rejectModal, setRejectModal] = useState({ open: false, toolId: null, toolName: '' });
