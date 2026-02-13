@@ -822,6 +822,7 @@ export async function POST(request) {
         shortDescription: body.shortDescription || '',
         description: body.description || '',
         image: body.image || '',
+        imageAlt: body.imageAlt || '',
         monthlyPrice: parseFloat(body.monthlyPrice) || 0,
         halfYearlyPrice: parseFloat(body.halfYearlyPrice) || 0,
         yearlyPrice: parseFloat(body.yearlyPrice) || 0,
