@@ -35,9 +35,41 @@ export default function AdminPage() {
   const [shopForm, setShopForm] = useState({});
   const [bulkLogTools, setBulkLogTools] = useState({ open: false, logId: null, tools: [] });
   const [imageUploading, setImageUploading] = useState(false);
+  const [imageFetching, setImageFetching] = useState(false);
   const [shopBulkStatus, setShopBulkStatus] = useState(null);
   const [shopUploading, setShopUploading] = useState(false);
   const shopFileInputRef = useRef(null);
+  const [productUrl, setProductUrl] = useState('');
+
+  // Fetch image from URL (favicon/og:image)
+  const fetchProductImage = async () => {
+    if (!productUrl) {
+      alert('Please enter a website URL first');
+      return;
+    }
+    
+    setImageFetching(true);
+    try {
+      const res = await fetch('/api/fetch-favicon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: productUrl }),
+      });
+      const data = await res.json();
+      
+      if (data.favicon) {
+        setShopForm(prev => ({ ...prev, image: data.favicon }));
+        alert('Image fetched successfully!');
+      } else {
+        alert('Could not fetch image from this URL');
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+      alert('Failed to fetch image: ' + error.message);
+    } finally {
+      setImageFetching(false);
+    }
+  };
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
