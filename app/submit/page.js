@@ -180,7 +180,7 @@ export default function SubmitToolPage() {
     }
   };
 
-  if (!isLoaded || !isSignedIn) {
+  if (!isLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -190,6 +190,11 @@ export default function SubmitToolPage() {
       </div>
     );
   }
+
+  // Temporarily allow access without sign-in for testing
+  // if (!isSignedIn) {
+  //   return <SignIn />;
+  // }
 
   if (success) {
     return (
