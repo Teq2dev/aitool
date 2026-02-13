@@ -111,9 +111,7 @@ export default function RootLayout({ children }) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   <div>
                     <div className="flex items-center space-x-2 mb-4">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                        <span className="text-white font-bold">AI</span>
-                      </div>
+                      <img src="/logo.jpg" alt="Best AI Tools Free" className="w-8 h-8 rounded-lg object-cover" />
                       <span className="font-bold text-lg">Best AI Tools Free</span>
                     </div>
                     <p className="text-sm text-gray-600">
