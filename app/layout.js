@@ -42,17 +42,39 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const baseUrl = 'https://www.bestaitoolsfree.com';
+  
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: 'Best AI Tools Free',
-    description: 'Browse 3000+ Best Free AI Tools across multiple categories',
-    url: process.env.NEXT_PUBLIC_BASE_URL || 'https://bestaitoolsfree.com',
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://bestaitoolsfree.com'}/tools?search={search_term_string}`,
-      'query-input': 'required name=search_term_string',
-    },
+    '@graph': [
+      {
+        '@type': 'Organization',
+        'name': 'Best AI Tools Free',
+        'url': baseUrl,
+        'logo': `${baseUrl}/logo.jpg`,
+        'sameAs': [
+          'https://www.facebook.com/bestaitoolsfree',
+          'https://twitter.com/bestaitoolsfree',
+          'https://www.linkedin.com/company/bestaitoolsfree'
+        ],
+        'description': 'A curated directory of free AI tools and resources, helping users find the best free artificial intelligence tools online.'
+      },
+      {
+        '@type': 'WebSite',
+        'name': 'Best AI Tools Free',
+        'url': baseUrl,
+        'publisher': {
+          '@type': 'Organization',
+          'name': 'Best AI Tools Free'
+        },
+        'potentialAction': {
+          '@type': 'SearchAction',
+          'target': `${baseUrl}/search?q={search_term_string}`,
+          'query-input': 'required name=search_term_string'
+        },
+        'description': 'Explore a comprehensive, updated list of free AI tools for productivity, creativity, marketing, development and more.'
+      }
+    ]
   };
 
   return (
