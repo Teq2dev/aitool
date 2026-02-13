@@ -36,9 +36,7 @@ export default function Navigation() {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity" prefetch={true}>
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-white" />
-            </div>
+            <img src="/logo.jpg" alt="Best AI Tools Free" className="w-10 h-10 rounded-lg object-cover" />
             <span className="font-bold text-xl text-black hidden sm:inline">Best AI Tools Free</span>
           </Link>
 
