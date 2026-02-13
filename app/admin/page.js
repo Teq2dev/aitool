@@ -200,6 +200,120 @@ export default function AdminPage() {
     }
   };
 
+  // Shop bulk CSV upload handler
+  const handleShopCSVUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    setShopUploading(true);
+    setShopBulkStatus(null);
+    
+    try {
+      const text = await file.text();
+      const productsData = parseShopCSV(text);
+      
+      if (productsData.length === 0) {
+        setShopBulkStatus({ type: 'error', message: 'No valid data found in CSV file.' });
+        setShopUploading(false);
+        return;
+      }
+      
+      const response = await fetch('/api/admin/shop/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ products: productsData }),
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        setShopBulkStatus({
+          type: 'success',
+          message: result.message,
+          details: result.results
+        });
+        fetchShopProducts();
+      } else {
+        setShopBulkStatus({ type: 'error', message: result.error || 'Upload failed' });
+      }
+    } catch (error) {
+      setShopBulkStatus({ type: 'error', message: `Error processing file: ${error.message}` });
+    } finally {
+      setShopUploading(false);
+      if (shopFileInputRef.current) shopFileInputRef.current.value = '';
+    }
+  };
+
+  // Parse shop CSV - pricing is mandatory
+  const parseShopCSV = (csvText) => {
+    const lines = csvText.trim().split('\n');
+    if (lines.length < 2) return [];
+    
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+    const products = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+      const values = [];
+      let currentValue = '';
+      let insideQuotes = false;
+      
+      for (const char of lines[i]) {
+        if (char === '"') {
+          insideQuotes = !insideQuotes;
+        } else if (char === ',' && !insideQuotes) {
+          values.push(currentValue.trim());
+          currentValue = '';
+        } else {
+          currentValue += char;
+        }
+      }
+      values.push(currentValue.trim());
+      
+      const product = {};
+      headers.forEach((header, index) => {
+        product[header] = values[index]?.replace(/^"|"$/g, '') || '';
+      });
+      
+      // Only add if pricing is provided (mandatory)
+      const price = product['price'] || product['monthlyprice'] || product['monthly_price'] || product['monthly price'];
+      if (price) {
+        products.push({
+          name: product['name'] || product['product name'] || 'Unnamed Product',
+          shortDescription: product['shortdescription'] || product['short description'] || product['description'] || '',
+          description: product['description'] || product['full description'] || '',
+          image: product['image'] || product['imageurl'] || product['image url'] || '',
+          imageAlt: product['imagealt'] || product['image alt'] || '',
+          monthlyPrice: parseFloat(price) || 0,
+          halfYearlyPrice: parseFloat(product['halfyearlyprice'] || product['6monthprice'] || product['6 month price'] || 0),
+          yearlyPrice: parseFloat(product['yearlyprice'] || product['yearly price'] || product['annual price'] || 0),
+          originalPrice: parseFloat(product['originalprice'] || product['original price'] || 0),
+          discount: parseInt(product['discount'] || product['discount %'] || 80),
+          category: product['category'] || 'AI Tool',
+          features: (product['features'] || '').split('|').filter(f => f.trim()),
+        });
+      }
+    }
+    
+    return products;
+  };
+
+  // Download shop CSV template
+  const downloadShopTemplate = () => {
+    const template = `Name,Price,Category,Short Description,Description,Yearly Price,Original Price,Discount,Features
+"AI Writing Bundle",499,"AI Tool","Complete AI writing toolkit","Full suite of AI writing tools for content creation",2999,4999,80,"Lifetime Access|All Future Updates|Priority Support"
+"Image Generator Pro",299,"Design Tool","AI image generation tool","Create stunning AI images in seconds",1799,2999,70,"Unlimited Generations|HD Export|Commercial License"`;
+    
+    const blob = new Blob([template], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'shop_products_template.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const deleteShopProduct = async (productId) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
     try {
