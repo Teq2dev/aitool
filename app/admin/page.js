@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle, XCircle, Eye, Star, Trash2, Users, Shield, ShieldOff, Upload, FileSpreadsheet, Download, Edit, X, ShoppingBag, History, Undo2, Plus, Zap } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Star, Trash2, Users, Shield, ShieldOff, Upload, FileSpreadsheet, Download, Edit, X, ShoppingBag, History, Undo2, Plus, Zap, Globe } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminPage() {
