@@ -1101,6 +1101,15 @@ export default function AdminPage() {
                 )}
               </div>
               <div>
+                <label className="block text-sm font-medium mb-1">Image Alt Text (SEO Keywords)</label>
+                <Input
+                  value={shopForm.imageAlt}
+                  onChange={(e) => setShopForm({ ...shopForm, imageAlt: e.target.value })}
+                  placeholder="Best AI directory tool, software discount, AI tool bundle"
+                />
+                <p className="text-xs text-gray-500 mt-1">Add keywords like: Best AI directory tool, software and AI tool in discount, AI tool buy</p>
+              </div>
+              <div>
                 <label className="block text-sm font-medium mb-1">Short Description</label>
                 <Input
                   value={shopForm.shortDescription}
