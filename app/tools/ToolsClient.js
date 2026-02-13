@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ToolCard from '@/components/ToolCard';
 import SearchBar from '@/components/SearchBar';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Filter, X } from 'lucide-react';
+import { Filter, X, Loader2 } from 'lucide-react';
 
 export default function ToolsClient({ initialTools, initialPagination, categories, initialFilters }) {
   const router = useRouter();
@@ -17,6 +17,67 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
   const [filters, setFilters] = useState(initialFilters);
   const [tools, setTools] = useState(initialTools);
   const [pagination, setPagination] = useState(initialPagination);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const observerRef = useRef(null);
+  const loadMoreRef = useRef(null);
+
+  // Load more tools for infinite scroll
+  const loadMoreTools = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+    
+    setLoadingMore(true);
+    try {
+      const nextPage = pagination.page + 1;
+      const params = new URLSearchParams(searchParams);
+      params.set('page', nextPage.toString());
+      params.set('limit', '80');
+      
+      const res = await fetch(`/api/tools?${params.toString()}`);
+      const data = await res.json();
+      
+      if (data.tools && data.tools.length > 0) {
+        setTools(prev => [...prev, ...data.tools]);
+        setPagination(prev => ({ ...prev, page: nextPage, totalPages: data.pagination.totalPages }));
+        setHasMore(nextPage < data.pagination.totalPages);
+      } else {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error('Error loading more tools:', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore, pagination.page, searchParams]);
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+          loadMoreTools();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [loadMoreTools, hasMore, loadingMore]);
+
+  // Reset tools when filters change
+  useEffect(() => {
+    setTools(initialTools);
+    setPagination(initialPagination);
+    setHasMore(initialPagination.page < initialPagination.totalPages);
+  }, [initialTools, initialPagination]);
 
   // Update URL and trigger server-side data fetch
   const updateFilters = (newFilters) => {
@@ -32,6 +93,7 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
     
     // Reset to page 1 when filters change
     params.set('page', '1');
+    params.set('limit', '80');
     
     // Use startTransition for smoother UX
     startTransition(() => {
