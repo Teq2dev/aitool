@@ -869,9 +869,52 @@ export default function AdminPage() {
 
               {/* Shop Products Tab */}
               <TabsContent value="shop" className="mt-6">
-                <div className="space-y-4">
+                <div className="space-y-6">
+                  {/* Bulk Upload Section */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 className="font-medium text-blue-800 mb-2">Bulk Upload Shop Products</h4>
+                    <p className="text-sm text-blue-700 mb-3">Upload multiple products via CSV. Only <strong>Price</strong> is mandatory.</p>
+                    <div className="flex gap-3 flex-wrap">
+                      <Button variant="outline" onClick={downloadShopTemplate} size="sm">
+                        <Download className="w-4 h-4 mr-2" />
+                        Download Template
+                      </Button>
+                      <input
+                        ref={shopFileInputRef}
+                        type="file"
+                        accept=".csv"
+                        onChange={handleShopCSVUpload}
+                        className="hidden"
+                        id="shop-csv-upload"
+                      />
+                      <Button 
+                        onClick={() => shopFileInputRef.current?.click()}
+                        disabled={shopUploading}
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        {shopUploading ? (
+                          <>
+                            <span className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-4 h-4 mr-2" />
+                            Upload CSV
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    {shopBulkStatus && (
+                      <div className={`mt-3 p-3 rounded ${shopBulkStatus.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {shopBulkStatus.message}
+                      </div>
+                    )}
+                  </div>
+
                   <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold">Shop Products</h3>
+                    <h3 className="text-lg font-semibold">Shop Products ({shopProducts.length})</h3>
                     <Button onClick={() => openShopModal()} className="bg-blue-600 hover:bg-blue-700">
                       <Plus className="w-4 h-4 mr-2" />
                       Add Product
