@@ -277,6 +277,19 @@ export default function AdminPage() {
     }
   };
 
+  const handleToggleTrending = async (toolId, currentTrending) => {
+    try {
+      await fetch(`/api/admin/tools/${toolId}/trending`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trending: !currentTrending }),
+      });
+      fetchTools();
+    } catch (error) {
+      console.error('Error toggling trending:', error);
+    }
+  };
+
   const handleDelete = async (toolId) => {
     if (!confirm('Are you sure you want to delete this tool?')) return;
     try {
