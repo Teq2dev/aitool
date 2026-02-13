@@ -6,8 +6,9 @@ import ToolsClient from './ToolsClient';
 export const revalidate = 60; // Revalidate every 60 seconds
 
 export const metadata = {
-  title: 'Browse AI Tools - AI Directory',
-  description: 'Discover and explore AI tools across multiple categories. Filter by category, search, and sort.',
+  title: 'Browse AI Tools - Best Free AI Tools Directory',
+  description: 'Discover 3000+ free AI tools across multiple categories. Find the best AI tools for writing, image generation, coding, productivity and more.',
+  keywords: 'browse ai tools, ai tools list, free ai tools, ai directory, ai software list',
 };
 
 // Server Component - fetches data before rendering
@@ -17,6 +18,7 @@ export default async function ToolsPage({ searchParams }) {
   const search = searchParams?.search || '';
   const sort = searchParams?.sort || 'trending';
   const page = parseInt(searchParams?.page || '1');
+  const limit = parseInt(searchParams?.limit || '80');
 
   // Fetch data on the server (parallel for better performance)
   const [toolsData, categories] = await Promise.all([
@@ -25,7 +27,7 @@ export default async function ToolsPage({ searchParams }) {
       search, 
       sort, 
       page,
-      limit: 12 
+      limit: limit
     }),
     getCategories()
   ]);
