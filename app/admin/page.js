@@ -1035,11 +1035,11 @@ export default function AdminPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Product Image</label>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
                   <Input
                     value={shopForm.image}
                     onChange={(e) => setShopForm({ ...shopForm, image: e.target.value })}
-                    placeholder="https://example.com/image.jpg"
+                    placeholder="Enter URL or upload from your PC"
                     className="flex-1"
                   />
                   <label className="cursor-pointer">
@@ -1050,6 +1050,7 @@ export default function AdminPage() {
                       onChange={async (e) => {
                         const file = e.target.files[0];
                         if (!file) return;
+                        setImageUploading(true);
                         const formData = new FormData();
                         formData.append('file', file);
                         try {
@@ -1060,21 +1061,41 @@ export default function AdminPage() {
                           const data = await res.json();
                           if (data.url) {
                             setShopForm({ ...shopForm, image: data.url });
+                            alert('Image uploaded successfully!');
+                          } else {
+                            alert('Upload failed: ' + (data.error || 'Unknown error'));
                           }
                         } catch (error) {
                           console.error('Upload error:', error);
+                          alert('Upload failed: ' + error.message);
+                        } finally {
+                          setImageUploading(false);
                         }
                       }}
                     />
-                    <Button type="button" variant="outline">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Upload
+                    <Button type="button" variant="outline" disabled={imageUploading}>
+                      {imageUploading ? (
+                        <>
+                          <span className="w-4 h-4 mr-2 border-2 border-gray-400 border-t-blue-600 rounded-full animate-spin"></span>
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4 mr-2" />
+                          Upload from PC
+                        </>
+                      )}
                     </Button>
                   </label>
                 </div>
+                <p className="text-xs text-gray-500 mt-1">Click "Upload from PC" to select an image from your computer</p>
                 {shopForm.image && (
-                  <div className="mt-2">
-                    <img src={shopForm.image} alt="Preview" className="w-20 h-20 object-cover rounded border" />
+                  <div className="mt-2 flex items-center gap-3">
+                    <img src={shopForm.image} alt="Preview" className="w-24 h-24 object-cover rounded border" />
+                    <div className="text-sm">
+                      <p className="text-green-600 font-medium">✓ Image loaded</p>
+                      <p className="text-gray-500 text-xs truncate max-w-[200px]">{shopForm.image}</p>
+                    </div>
                   </div>
                 )}
               </div>
