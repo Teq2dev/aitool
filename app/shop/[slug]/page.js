@@ -107,7 +107,7 @@ export default function ShopProductPage() {
                 {product.image ? (
                   <img 
                     src={product.image} 
-                    alt={product.name}
+                    alt={product.imageAlt || `${product.name} - Best AI directory tool, software discount, AI tool bundle`}
                     className="w-full h-80 object-cover rounded-xl shadow-lg"
                   />
                 ) : (
