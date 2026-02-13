@@ -35,6 +35,9 @@ export default function AdminPage() {
   const [shopForm, setShopForm] = useState({});
   const [bulkLogTools, setBulkLogTools] = useState({ open: false, logId: null, tools: [] });
   const [imageUploading, setImageUploading] = useState(false);
+  const [shopBulkStatus, setShopBulkStatus] = useState(null);
+  const [shopUploading, setShopUploading] = useState(false);
+  const shopFileInputRef = useRef(null);
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
