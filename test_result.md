@@ -109,6 +109,30 @@ user_problem_statement: |
   Authentication via Clerk. Currently fixing admin page error after adding Users management tab.
 
 backend:
+  - task: "File Upload API - POST /api/upload"
+    implemented: true
+    working: true
+    file: "app/api/upload/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: File Upload API working perfectly. Successfully uploads files to /app/public/uploads/, returns correct JSON response with success:true, url, and filename fields. File is accessible via public URL. Tested with 37-byte test image, received proper response structure."
+
+  - task: "Tool Submission API - POST /api/tools"
+    implemented: true
+    working: true
+    file: "app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Tool Submission API working correctly. Properly requires authentication - returns 401 Unauthorized when no auth provided (expected behavior). Endpoint exists at line 594-650 in route.js with proper Clerk authentication check, duplicate domain validation, and database operations."
+
   - task: "Admin Users API - GET /api/admin/users"
     implemented: true
     working: true
