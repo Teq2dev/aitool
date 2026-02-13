@@ -1044,51 +1044,58 @@ export default function AdminPage() {
                     placeholder="Enter URL or upload from your PC"
                     className="flex-1"
                   />
-                  <label className="cursor-pointer">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={async (e) => {
-                        const file = e.target.files[0];
-                        if (!file) return;
-                        setImageUploading(true);
-                        const formData = new FormData();
-                        formData.append('file', file);
-                        try {
-                          const res = await fetch('/api/upload', {
-                            method: 'POST',
-                            body: formData,
-                          });
-                          const data = await res.json();
-                          if (data.url) {
-                            setShopForm({ ...shopForm, image: data.url });
-                            alert('Image uploaded successfully!');
-                          } else {
-                            alert('Upload failed: ' + (data.error || 'Unknown error'));
-                          }
-                        } catch (error) {
-                          console.error('Upload error:', error);
-                          alert('Upload failed: ' + error.message);
-                        } finally {
-                          setImageUploading(false);
+                  <input
+                    ref={shopImageInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      setImageUploading(true);
+                      const formData = new FormData();
+                      formData.append('file', file);
+                      try {
+                        const res = await fetch('/api/upload', {
+                          method: 'POST',
+                          body: formData,
+                        });
+                        const data = await res.json();
+                        if (data.url) {
+                          setShopForm({ ...shopForm, image: data.url });
+                          alert('Image uploaded successfully!');
+                        } else {
+                          alert('Upload failed: ' + (data.error || 'Unknown error'));
                         }
-                      }}
-                    />
-                    <Button type="button" variant="outline" disabled={imageUploading}>
-                      {imageUploading ? (
-                        <>
-                          <span className="w-4 h-4 mr-2 border-2 border-gray-400 border-t-blue-600 rounded-full animate-spin"></span>
-                          Uploading...
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="w-4 h-4 mr-2" />
-                          Upload from PC
-                        </>
-                      )}
-                    </Button>
-                  </label>
+                      } catch (error) {
+                        console.error('Upload error:', error);
+                        alert('Upload failed: ' + error.message);
+                      } finally {
+                        setImageUploading(false);
+                        if (shopImageInputRef.current) {
+                          shopImageInputRef.current.value = '';
+                        }
+                      }
+                    }}
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    disabled={imageUploading}
+                    onClick={() => shopImageInputRef.current?.click()}
+                  >
+                    {imageUploading ? (
+                      <>
+                        <span className="w-4 h-4 mr-2 border-2 border-gray-400 border-t-blue-600 rounded-full animate-spin"></span>
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4 mr-2" />
+                        Upload from PC
+                      </>
+                    )}
+                  </Button>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">Click "Upload from PC" to select an image from your computer</p>
                 {shopForm.image && (
