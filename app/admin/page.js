@@ -1229,13 +1229,43 @@ export default function AdminPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Product Image</label>
-                <div className="flex gap-2 items-center">
-                  <Input
-                    value={shopForm.image}
-                    onChange={(e) => setShopForm({ ...shopForm, image: e.target.value })}
-                    placeholder="Enter URL or upload from your PC"
-                    className="flex-1"
-                  />
+                
+                {/* Option 1: Fetch from URL */}
+                <div className="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <label className="block text-xs font-medium text-blue-800 mb-2">Option 1: Auto-fetch from Website</label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={productUrl}
+                      onChange={(e) => setProductUrl(e.target.value)}
+                      placeholder="https://example.com"
+                      className="flex-1 text-sm"
+                    />
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      size="sm"
+                      disabled={imageFetching}
+                      onClick={fetchProductImage}
+                      className="bg-blue-600 text-white hover:bg-blue-700"
+                    >
+                      {imageFetching ? (
+                        <>
+                          <span className="w-3 h-3 mr-1 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                          Fetching...
+                        </>
+                      ) : (
+                        <>
+                          <Globe className="w-3 h-3 mr-1" />
+                          Fetch Image
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Option 2: Upload from PC */}
+                <div className="mb-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                  <label className="block text-xs font-medium text-green-800 mb-2">Option 2: Upload from Your PC</label>
                   <input
                     ref={shopImageInputRef}
                     type="file"
@@ -1276,30 +1306,53 @@ export default function AdminPage() {
                   />
                   <Button 
                     type="button" 
-                    variant="outline" 
+                    variant="outline"
+                    size="sm"
                     disabled={imageUploading}
                     onClick={() => shopImageInputRef.current?.click()}
+                    className="bg-green-600 text-white hover:bg-green-700"
                   >
                     {imageUploading ? (
                       <>
-                        <span className="w-4 h-4 mr-2 border-2 border-gray-400 border-t-blue-600 rounded-full animate-spin"></span>
+                        <span className="w-3 h-3 mr-1 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                         Uploading...
                       </>
                     ) : (
                       <>
-                        <Upload className="w-4 h-4 mr-2" />
+                        <Upload className="w-3 h-3 mr-1" />
                         Upload from PC
                       </>
                     )}
                   </Button>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Click "Upload from PC" to select an image from your computer</p>
+
+                {/* Option 3: Direct URL */}
+                <div className="mb-3">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Or paste image URL directly:</label>
+                  <Input
+                    value={shopForm.image}
+                    onChange={(e) => setShopForm({ ...shopForm, image: e.target.value })}
+                    placeholder="https://example.com/image.jpg"
+                    className="text-sm"
+                  />
+                </div>
+
+                {/* Image Preview */}
                 {shopForm.image && (
-                  <div className="mt-2 flex items-center gap-3">
+                  <div className="mt-2 flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                     <img src={shopForm.image} alt="Preview" className="w-24 h-24 object-cover rounded border" />
                     <div className="text-sm">
                       <p className="text-green-600 font-medium">✓ Image loaded</p>
                       <p className="text-gray-500 text-xs truncate max-w-[200px]">{shopForm.image}</p>
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-red-500 hover:text-red-700 mt-1 p-0 h-auto"
+                        onClick={() => setShopForm(prev => ({ ...prev, image: '' }))}
+                      >
+                        <X className="w-3 h-3 mr-1" /> Remove
+                      </Button>
                     </div>
                   </div>
                 )}
