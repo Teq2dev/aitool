@@ -169,6 +169,9 @@ export default function SubmitToolPage() {
       if (res.ok) {
         setSuccess(true);
         setTimeout(() => router.push('/dashboard'), 2000);
+      } else if (res.status === 409) {
+        // Duplicate tool detected
+        alert(`This tool already exists: "${data.existingTool?.name || 'Unknown'}". Status: ${data.existingTool?.status || 'unknown'}`);
       } else {
         alert('Failed to submit tool: ' + (data.error || data.message || 'Please try again.'));
       }
