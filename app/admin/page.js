@@ -56,12 +56,14 @@ export default function AdminPage() {
         body: JSON.stringify({ url: productUrl }),
       });
       const data = await res.json();
+      console.log('Fetch response:', data);
       
-      if (data.favicon) {
-        setShopForm(prev => ({ ...prev, image: data.favicon }));
+      if (data.faviconUrl || data.favicon) {
+        const imageUrl = data.faviconUrl || data.favicon;
+        setShopForm(prev => ({ ...prev, image: imageUrl }));
         alert('Image fetched successfully!');
       } else {
-        alert('Could not fetch image from this URL');
+        alert('Could not fetch image from this URL. Try uploading manually.');
       }
     } catch (error) {
       console.error('Fetch error:', error);
