@@ -545,11 +545,84 @@ export default function AdminPage() {
                       onApprove={handleApprove}
                       onReject={openRejectModal}
                       onToggleFeatured={handleToggleFeatured}
+                      onToggleTrending={handleToggleTrending}
                       onDelete={handleDelete}
                       onEdit={openEditModal}
                     />
                   </TabsContent>
                 </Tabs>
+              </TabsContent>
+
+              {/* Featured Tools Tab */}
+              <TabsContent value="featured" className="mt-6">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold">Featured Tools</h3>
+                  <p className="text-sm text-gray-600">Manage which tools appear in the "Featured" section on the homepage</p>
+                </div>
+                <AdminToolList
+                  tools={tools.filter(t => t.featured && t.status === 'approved')}
+                  onApprove={handleApprove}
+                  onReject={openRejectModal}
+                  onToggleFeatured={handleToggleFeatured}
+                  onToggleTrending={handleToggleTrending}
+                  onDelete={handleDelete}
+                  onEdit={openEditModal}
+                  showFeatureToggle={true}
+                />
+                <div className="mt-6 border-t pt-6">
+                  <h4 className="font-medium mb-4">Add to Featured</h4>
+                  <p className="text-sm text-gray-500 mb-4">Approved tools that can be featured:</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto">
+                    {tools.filter(t => !t.featured && t.status === 'approved').slice(0, 20).map(tool => (
+                      <div key={tool._id} className="flex items-center justify-between p-2 border rounded">
+                        <div className="flex items-center gap-2">
+                          <img src={tool.logo} alt="" className="w-8 h-8 rounded" />
+                          <span className="text-sm">{tool.name}</span>
+                        </div>
+                        <Button size="sm" variant="outline" onClick={() => handleToggleFeatured(tool._id, false)}>
+                          <Star className="w-4 h-4 mr-1" />
+                          Feature
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* Trending Tools Tab */}
+              <TabsContent value="trending" className="mt-6">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold">Trending Tools</h3>
+                  <p className="text-sm text-gray-600">Manage which tools appear in the "Trending Now" section on the homepage</p>
+                </div>
+                <AdminToolList
+                  tools={tools.filter(t => t.trending && t.status === 'approved')}
+                  onApprove={handleApprove}
+                  onReject={openRejectModal}
+                  onToggleFeatured={handleToggleFeatured}
+                  onToggleTrending={handleToggleTrending}
+                  onDelete={handleDelete}
+                  onEdit={openEditModal}
+                  showTrendingToggle={true}
+                />
+                <div className="mt-6 border-t pt-6">
+                  <h4 className="font-medium mb-4">Add to Trending</h4>
+                  <p className="text-sm text-gray-500 mb-4">Approved tools that can be marked as trending:</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto">
+                    {tools.filter(t => !t.trending && t.status === 'approved').slice(0, 20).map(tool => (
+                      <div key={tool._id} className="flex items-center justify-between p-2 border rounded">
+                        <div className="flex items-center gap-2">
+                          <img src={tool.logo} alt="" className="w-8 h-8 rounded" />
+                          <span className="text-sm">{tool.name}</span>
+                        </div>
+                        <Button size="sm" variant="outline" onClick={() => handleToggleTrending(tool._id, false)}>
+                          <Zap className="w-4 h-4 mr-1" />
+                          Trend
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </TabsContent>
 
               <TabsContent value="users" className="mt-6">
