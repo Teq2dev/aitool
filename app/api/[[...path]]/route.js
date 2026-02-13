@@ -593,9 +593,12 @@ export async function POST(request) {
   try {
     // POST /api/tools - Submit tool
     if (pathname === '/api/tools' || pathname === '/api/tools/') {
+      console.log('=== POST /api/tools called ===');
       const { userId } = await auth();
+      console.log('User ID:', userId);
       
       if (!userId) {
+        console.log('Unauthorized - no userId');
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
       
