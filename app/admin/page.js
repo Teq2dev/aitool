@@ -149,6 +149,7 @@ export default function AdminPage() {
         shortDescription: product.shortDescription || '',
         description: product.description || '',
         image: product.image || '',
+        imageAlt: product.imageAlt || '',
         monthlyPrice: product.monthlyPrice || 0,
         halfYearlyPrice: product.halfYearlyPrice || 0,
         yearlyPrice: product.yearlyPrice || 0,
@@ -160,7 +161,7 @@ export default function AdminPage() {
       setShopModal({ open: true, product });
     } else {
       setShopForm({
-        name: '', shortDescription: '', description: '', image: '',
+        name: '', shortDescription: '', description: '', image: '', imageAlt: '',
         monthlyPrice: 0, halfYearlyPrice: 0, yearlyPrice: 0, originalPrice: 0,
         discount: 80, features: '', category: 'AI Tool',
       });
