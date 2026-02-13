@@ -1312,37 +1312,3 @@ function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onToggleT
     </div>
   );
 }
-                  onClick={() => onToggleFeatured(tool._id, tool.featured)}
-                >
-                  <Star className="w-4 h-4 mr-1" />
-                  {tool.featured ? 'Unfeature' : 'Feature'}
-                </Button>
-                <Link href={`/tools/${tool.slug}`}>
-                  <Button size="sm" variant="outline" className="w-full">
-                    <Eye className="w-4 h-4 mr-1" />
-                    View
-                  </Button>
-                </Link>
-              </>
-            )}
-            {tool.status === 'rejected' && (
-              <Button size="sm" onClick={() => onApprove(tool._id)} variant="outline">
-                <CheckCircle className="w-4 h-4 mr-1" />
-                Approve
-              </Button>
-            )}
-            {/* Edit button - always visible */}
-            <Button size="sm" variant="outline" onClick={() => onEdit(tool)} className="text-blue-600 border-blue-600 hover:bg-blue-50">
-              <Edit className="w-4 h-4 mr-1" />
-              Edit
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => onDelete(tool._id)} className="text-red-600 hover:text-red-700 hover:bg-red-50">
-              <Trash2 className="w-4 h-4 mr-1" />
-              Delete
-            </Button>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
