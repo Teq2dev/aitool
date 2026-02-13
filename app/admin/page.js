@@ -1233,8 +1233,6 @@ export default function AdminPage() {
                       } catch (error) {
                         console.error('Upload error:', error);
                         alert('Upload failed: ' + error.message);
-                        console.error('Upload error:', error);
-                        alert('Upload failed: ' + error.message);
                       } finally {
                         setImageUploading(false);
                         if (shopImageInputRef.current) {
