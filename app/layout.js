@@ -2,6 +2,7 @@ import { ClerkProvider } from '@clerk/nextjs';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import Navigation from '@/components/Navigation';
+import Script from 'next/script';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -10,11 +11,17 @@ export const metadata = {
   description: 'Browse 3000+ Best Free AI Tools across multiple categories. Find the perfect AI tool for your needs. Compare AI tools, read reviews, and discover trending AI solutions.',
   keywords: 'best ai tools, free ai tools, ai tools directory, artificial intelligence tools, ai software, machine learning tools, chatgpt alternatives, ai image generators, ai writing tools',
   authors: [{ name: 'Best AI Tools Free' }],
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
   openGraph: {
     title: 'Best AI Tools Free - Top AI Tools Directory',
     description: 'Discover 3000+ best free AI tools. Compare and find the perfect AI solution for your needs.',
     type: 'website',
     locale: 'en_US',
+    siteName: 'Best AI Tools Free',
   },
   twitter: {
     card: 'summary_large_image',
@@ -29,13 +36,64 @@ export const metadata = {
       follow: true,
     },
   },
+  verification: {
+    google: 'G-4LG9W041CP',
+  },
 };
 
 export default function RootLayout({ children }) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Best AI Tools Free',
+    description: 'Browse 3000+ Best Free AI Tools across multiple categories',
+    url: process.env.NEXT_PUBLIC_BASE_URL || 'https://bestaitoolsfree.com',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://bestaitoolsfree.com'}/tools?search={search_term_string}`,
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
   return (
     <ClerkProvider>
       <html lang="en">
+        <head>
+          {/* Google Tag Manager */}
+          <Script id="gtm-head" strategy="afterInteractive">
+            {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-MQ7PGG3N');`}
+          </Script>
+          
+          {/* Google Analytics */}
+          <Script src="https://www.googletagmanager.com/gtag/js?id=G-4LG9W041CP" strategy="afterInteractive" />
+          <Script id="google-analytics" strategy="afterInteractive">
+            {`window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-4LG9W041CP');`}
+          </Script>
+          
+          {/* JSON-LD Schema */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          />
+        </head>
         <body className={inter.className}>
+          {/* Google Tag Manager (noscript) */}
+          <noscript>
+            <iframe 
+              src="https://www.googletagmanager.com/ns.html?id=GTM-MQ7PGG3N"
+              height="0" 
+              width="0" 
+              style={{display: 'none', visibility: 'hidden'}}
+            />
+          </noscript>
+          
           <div className="min-h-screen bg-white">
             <Navigation />
             <main>{children}</main>
