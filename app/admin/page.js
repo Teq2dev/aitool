@@ -1219,6 +1219,7 @@ export default function AdminPage() {
                         console.log('Uploading file:', file.name, file.size);
                         const res = await fetch('/api/upload', {
                           method: 'POST',
+                          credentials: 'include',
                           body: formData,
                         });
                         console.log('Response status:', res.status);
