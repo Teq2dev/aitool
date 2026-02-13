@@ -150,24 +150,31 @@ export default function SubmitToolPage() {
         }
       }
 
+      console.log('Submitting tool with data:', { ...formData, logo: logoUrl });
+
       const res = await fetch('/api/tools', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           ...formData,
           logo: logoUrl,
         }),
       });
 
+      console.log('Response status:', res.status);
+      const data = await res.json();
+      console.log('Response data:', data);
+
       if (res.ok) {
         setSuccess(true);
         setTimeout(() => router.push('/dashboard'), 2000);
       } else {
-        alert('Failed to submit tool. Please try again.');
+        alert('Failed to submit tool: ' + (data.error || data.message || 'Please try again.'));
       }
     } catch (error) {
       console.error('Error submitting tool:', error);
-      alert('An error occurred. Please try again.');
+      alert('An error occurred: ' + error.message);
     } finally {
       setSubmitting(false);
     }
