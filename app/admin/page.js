@@ -349,12 +349,25 @@ export default function AdminPage() {
   };
 
   const deleteShopProduct = async (productId) => {
+    console.log('Delete called for product:', productId);
     if (!confirm('Are you sure you want to delete this product?')) return;
     try {
-      await fetch(`/api/admin/shop/${productId}`, { method: 'DELETE' });
-      fetchShopProducts();
+      console.log('Sending DELETE request for:', productId);
+      const res = await fetch(`/api/admin/shop/${productId}`, { 
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      const data = await res.json();
+      console.log('Delete response:', data);
+      if (res.ok) {
+        alert('Product deleted successfully!');
+        fetchShopProducts();
+      } else {
+        alert('Failed to delete: ' + (data.error || 'Unknown error'));
+      }
     } catch (error) {
       console.error('Error deleting product:', error);
+      alert('Error deleting product: ' + error.message);
     }
   };
 
