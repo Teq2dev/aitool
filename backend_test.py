@@ -10,7 +10,7 @@ import sys
 from typing import Dict, Any
 
 # Base URL from environment
-BASE_URL = "https://toolhub-45.preview.emergentagent.com"
+BASE_URL = "https://nextai-dir.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 def test_endpoint(method: str, endpoint: str, headers: Dict[str, str] = None, data: Dict[str, Any] = None) -> Dict[str, Any]:
