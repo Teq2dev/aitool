@@ -459,6 +459,14 @@ export default function AdminPage() {
                   <Eye className="w-4 h-4 mr-2" />
                   Tools ({tools.length})
                 </TabsTrigger>
+                <TabsTrigger value="featured">
+                  <Star className="w-4 h-4 mr-2" />
+                  Featured ({tools.filter(t => t.featured).length})
+                </TabsTrigger>
+                <TabsTrigger value="trending">
+                  <Zap className="w-4 h-4 mr-2" />
+                  Trending ({tools.filter(t => t.trending).length})
+                </TabsTrigger>
                 <TabsTrigger value="users">
                   <Users className="w-4 h-4 mr-2" />
                   Users ({users.length})
@@ -492,6 +500,7 @@ export default function AdminPage() {
                       onApprove={handleApprove}
                       onReject={openRejectModal}
                       onToggleFeatured={handleToggleFeatured}
+                      onToggleTrending={handleToggleTrending}
                       onDelete={handleDelete}
                       onEdit={openEditModal}
                     />
@@ -502,6 +511,7 @@ export default function AdminPage() {
                       onApprove={handleApprove}
                       onReject={openRejectModal}
                       onToggleFeatured={handleToggleFeatured}
+                      onToggleTrending={handleToggleTrending}
                       onDelete={handleDelete}
                       onEdit={openEditModal}
                     />
