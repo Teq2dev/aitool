@@ -1033,12 +1033,49 @@ export default function AdminPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Image URL</label>
-                <Input
-                  value={shopForm.image}
-                  onChange={(e) => setShopForm({ ...shopForm, image: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
-                />
+                <label className="block text-sm font-medium mb-1">Product Image</label>
+                <div className="flex gap-2">
+                  <Input
+                    value={shopForm.image}
+                    onChange={(e) => setShopForm({ ...shopForm, image: e.target.value })}
+                    placeholder="https://example.com/image.jpg"
+                    className="flex-1"
+                  />
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        try {
+                          const res = await fetch('/api/upload', {
+                            method: 'POST',
+                            body: formData,
+                          });
+                          const data = await res.json();
+                          if (data.url) {
+                            setShopForm({ ...shopForm, image: data.url });
+                          }
+                        } catch (error) {
+                          console.error('Upload error:', error);
+                        }
+                      }}
+                    />
+                    <Button type="button" variant="outline">
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload
+                    </Button>
+                  </label>
+                </div>
+                {shopForm.image && (
+                  <div className="mt-2">
+                    <img src={shopForm.image} alt="Preview" className="w-20 h-20 object-cover rounded border" />
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Short Description</label>
@@ -1059,7 +1096,7 @@ export default function AdminPage() {
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Monthly Price ($)</label>
+                  <label className="block text-sm font-medium mb-1">Monthly Price (₹)</label>
                   <Input
                     type="number"
                     value={shopForm.monthlyPrice}
@@ -1067,7 +1104,7 @@ export default function AdminPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">6 Months Price ($)</label>
+                  <label className="block text-sm font-medium mb-1">6 Months Price (₹)</label>
                   <Input
                     type="number"
                     value={shopForm.halfYearlyPrice}
@@ -1075,7 +1112,7 @@ export default function AdminPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Yearly Price ($)</label>
+                  <label className="block text-sm font-medium mb-1">Yearly Price (₹)</label>
                   <Input
                     type="number"
                     value={shopForm.yearlyPrice}
