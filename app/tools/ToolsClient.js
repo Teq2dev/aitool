@@ -214,34 +214,25 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <p className="text-sm text-gray-500 mb-4">Showing {tools.length} of {pagination.total} tools</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
               {tools.map((tool) => (
                 <ToolCard key={tool._id} tool={tool} />
               ))}
             </div>
 
-            {/* Pagination */}
-            {pagination.totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2">
-                <Button
-                  variant="outline"
-                  disabled={pagination.page === 1 || isPending}
-                  onClick={() => handlePageChange(pagination.page - 1)}
-                >
-                  Previous
-                </Button>
-                <span className="text-gray-600 mx-4">
-                  Page {pagination.page} of {pagination.totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  disabled={pagination.page === pagination.totalPages || isPending}
-                  onClick={() => handlePageChange(pagination.page + 1)}
-                >
-                  Next
-                </Button>
-              </div>
-            )}
+            {/* Infinite Scroll Loading */}
+            <div ref={loadMoreRef} className="h-20 flex items-center justify-center">
+              {loadingMore && (
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <span>Loading more tools...</span>
+                </div>
+              )}
+              {!hasMore && tools.length > 0 && (
+                <p className="text-gray-500">You've seen all {tools.length} tools</p>
+              )}
+            </div>
           </>
         )}
       </div>
