@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
+import { useState, useTransition, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ToolCard from '@/components/ToolCard';
 import SearchBar from '@/components/SearchBar';
@@ -14,22 +14,32 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   
-  const [filters, setFilters] = useState(initialFilters);
-  const [tools, setTools] = useState(initialTools);
-  const [pagination, setPagination] = useState(initialPagination);
+  const [filters, setFilters] = useState(initialFilters || { category: '', search: '', sort: 'trending' });
+  const [tools, setTools] = useState(initialTools || []);
+  const [pagination, setPagination] = useState(initialPagination || { page: 1, totalPages: 1, total: 0 });
   const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const observerRef = useRef(null);
+  const [hasMore, setHasMore] = useState(false);
   const loadMoreRef = useRef(null);
+  const observerRef = useRef(null);
 
-  // Load more tools for infinite scroll
-  const loadMoreTools = useCallback(async () => {
+  // Initialize hasMore based on pagination
+  useEffect(() => {
+    if (initialPagination) {
+      setHasMore(initialPagination.page < initialPagination.totalPages);
+    }
+  }, [initialPagination]);
+
+  // Load more tools function
+  const loadMoreTools = async () => {
     if (loadingMore || !hasMore) return;
     
     setLoadingMore(true);
     try {
       const nextPage = pagination.page + 1;
-      const params = new URLSearchParams(searchParams);
+      const params = new URLSearchParams();
+      if (filters.category) params.set('category', filters.category);
+      if (filters.search) params.set('search', filters.search);
+      if (filters.sort) params.set('sort', filters.sort);
       params.set('page', nextPage.toString());
       params.set('limit', '80');
       
@@ -38,46 +48,64 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
       
       if (data.tools && data.tools.length > 0) {
         setTools(prev => [...prev, ...data.tools]);
-        setPagination(prev => ({ ...prev, page: nextPage, totalPages: data.pagination.totalPages }));
-        setHasMore(nextPage < data.pagination.totalPages);
+        setPagination(prev => ({ 
+          ...prev, 
+          page: nextPage, 
+          totalPages: data.pagination?.totalPages || prev.totalPages 
+        }));
+        setHasMore(nextPage < (data.pagination?.totalPages || 1));
       } else {
         setHasMore(false);
       }
     } catch (error) {
       console.error('Error loading more tools:', error);
+      setHasMore(false);
     } finally {
       setLoadingMore(false);
     }
-  }, [loadingMore, hasMore, pagination.page, searchParams]);
+  };
 
-  // Intersection Observer for infinite scroll
+  // Setup intersection observer
   useEffect(() => {
-    observerRef.current = new IntersectionObserver(
+    if (typeof window === 'undefined') return;
+    
+    const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loadingMore) {
           loadMoreTools();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1, rootMargin: '100px' }
     );
 
-    if (loadMoreRef.current) {
-      observerRef.current.observe(loadMoreRef.current);
+    observerRef.current = observer;
+
+    const currentRef = loadMoreRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
     }
 
     return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
+      observer.disconnect();
     };
-  }, [loadMoreTools, hasMore, loadingMore]);
+  }, [hasMore, loadingMore]);
 
-  // Reset tools when filters change
+  // Reset tools when initial data changes
   useEffect(() => {
-    setTools(initialTools);
-    setPagination(initialPagination);
-    setHasMore(initialPagination.page < initialPagination.totalPages);
-  }, [initialTools, initialPagination]);
+    if (initialTools) {
+      setTools(initialTools);
+    }
+    if (initialPagination) {
+      setPagination(initialPagination);
+      setHasMore(initialPagination.page < initialPagination.totalPages);
+    }
+    if (initialFilters) {
+      setFilters(initialFilters);
+    }
+  }, [initialTools, initialPagination, initialFilters]);
 
   // Update URL and trigger server-side data fetch
   const updateFilters = (newFilters) => {
