@@ -12,9 +12,9 @@ export const metadata = {
   keywords: 'best ai tools, free ai tools, ai tools directory, artificial intelligence tools, ai software, machine learning tools, chatgpt alternatives, ai image generators, ai writing tools',
   authors: [{ name: 'Best AI Tools Free' }],
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
   },
   openGraph: {
     title: 'Best AI Tools Free - Top AI Tools Directory',
