@@ -4,69 +4,74 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 
 export async function POST(request) {
+  console.log('=== Upload API Called ===');
+  
   try {
     const formData = await request.formData();
     const file = formData.get('file');
     
     if (!file) {
+      console.log('Error: No file in request');
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
+
+    console.log('File received:', file.name, 'Size:', file.size);
 
     // Get file data
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Use absolute path for uploads directory
-    // In Next.js standalone mode, we need to handle paths carefully
-    const uploadsDir = join(process.cwd(), 'public', 'uploads');
+    // Define uploads directory - use absolute path
+    const uploadsDir = '/app/public/uploads';
     
-    console.log('Upload directory:', uploadsDir);
-    console.log('File name:', file.name);
-    console.log('File size:', buffer.length);
+    console.log('Uploads directory:', uploadsDir);
+    console.log('Directory exists:', existsSync(uploadsDir));
 
-    // Ensure uploads directory exists
-    try {
-      if (!existsSync(uploadsDir)) {
-        await mkdir(uploadsDir, { recursive: true });
-        console.log('Created uploads directory');
-      }
-    } catch (mkdirError) {
-      console.error('Error creating directory:', mkdirError);
-      // Try alternative path
-      const altUploadsDir = '/app/public/uploads';
-      if (!existsSync(altUploadsDir)) {
-        await mkdir(altUploadsDir, { recursive: true });
+    // Create directory if it doesn't exist
+    if (!existsSync(uploadsDir)) {
+      console.log('Creating uploads directory...');
+      try {
+        await mkdir(uploadsDir, { recursive: true, mode: 0o777 });
+        console.log('Directory created successfully');
+      } catch (mkdirErr) {
+        console.error('Failed to create directory:', mkdirErr);
+        return NextResponse.json({ 
+          error: 'Upload failed', 
+          details: 'Could not create uploads directory: ' + mkdirErr.message 
+        }, { status: 500 });
       }
     }
 
     // Create unique filename - sanitize the filename
-    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '-');
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '-').replace(/-+/g, '-');
     const filename = `${Date.now()}-${sanitizedName}`;
+    const filePath = join(uploadsDir, filename);
     
-    // Try primary path first, then fallback
-    let filePath = join(uploadsDir, filename);
-    let savedPath = `/uploads/${filename}`;
-    
+    console.log('Saving file to:', filePath);
+
+    // Save file
     try {
       await writeFile(filePath, buffer);
-      console.log('File saved to:', filePath);
-    } catch (writeError) {
-      console.error('Primary write failed:', writeError);
-      // Try alternative absolute path
-      filePath = `/app/public/uploads/${filename}`;
-      await writeFile(filePath, buffer);
-      console.log('File saved to alternative path:', filePath);
+      console.log('File saved successfully!');
+    } catch (writeErr) {
+      console.error('Failed to write file:', writeErr);
+      return NextResponse.json({ 
+        error: 'Upload failed', 
+        details: 'Could not save file: ' + writeErr.message 
+      }, { status: 500 });
     }
 
     // Return public URL
+    const publicUrl = `/uploads/${filename}`;
+    console.log('Returning URL:', publicUrl);
+    
     return NextResponse.json({ 
       success: true, 
-      url: savedPath,
+      url: publicUrl,
       filename 
     });
   } catch (error) {
     console.error('Upload error:', error);
-    console.error('Error stack:', error.stack);
     return NextResponse.json({ 
       error: 'Upload failed', 
       details: error.message 
