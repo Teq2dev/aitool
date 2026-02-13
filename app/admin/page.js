@@ -1187,7 +1187,7 @@ function UsersList({ users, onMakeAdmin, onRemoveAdmin }) {
   );
 }
 
-function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onDelete, onEdit }) {
+function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onToggleTrending, onDelete, onEdit }) {
   if (tools.length === 0) {
     return (
       <div className="text-center py-12">
@@ -1207,7 +1207,7 @@ function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onDelete,
                 <h3 className="font-semibold text-black mb-1">{tool.name}</h3>
                 <p className="text-sm text-gray-600 mb-2">{tool.shortDescription}</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Badge
                   variant={
                     tool.status === 'approved'
@@ -1220,6 +1220,7 @@ function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onDelete,
                   {tool.status}
                 </Badge>
                 {tool.featured && <Badge className="bg-yellow-500 text-black">Featured</Badge>}
+                {tool.trending && <Badge className="bg-orange-500 text-white">Trending</Badge>}
               </div>
             </div>
 
@@ -1268,6 +1269,49 @@ function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onDelete,
                 <Button
                   size="sm"
                   variant={tool.featured ? 'default' : 'outline'}
+                  onClick={() => onToggleFeatured(tool._id, tool.featured)}
+                >
+                  <Star className="w-4 h-4 mr-1" />
+                  {tool.featured ? 'Unfeature' : 'Feature'}
+                </Button>
+                <Button
+                  size="sm"
+                  variant={tool.trending ? 'default' : 'outline'}
+                  onClick={() => onToggleTrending && onToggleTrending(tool._id, tool.trending)}
+                  className={tool.trending ? 'bg-orange-500 hover:bg-orange-600' : ''}
+                >
+                  <Zap className="w-4 h-4 mr-1" />
+                  {tool.trending ? 'Untrend' : 'Trend'}
+                </Button>
+                <Link href={`/tools/${tool.slug}`}>
+                  <Button size="sm" variant="outline" className="w-full">
+                    <Eye className="w-4 h-4 mr-1" />
+                    View
+                  </Button>
+                </Link>
+              </>
+            )}
+            {tool.status === 'rejected' && (
+              <Button size="sm" onClick={() => onApprove(tool._id)} variant="outline">
+                <CheckCircle className="w-4 h-4 mr-1" />
+                Approve
+              </Button>
+            )}
+            {/* Edit button - always visible */}
+            <Button size="sm" variant="outline" onClick={() => onEdit(tool)} className="text-blue-600 border-blue-600 hover:bg-blue-50">
+              <Edit className="w-4 h-4 mr-1" />
+              Edit
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => onDelete(tool._id)} className="text-red-600 hover:text-red-700 hover:bg-red-50">
+              <Trash2 className="w-4 h-4 mr-1" />
+              Delete
+            </Button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
                   onClick={() => onToggleFeatured(tool._id, tool.featured)}
                 >
                   <Star className="w-4 h-4 mr-1" />
