@@ -838,6 +838,67 @@ export async function POST(request) {
       return NextResponse.json({ success: true, product });
     }
     
+    // POST /api/admin/shop/bulk - Bulk upload shop products
+    if (pathname === '/api/admin/shop/bulk') {
+      const { userId } = await auth();
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      const body = await request.json();
+      const { products } = body;
+      
+      if (!products || !Array.isArray(products) || products.length === 0) {
+        return NextResponse.json({ error: 'No products provided' }, { status: 400 });
+      }
+      
+      const shopCollection = await getCollection('shop_products');
+      const results = { success: 0, failed: 0, errors: [] };
+      
+      for (const productData of products) {
+        try {
+          // Only price is mandatory
+          if (!productData.monthlyPrice && productData.monthlyPrice !== 0) {
+            results.failed++;
+            results.errors.push(`Product "${productData.name || 'Unknown'}": Missing price`);
+            continue;
+          }
+          
+          const product = {
+            _id: uuidv4(),
+            name: productData.name || 'Unnamed Product',
+            slug: (productData.name || 'product').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now(),
+            shortDescription: productData.shortDescription || '',
+            description: productData.description || '',
+            image: productData.image || '',
+            imageAlt: productData.imageAlt || '',
+            monthlyPrice: parseFloat(productData.monthlyPrice) || 0,
+            halfYearlyPrice: parseFloat(productData.halfYearlyPrice) || 0,
+            yearlyPrice: parseFloat(productData.yearlyPrice) || 0,
+            originalPrice: parseFloat(productData.originalPrice) || 0,
+            discount: parseInt(productData.discount) || 80,
+            features: productData.features || [],
+            category: productData.category || 'AI Tool',
+            status: 'active',
+            createdBy: userId,
+            createdAt: new Date(),
+          };
+          
+          await shopCollection.insertOne(product);
+          results.success++;
+        } catch (err) {
+          results.failed++;
+          results.errors.push(`Product "${productData.name || 'Unknown'}": ${err.message}`);
+        }
+      }
+      
+      return NextResponse.json({
+        success: true,
+        message: `Uploaded ${results.success} products. ${results.failed} failed.`,
+        results
+      });
+    }
+    
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   } catch (error) {
     console.error('POST Error:', error);
