@@ -63,6 +63,7 @@ export default function ShopPage() {
         <title>AI Tools Shop - Premium AI Tools at 80% OFF | Best AI Tools Free</title>
         <meta name="description" content="Get premium AI tools at unbeatable prices. Up to 80% discount on AI software, productivity tools, and more. Instant digital delivery." />
         <meta name="keywords" content="ai tools shop, buy ai tools, ai software deals, premium ai tools, ai tools discount" />
+        <meta name="robots" content="noindex, nofollow" />
       </head>
       <div className="min-h-screen bg-gray-50">
         {/* Hero Banner */}
