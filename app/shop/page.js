@@ -142,7 +142,7 @@ export default function ShopPage() {
                       {product.image ? (
                         <img 
                           src={product.image} 
-                          alt={product.name}
+                          alt={product.imageAlt || `${product.name} - Best AI directory tool, software discount`}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       ) : (
