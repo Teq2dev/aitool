@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
-import { cwd } from 'process';
+import { v2 as cloudinary } from 'cloudinary';
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(request) {
   try {
+
     const formData = await request.formData();
     const file = formData.get('file');
 
@@ -16,33 +20,29 @@ export async function POST(request) {
       );
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    // convert to base64
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
 
-    const uploadsDir = join(cwd(), 'public', 'uploads');
+    const base64 = `data:${file.type};base64,${buffer.toString('base64')}`;
 
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true });
-    }
-
-    const sanitizedName = file.name
-      .replace(/[^a-zA-Z0-9.-]/g, '-')
-      .replace(/-+/g, '-');
-
-    const filename = `${Date.now()}-${sanitizedName}`;
-    const filePath = join(uploadsDir, filename);
-
-    await writeFile(filePath, buffer);
+    // upload to cloudinary
+    const result = await cloudinary.uploader.upload(base64, {
+      folder: "logos",
+    });
 
     return NextResponse.json({
       success: true,
-      url: `/uploads/${filename}`,
-      filename,
+      url: result.secure_url,
+      filename: result.public_id,
     });
 
   } catch (error) {
+
     return NextResponse.json(
       { error: 'Upload failed', details: error.message },
       { status: 500 }
     );
+
   }
 }
