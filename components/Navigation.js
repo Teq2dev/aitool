@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SignInButton, UserButton, SignedIn, SignedOut, useUser } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Upload, ShoppingBag } from 'lucide-react';
+import { Sparkles, Upload } from 'lucide-react';
 
 export default function Navigation() {
   const pathname = usePathname();
