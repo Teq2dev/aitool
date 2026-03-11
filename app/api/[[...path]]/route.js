@@ -86,6 +86,34 @@ export async function GET(request) {
       return NextResponse.json({ success: true, message: 'Database initialized' });
     }
     
+    // Temporary endpoint to make user admin - REMOVE IN PRODUCTION
+    if (pathname === '/api/setup-admin') {
+      const userId = searchParams.get('userId');
+      if (!userId) {
+        return NextResponse.json({ error: 'userId required' }, { status: 400 });
+      }
+      
+      const usersCollection = await getCollection('users');
+      const existing = await usersCollection.findOne({ userId });
+      
+      if (existing) {
+        await usersCollection.updateOne(
+          { userId },
+          { $set: { role: 'admin', updatedAt: new Date() } }
+        );
+      } else {
+        await usersCollection.insertOne({
+          _id: uuidv4(),
+          userId,
+          role: 'admin',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
+      
+      return NextResponse.json({ success: true, message: `User ${userId} is now admin` });
+    }
+    
     // GET /api/search - Fast global search across tools, blogs, and categories
     if (pathname === '/api/search') {
       const query = searchParams.get('q') || searchParams.get('query') || '';
