@@ -659,10 +659,6 @@ export default function AdminPage() {
                   <History className="w-4 h-4 mr-2" />
                   Upload Logs ({bulkLogs.length})
                 </TabsTrigger>
-                <TabsTrigger value="shop">
-                  <ShoppingBag className="w-4 h-4 mr-2" />
-                  Shop ({shopProducts.length})
-                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="tools" className="mt-6">
