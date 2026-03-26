@@ -238,7 +238,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-      )}
 
       {/* Latest Tools Section */}
       {latest.length > 0 && (
