@@ -134,57 +134,74 @@ export default function Home() {
       </section>
 
       {/* Featured Tools Section */}
-      {featured.length > 0 && (
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-3xl font-bold text-black mb-2">Featured AI Tools</h2>
-                <p className="text-gray-600">Handpicked tools recommended by our team</p>
-              </div>
-              <Link href="/tools?featured=true">
-                <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
-                  View All <ArrowRight className="ml-2 w-4 h-4" />
-                </Button>
-              </Link>
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-3xl font-bold text-black mb-2">Featured AI Tools</h2>
+              <p className="text-gray-600">Handpicked tools recommended by our team</p>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featured.map((tool) => (
-                <ToolCard key={tool._id} tool={tool} />
-              ))}
-            </div>
+            <Link href="/tools?featured=true">
+              <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
+                View All <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </Link>
           </div>
-        </section>
-      )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {loading ? (
+              <>
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </>
+            ) : featured.length > 0 ? (
+              featured.map((tool) => (
+                <ToolCard key={tool._id} tool={tool} />
+              ))
+            ) : (
+              <p className="text-gray-500 col-span-3 text-center py-8">No featured tools yet</p>
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* Trending Tools Section */}
-      {trending.length > 0 && (
-        <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-3xl font-bold text-black mb-2 flex items-center gap-3">
-                  <TrendingUp className="w-8 h-8 text-blue-600" />
-                  Trending Now
-                </h2>
-                <p className="text-gray-600">Most popular AI tools this week</p>
-              </div>
-              <Link href="/tools?sort=trending">
-                <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
-                  View All <ArrowRight className="ml-2 w-4 h-4" />
-                </Button>
-              </Link>
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-3xl font-bold text-black mb-2 flex items-center gap-3">
+                <TrendingUp className="w-8 h-8 text-blue-600" />
+                Trending Now
+              </h2>
+              <p className="text-gray-600">Most popular AI tools this week</p>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {trending.slice(0, 8).map((tool) => (
-                <ToolCard key={tool._id} tool={tool} />
-              ))}
-            </div>
+            <Link href="/tools?sort=trending">
+              <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
+                View All <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </Link>
           </div>
-        </section>
-      )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {loading ? (
+              <>
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </>
+            ) : trending.length > 0 ? (
+              trending.slice(0, 8).map((tool) => (
+                <ToolCard key={tool._id} tool={tool} />
+              ))
+            ) : (
+              <p className="text-gray-500 col-span-4 text-center py-8">No trending tools yet</p>
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* Categories Section */}
       {categories.length > 0 && (
