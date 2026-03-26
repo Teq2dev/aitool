@@ -204,30 +204,40 @@ export default function Home() {
       </section>
 
       {/* Categories Section */}
-      {categories.length > 0 && (
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-black mb-2">Explore by Category</h2>
-              <p className="text-gray-600">Find AI tools organized by topics, tasks, and roles</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
-              {categories.map((category) => (
-                <CategoryCard key={category._id} category={category} />
-              ))}
-            </div>
-
-            <div className="text-center">
-              <Link href="/categories">
-                <Button size="lg" variant="outline" className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50">
-                  View All Categories
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-              </Link>
-            </div>
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-black mb-2">Explore by Category</h2>
+            <p className="text-gray-600">Find AI tools organized by topics, tasks, and roles</p>
           </div>
-        </section>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+            {loading ? (
+              <>
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </>
+            ) : categories.length > 0 ? (
+              categories.map((category) => (
+                <CategoryCard key={category._id || category.name} category={category} />
+              ))
+            ) : (
+              <p className="text-gray-500 col-span-4 text-center py-8">No categories yet</p>
+            )}
+          </div>
+
+          <div className="text-center">
+            <Link href="/categories">
+              <Button size="lg" variant="outline" className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50">
+                View All Categories
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
       )}
 
       {/* Latest Tools Section */}
