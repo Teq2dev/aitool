@@ -20,10 +20,10 @@ export default function Home() {
   useEffect(() => {
     const initAndFetch = async () => {
       try {
-        // Initialize database first
-        await fetch('/api/init');
+        // Initialize database first (don't wait)
+        fetch('/api/init').catch(() => {});
         
-        // Fetch all data
+        // Fetch all data in parallel
         const [featuredRes, trendingRes, categoriesRes, latestRes] = await Promise.all([
           fetch('/api/featured'),
           fetch('/api/trending'),
