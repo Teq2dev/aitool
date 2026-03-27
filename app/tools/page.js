@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { getTools, getCategories } from '@/lib/getTools';
 import ToolsClient from './ToolsClient';
+import Script from 'next/script';
 
 // Enable Next.js caching with revalidation
 export const revalidate = 60; // Revalidate every 60 seconds
@@ -31,6 +32,35 @@ export default async function ToolsPage({ searchParams }) {
     }),
     getCategories()
   ]);
+
+  // Schema for CollectionPage
+  const schemaData = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Browse AI Tools - Best Free AI Tools Directory',
+    description: 'Discover 3000+ free AI tools across multiple categories.',
+    url: 'https://www.bestaitoolsfree.com/tools',
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: toolsData.total || 0,
+      itemListElement: (toolsData.tools || []).slice(0, 10).map((tool, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'SoftwareApplication',
+          name: tool.name,
+          description: tool.shortDescription || tool.description,
+          url: `https://www.bestaitoolsfree.com/tools/${tool.slug}`,
+          applicationCategory: 'AI Tool',
+          offers: {
+            '@type': 'Offer',
+            price: tool.pricing === 'Free' ? '0' : undefined,
+            priceCurrency: 'USD'
+          }
+        }
+      }))
+    }
+  };
 
   // Handle error state
   if (toolsData.error) {
