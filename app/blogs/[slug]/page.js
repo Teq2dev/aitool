@@ -50,8 +50,45 @@ export default function BlogDetailPage() {
 
   if (!blog) return null;
 
+  // Schema for BlogPosting
+  const schemaData = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: blog.title,
+    description: blog.excerpt || blog.content?.substring(0, 160),
+    url: `https://www.bestaitoolsfree.com/blogs/${blog.slug}`,
+    datePublished: blog.createdAt,
+    dateModified: blog.updatedAt || blog.createdAt,
+    author: {
+      '@type': 'Person',
+      name: blog.author || 'Best AI Tools Free'
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Best AI Tools Free',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://www.bestaitoolsfree.com/logo.jpg'
+      }
+    },
+    image: blog.coverImage || 'https://www.bestaitoolsfree.com/logo.jpg',
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://www.bestaitoolsfree.com/blogs/${blog.slug}`
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <>
+      <head>
+        <title>{blog.title} - Best AI Tools Free Blog</title>
+        <meta name="description" content={blog.excerpt || blog.content?.substring(0, 160)} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+        />
+      </head>
+      <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Back Button */}
         <Link href="/blogs">
