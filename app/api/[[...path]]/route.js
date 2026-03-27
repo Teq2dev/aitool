@@ -735,6 +735,41 @@ export async function POST(request) {
       return NextResponse.json({ success: true, blog: newBlog });
     }
     
+    // POST /api/admin/blogs - Create new blog (admin)
+    if (pathname === '/api/admin/blogs') {
+      const body = await request.json();
+      const { title, content, excerpt, coverImage, author, tags, featured, slug } = body;
+      
+      if (!title || !content) {
+        return NextResponse.json({ error: 'Title and content are required' }, { status: 400 });
+      }
+      
+      const blogsCollection = await getCollection('blogs');
+      
+      // Generate slug if not provided
+      const blogSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      
+      const newBlog = {
+        _id: uuidv4(),
+        title,
+        slug: blogSlug,
+        content,
+        excerpt: excerpt || content.substring(0, 160),
+        coverImage: coverImage || '',
+        author: author || 'Admin',
+        tags: tags || [],
+        featured: featured || false,
+        views: 0,
+        status: 'published',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      
+      await blogsCollection.insertOne(newBlog);
+      
+      return NextResponse.json({ success: true, blog: newBlog });
+    }
+    
     // POST /api/admin/bulk-tools - Bulk upload tools from CSV data
     if (pathname === '/api/admin/bulk-tools') {
       const { userId } = await auth();
