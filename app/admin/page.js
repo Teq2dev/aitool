@@ -385,6 +385,79 @@ export default function AdminPage() {
     }
   };
 
+  // Blog handlers
+  const openBlogModal = (blog = null) => {
+    if (blog) {
+      setBlogForm({
+        title: blog.title || '',
+        slug: blog.slug || '',
+        excerpt: blog.excerpt || '',
+        content: blog.content || '',
+        coverImage: blog.coverImage || '',
+        author: blog.author || '',
+        tags: blog.tags?.join(', ') || '',
+        featured: blog.featured || false,
+      });
+      setBlogModal({ open: true, blog });
+    } else {
+      setBlogForm({
+        title: '', slug: '', excerpt: '', content: '', coverImage: '', author: '', tags: '', featured: false
+      });
+      setBlogModal({ open: true, blog: null });
+    }
+  };
+
+  const handleSaveBlog = async () => {
+    try {
+      const blogData = {
+        ...blogForm,
+        tags: blogForm.tags ? blogForm.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+      };
+
+      const url = blogModal.blog 
+        ? `/api/admin/blogs/${blogModal.blog._id}`
+        : '/api/admin/blogs';
+      
+      const res = await fetch(url, {
+        method: blogModal.blog ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(blogData),
+      });
+
+      if (res.ok) {
+        alert(blogModal.blog ? 'Blog updated!' : 'Blog created!');
+        setBlogModal({ open: false, blog: null });
+        fetchBlogs();
+      } else {
+        const data = await res.json();
+        alert('Failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error saving blog:', error);
+      alert('Error: ' + error.message);
+    }
+  };
+
+  const deleteBlog = async (blogId) => {
+    if (!confirm('Are you sure you want to delete this blog?')) return;
+    try {
+      const res = await fetch(`/api/admin/blogs/${blogId}`, { 
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        alert('Blog deleted!');
+        fetchBlogs();
+      } else {
+        const data = await res.json();
+        alert('Failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error deleting blog:', error);
+      alert('Error: ' + error.message);
+    }
+  };
+
   // Open reject modal
   const openRejectModal = (toolId, toolName) => {
     setRejectModal({ open: true, toolId, toolName });
