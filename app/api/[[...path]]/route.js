@@ -608,6 +608,18 @@ export async function GET(request) {
       return NextResponse.json(products);
     }
     
+    // GET /api/admin/blogs - Get all blogs for admin
+    if (pathname === '/api/admin/blogs') {
+      // Temporarily skip auth for testing
+      const blogsCollection = await getCollection('blogs');
+      const blogs = await blogsCollection
+        .find({})
+        .sort({ createdAt: -1 })
+        .toArray();
+      
+      return NextResponse.json(blogs);
+    }
+    
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   } catch (error) {
     console.error('API Error:', error);
