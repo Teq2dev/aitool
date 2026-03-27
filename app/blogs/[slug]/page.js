@@ -193,5 +193,6 @@ export default function BlogDetailPage() {
         </Card>
       </div>
     </div>
+    </>
   );
 }
