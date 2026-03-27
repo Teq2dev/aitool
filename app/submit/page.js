@@ -414,5 +414,6 @@ export default function SubmitToolPage() {
         </form>
       </div>
     </div>
+    </>
   );
 }
