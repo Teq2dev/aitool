@@ -1335,6 +1335,16 @@ export async function DELETE(request) {
       return NextResponse.json({ success: true });
     }
     
+    // Delete blog (admin route)
+    if (pathname.startsWith('/api/admin/blogs/')) {
+      const id = pathname.split('/api/admin/blogs/')[1];
+      const blogsCollection = await getCollection('blogs');
+      
+      await blogsCollection.deleteOne({ _id: id });
+      
+      return NextResponse.json({ success: true });
+    }
+    
     // Delete shop product
     if (pathname.startsWith('/api/admin/shop/')) {
       const id = pathname.split('/api/admin/shop/')[1];
