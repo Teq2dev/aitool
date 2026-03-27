@@ -264,5 +264,6 @@ export default function BlogsPage() {
         </section>
       </div>
     </div>
+    </>
   );
 }
