@@ -1088,10 +1088,150 @@ export default function AdminPage() {
                   )}
                 </div>
               </TabsContent>
+
+              {/* Blogs Tab */}
+              <TabsContent value="blogs" className="mt-6">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-semibold">All Blogs ({blogs.length})</h3>
+                    <Button onClick={() => openBlogModal()} className="bg-blue-600 hover:bg-blue-700">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Blog
+                    </Button>
+                  </div>
+                  {blogs.length === 0 ? (
+                    <p className="text-gray-500 text-center py-8">No blogs yet</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {blogs.map((blog) => (
+                        <div key={blog._id} className="border rounded-lg p-4 bg-white flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold">{blog.title}</h4>
+                              {blog.featured && <Badge className="bg-yellow-500">Featured</Badge>}
+                            </div>
+                            <p className="text-sm text-gray-600 line-clamp-1">{blog.excerpt}</p>
+                            <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                              <span>By: {blog.author || 'Unknown'}</span>
+                              <span>Views: {blog.views || 0}</span>
+                              <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 ml-4">
+                            <Link href={`/blogs/${blog.slug}`} target="_blank">
+                              <Button size="sm" variant="ghost">
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                            </Link>
+                            <Button size="sm" variant="outline" onClick={() => openBlogModal(blog)}>
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button size="sm" variant="destructive" onClick={() => deleteBlog(blog._id)}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
       </div>
+
+      {/* Blog Modal */}
+      {blogModal.open && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto py-8">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 my-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">{blogModal.blog ? 'Edit Blog' : 'Add Blog'}</h3>
+              <button onClick={() => setBlogModal({ open: false, blog: null })}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+              <div>
+                <label className="block text-sm font-medium mb-1">Title *</label>
+                <Input
+                  value={blogForm.title}
+                  onChange={(e) => setBlogForm({ ...blogForm, title: e.target.value })}
+                  placeholder="Blog title"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Slug</label>
+                <Input
+                  value={blogForm.slug}
+                  onChange={(e) => setBlogForm({ ...blogForm, slug: e.target.value })}
+                  placeholder="blog-url-slug (auto-generated if empty)"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Author</label>
+                <Input
+                  value={blogForm.author}
+                  onChange={(e) => setBlogForm({ ...blogForm, author: e.target.value })}
+                  placeholder="Author name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Cover Image URL</label>
+                <Input
+                  value={blogForm.coverImage}
+                  onChange={(e) => setBlogForm({ ...blogForm, coverImage: e.target.value })}
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Excerpt</label>
+                <Textarea
+                  value={blogForm.excerpt}
+                  onChange={(e) => setBlogForm({ ...blogForm, excerpt: e.target.value })}
+                  placeholder="Short description for preview"
+                  rows={2}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Content *</label>
+                <Textarea
+                  value={blogForm.content}
+                  onChange={(e) => setBlogForm({ ...blogForm, content: e.target.value })}
+                  placeholder="Full blog content (supports HTML)"
+                  rows={10}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Tags (comma-separated)</label>
+                <Input
+                  value={blogForm.tags}
+                  onChange={(e) => setBlogForm({ ...blogForm, tags: e.target.value })}
+                  placeholder="ai, tools, productivity"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="blogFeatured"
+                  checked={blogForm.featured}
+                  onChange={(e) => setBlogForm({ ...blogForm, featured: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="blogFeatured" className="text-sm font-medium">Featured Blog</label>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-4 pt-4 border-t">
+              <Button variant="outline" onClick={() => setBlogModal({ open: false, blog: null })}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveBlog} className="bg-blue-600 hover:bg-blue-700">
+                {blogModal.blog ? 'Update Blog' : 'Create Blog'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Reject Modal */}
       {rejectModal.open && (
