@@ -59,8 +59,46 @@ export default function ToolDetailPage() {
 
   if (!tool) return null;
 
+  // Schema for SoftwareApplication
+  const schemaData = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: tool.name,
+    description: tool.description || tool.shortDescription,
+    url: `https://www.bestaitoolsfree.com/tools/${tool.slug}`,
+    applicationCategory: 'AI Tool',
+    operatingSystem: 'Web',
+    offers: {
+      '@type': 'Offer',
+      price: tool.pricing === 'Free' ? '0' : undefined,
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock'
+    },
+    aggregateRating: tool.rating ? {
+      '@type': 'AggregateRating',
+      ratingValue: tool.rating,
+      ratingCount: tool.votes || 1,
+      bestRating: 5,
+      worstRating: 1
+    } : undefined,
+    image: tool.logo,
+    author: {
+      '@type': 'Organization',
+      name: 'Best AI Tools Free'
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <>
+      <head>
+        <title>{tool.name} - Best AI Tools Free</title>
+        <meta name="description" content={tool.shortDescription || tool.description} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+        />
+      </head>
+      <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
         {/* Back Button */}
         <Link href="/tools">
