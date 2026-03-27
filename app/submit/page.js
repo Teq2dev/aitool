@@ -218,8 +218,26 @@ export default function SubmitToolPage() {
     );
   }
 
+  // Schema for submit page
+  const schemaData = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'Submit Your AI Tool - Best AI Tools Free',
+    description: 'Share your AI tool with thousands of users. Submit your tool to the Best AI Tools Free directory.',
+    url: 'https://www.bestaitoolsfree.com/submit'
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <>
+      <head>
+        <title>Submit Your AI Tool - Best AI Tools Free</title>
+        <meta name="description" content="Share your AI tool with thousands of users. Submit your tool to the Best AI Tools Free directory." />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+        />
+      </head>
+      <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-black mb-2">Submit Your AI Tool</h1>
