@@ -17,6 +17,7 @@ export default function AdminPage() {
   const router = useRouter();
   const [tools, setTools] = useState([]);
   const [users, setUsers] = useState([]);
+  const [blogs, setBlogs] = useState([]);
   const [bulkLogs, setBulkLogs] = useState([]);
   const [shopProducts, setShopProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +34,8 @@ export default function AdminPage() {
   const [editForm, setEditForm] = useState({});
   const [shopModal, setShopModal] = useState({ open: false, product: null });
   const [shopForm, setShopForm] = useState({});
+  const [blogModal, setBlogModal] = useState({ open: false, blog: null });
+  const [blogForm, setBlogForm] = useState({});
   const [bulkLogTools, setBulkLogTools] = useState({ open: false, logId: null, tools: [] });
   const [imageUploading, setImageUploading] = useState(false);
   const [imageFetching, setImageFetching] = useState(false);
