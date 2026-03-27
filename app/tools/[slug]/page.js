@@ -256,5 +256,6 @@ export default function ToolDetailPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
