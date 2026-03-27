@@ -1182,6 +1182,30 @@ export async function PUT(request) {
       return NextResponse.json({ success: true });
     }
     
+    // PUT /api/admin/blogs/:id - Update blog
+    if (pathname.match(/\/api\/admin\/blogs\/[^/]+$/) && !pathname.includes('/approve') && !pathname.includes('/reject') && !pathname.includes('/featured')) {
+      const id = pathname.split('/api/admin/blogs/')[1];
+      const body = await request.json();
+      const blogsCollection = await getCollection('blogs');
+      
+      const updateFields = { updatedAt: new Date() };
+      if (body.title !== undefined) updateFields.title = body.title;
+      if (body.slug !== undefined) updateFields.slug = body.slug;
+      if (body.content !== undefined) updateFields.content = body.content;
+      if (body.excerpt !== undefined) updateFields.excerpt = body.excerpt;
+      if (body.coverImage !== undefined) updateFields.coverImage = body.coverImage;
+      if (body.author !== undefined) updateFields.author = body.author;
+      if (body.tags !== undefined) updateFields.tags = body.tags;
+      if (body.featured !== undefined) updateFields.featured = body.featured;
+      
+      await blogsCollection.updateOne(
+        { _id: id },
+        { $set: updateFields }
+      );
+      
+      return NextResponse.json({ success: true });
+    }
+    
     // User admin endpoints
     if (pathname.includes('/api/admin/users/') && pathname.includes('/make-admin')) {
       const { userId: currentUserId } = await auth();
