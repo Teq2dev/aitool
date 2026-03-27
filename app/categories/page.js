@@ -48,8 +48,39 @@ export default function CategoriesPage() {
     );
   }
 
+  // Schema for categories page
+  const schemaData = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'AI Tool Categories - Best AI Tools Free',
+    description: `Browse ${categories.length} categories with AI tools organized by topics, tasks, and roles.`,
+    url: 'https://www.bestaitoolsfree.com/categories',
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: categories.length,
+      itemListElement: categories.slice(0, 20).map((cat, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'Thing',
+          name: cat.name,
+          url: `https://www.bestaitoolsfree.com/tools?category=${cat.slug || cat.name}`
+        }
+      }))
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <>
+      <head>
+        <title>AI Tool Categories - Best AI Tools Free Directory</title>
+        <meta name="description" content={`Browse ${categories.length} AI tool categories. Find the best AI tools organized by topics, tasks, and roles.`} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+        />
+      </head>
+      <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-black mb-2">AI Tool Categories</h1>
