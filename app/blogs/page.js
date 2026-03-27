@@ -67,8 +67,45 @@ export default function BlogsPage() {
     fetchBlogs();
   };
 
+  // Schema for Blog listing page
+  const schemaData = {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    name: 'AI Tools Blog - Best AI Tools Free',
+    description: 'Insights, tutorials, and news about AI tools. Learn about the latest AI technologies and how to use them.',
+    url: 'https://www.bestaitoolsfree.com/blogs',
+    publisher: {
+      '@type': 'Organization',
+      name: 'Best AI Tools Free',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://www.bestaitoolsfree.com/logo.jpg'
+      }
+    },
+    blogPost: blogs.slice(0, 10).map(blog => ({
+      '@type': 'BlogPosting',
+      headline: blog.title,
+      description: blog.excerpt,
+      url: `https://www.bestaitoolsfree.com/blogs/${blog.slug}`,
+      datePublished: blog.createdAt,
+      author: {
+        '@type': 'Person',
+        name: blog.author || 'Best AI Tools Free'
+      }
+    }))
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <>
+      <head>
+        <title>AI Tools Blog - Best AI Tools Free</title>
+        <meta name="description" content="Insights, tutorials, and news about AI tools. Learn about the latest AI technologies and how to use them." />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+        />
+      </head>
+      <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="mb-8 text-center">
