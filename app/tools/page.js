@@ -79,19 +79,25 @@ export default async function ToolsPage({ searchParams }) {
 
   // Pass server-fetched data to client component for interactivity
   return (
-    <ToolsClient 
-      initialTools={toolsData.tools}
-      initialPagination={{
-        page: toolsData.page,
-        totalPages: toolsData.totalPages,
-        total: toolsData.total
-      }}
-      categories={categories}
-      initialFilters={{
-        category,
-        search,
-        sort
-      }}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+      />
+      <ToolsClient 
+        initialTools={toolsData.tools}
+        initialPagination={{
+          page: toolsData.page,
+          totalPages: toolsData.totalPages,
+          total: toolsData.total
+        }}
+        categories={categories}
+        initialFilters={{
+          category,
+          search,
+          sort
+        }}
+      />
+    </>
   );
 }
