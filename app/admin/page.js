@@ -84,6 +84,7 @@ export default function AdminPage() {
     if (isSignedIn) {
       fetchTools();
       fetchUsers();
+      fetchBlogs();
       fetchBulkLogs();
       fetchShopProducts();
     }
@@ -108,6 +109,16 @@ export default function AdminPage() {
       setUsers(data);
     } catch (error) {
       console.error('Error fetching users:', error);
+    }
+  };
+
+  const fetchBlogs = async () => {
+    try {
+      const res = await fetch('/api/admin/blogs');
+      const data = await res.json();
+      setBlogs(data);
+    } catch (error) {
+      console.error('Error fetching blogs:', error);
     }
   };
 
