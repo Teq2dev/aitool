@@ -11,7 +11,7 @@ import tempfile
 from io import BytesIO
 
 # Base URL from environment
-BASE_URL = "https://nextai-dir.preview.emergentagent.com"
+BASE_URL = "https://ai-tools-hub-119.preview.emergentagent.com"
 
 def test_file_upload_api():
     """Test 1: File Upload API (/api/upload)"""

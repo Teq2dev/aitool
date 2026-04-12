@@ -25,6 +25,7 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // Public pages - allow indexing (overrides Clerk dev instance noindex)
         source: "/(.*)",
         headers: [
           { key: "X-Frame-Options", value: "ALLOWALL" },
@@ -32,6 +33,28 @@ const nextConfig = {
           { key: "Access-Control-Allow-Origin", value: process.env.CORS_ORIGINS || "*" },
           { key: "Access-Control-Allow-Methods", value: "GET, POST, PUT, DELETE, OPTIONS" },
           { key: "Access-Control-Allow-Headers", value: "*" },
+          { key: "X-Robots-Tag", value: "index, follow" },
+        ],
+      },
+      {
+        // Admin pages - block indexing
+        source: "/admin/:path*",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
+      {
+        // Dashboard pages - block indexing
+        source: "/dashboard/:path*",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
+      {
+        // API routes - block indexing
+        source: "/api/:path*",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
         ],
       },
     ];
