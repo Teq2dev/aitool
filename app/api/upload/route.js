@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
+import { v2 as cloudinary } from 'cloudinary';
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(request) {
-  console.log('=== Upload API Called ===');
+  console.log('=== Cloudinary Upload API Called ===');
   
   try {
     const formData = await request.formData();
@@ -15,63 +20,40 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
-    console.log('File received:', file.name, 'Size:', file.size);
+    console.log('File received for Cloudinary:', file.name, 'Size:', file.size);
 
     // Get file data
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Define uploads directory - relative to project root
-    const uploadsDir = join(process.cwd(), 'public', 'uploads');
-    
-    console.log('Uploads directory:', uploadsDir);
-    console.log('Directory exists:', existsSync(uploadsDir));
+    // Upload to Cloudinary using a promise to handle the stream
+    const uploadResponse = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'aitools-logos',
+          resource_type: 'auto',
+        },
+        (error, result) => {
+          if (error) {
+            console.error('Cloudinary upload error:', error);
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+      uploadStream.end(buffer);
+    });
 
-    // Create directory if it doesn't exist
-    if (!existsSync(uploadsDir)) {
-      console.log('Creating uploads directory...');
-      try {
-        await mkdir(uploadsDir, { recursive: true, mode: 0o777 });
-        console.log('Directory created successfully');
-      } catch (mkdirErr) {
-        console.error('Failed to create directory:', mkdirErr);
-        return NextResponse.json({ 
-          error: 'Upload failed', 
-          details: 'Could not create uploads directory: ' + mkdirErr.message 
-        }, { status: 500 });
-      }
-    }
-
-    // Create unique filename - sanitize the filename
-    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '-').replace(/-+/g, '-');
-    const filename = `${Date.now()}-${sanitizedName}`;
-    const filePath = join(uploadsDir, filename);
-    
-    console.log('Saving file to:', filePath);
-
-    // Save file
-    try {
-      await writeFile(filePath, buffer);
-      console.log('File saved successfully!');
-    } catch (writeErr) {
-      console.error('Failed to write file:', writeErr);
-      return NextResponse.json({ 
-        error: 'Upload failed', 
-        details: 'Could not save file: ' + writeErr.message 
-      }, { status: 500 });
-    }
-
-    // Return public URL
-    const publicUrl = `/uploads/${filename}`;
-    console.log('Returning URL:', publicUrl);
+    console.log('Cloudinary upload successful:', uploadResponse.secure_url);
     
     return NextResponse.json({ 
       success: true, 
-      url: publicUrl,
-      filename 
+      url: uploadResponse.secure_url,
+      public_id: uploadResponse.public_id
     });
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error('Upload process error:', error);
     return NextResponse.json({ 
       error: 'Upload failed', 
       details: error.message 
