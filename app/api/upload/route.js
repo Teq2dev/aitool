@@ -21,8 +21,8 @@ export async function POST(request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Define uploads directory - use absolute path
-    const uploadsDir = '/app/public/uploads';
+    // Define uploads directory - relative to project root
+    const uploadsDir = join(process.cwd(), 'public', 'uploads');
     
     console.log('Uploads directory:', uploadsDir);
     console.log('Directory exists:', existsSync(uploadsDir));

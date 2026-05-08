@@ -6,11 +6,38 @@ import Script from 'next/script';
 // Enable Next.js caching with revalidation
 export const revalidate = 60; // Revalidate every 60 seconds
 
-export const metadata = {
-  title: 'Browse AI Tools - Best Free AI Tools Directory',
-  description: 'Discover 3000+ free AI tools across multiple categories. Find the best AI tools for writing, image generation, coding, productivity and more.',
-  keywords: 'browse ai tools, ai tools list, free ai tools, ai directory, ai software list',
-};
+export async function generateMetadata({ searchParams }) {
+  const category = searchParams?.category || '';
+  const search = searchParams?.search || '';
+  const baseUrl = 'https://www.bestaitoolsfree.com';
+  
+  let title = 'Browse AI Tools - Best Free AI Tools Directory';
+  let description = 'Discover 3000+ free AI tools across multiple categories. Find the best AI tools for writing, image generation, coding, productivity and more.';
+  let url = `${baseUrl}/tools`;
+
+  if (category) {
+    const formattedCat = category.replace(/-/g, ' ');
+    title = `Best ${formattedCat} AI Tools - Free AI Directory`;
+    description = `Explore the top-rated free AI tools for ${formattedCat}. Compare features, read reviews, and find the best ${formattedCat} AI solutions.`;
+    url = `${baseUrl}/tools?category=${category}`;
+  } else if (search) {
+    title = `Search results for "${search}" - Best AI Tools Free`;
+    url = `${baseUrl}/tools?search=${search}`;
+  }
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+    },
+  };
+}
 
 // Server Component - fetches data before rendering
 export default async function ToolsPage({ searchParams }) {
