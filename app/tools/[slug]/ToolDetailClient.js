@@ -89,7 +89,11 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                       <div className="flex flex-col md:flex-row items-center justify-between mb-4 gap-4">
                         <div>
                           <h1 className="text-4xl font-bold text-gray-900 mb-2">{tool.name}</h1>
-                          <p className="text-xl text-gray-600 font-medium">{tool.shortDescription}</p>
+                          <p className="text-xl text-gray-600 font-medium">
+                            {(!tool.shortDescription || tool.shortDescription === tool.name) 
+                              ? (tool.description?.substring(0, 160) + '...') 
+                              : tool.shortDescription}
+                          </p>
                         </div>
                         <Button variant="outline" size="icon" onClick={handleShare} className="rounded-full">
                           <Share2 className="w-5 h-5" />

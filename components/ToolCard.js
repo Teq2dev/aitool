@@ -48,7 +48,9 @@ export default function ToolCard({ tool }) {
             </div>
           </div>
           <CardDescription className="line-clamp-2 text-gray-600">
-            {tool.shortDescription}
+            {(!tool.shortDescription || tool.shortDescription === tool.name) 
+              ? (tool.description?.substring(0, 120) + '...') 
+              : tool.shortDescription}
           </CardDescription>
         </CardHeader>
       </Link>
