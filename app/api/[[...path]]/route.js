@@ -689,22 +689,6 @@ export async function GET(request) {
       return NextResponse.json(blogs);
     }
     
-    // GET /api/reviews - Get reviews for a tool
-    if (pathname.startsWith('/api/reviews') && request.method === 'GET') {
-      try {
-        const toolId = searchParams.get('toolId');
-        if (!toolId) return NextResponse.json({ error: 'Tool ID is required' }, { status: 400 });
-        
-        const reviewsCollection = await getCollection('reviews');
-        const toolReviews = await reviewsCollection
-          .find({ toolId, status: 'approved' })
-          .sort({ createdAt: -1 })
-          .toArray();
-          
-        return NextResponse.json(toolReviews);
-      } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-      }
     }
 
     }
@@ -725,46 +709,6 @@ export async function POST(request, { params }) {
   const path = params.path || [];
   
   try {
-    // POST /api/reviews - Submit a new review
-    if (path[0] === 'reviews') {
-      try {
-        const body = await request.json();
-        const { toolId, rating, comment, userName } = body;
-        
-        if (!toolId || !rating) return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-        
-        const reviewsCollection = await getCollection('reviews');
-        const toolsCollection = await getCollection('tools');
-        
-        const newReview = {
-          toolId,
-          rating: Number(rating),
-          comment: comment || '',
-          userName: userName || 'Anonymous',
-          status: 'approved', // Auto-approve for now, can change to 'pending' later
-          createdAt: new Date()
-        };
-        
-        await reviewsCollection.insertOne(newReview);
-        
-        // Update tool's aggregate rating and votes
-        const tool = await toolsCollection.findOne({ _id: new ObjectId(toolId) });
-        if (tool) {
-          const newVotes = (tool.votes || 0) + 1;
-          const newRating = ((tool.rating || 0) * (tool.votes || 0) + rating) / newVotes;
-          
-          await toolsCollection.updateOne(
-            { _id: new ObjectId(toolId) },
-            { $set: { rating: Number(newRating.toFixed(1)), votes: newVotes } }
-          );
-        }
-        
-        return NextResponse.json({ success: true, review: newReview });
-      } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-      }
-    }
-
     // POST /api/tools - Submit tool
     if (pathname === '/api/tools' || pathname === '/api/tools/') {
       console.log('=== POST /api/tools called ===');
