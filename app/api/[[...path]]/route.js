@@ -720,12 +720,13 @@ export async function GET(request) {
 }
 
 // POST /api/tools - Submit new tool
-export async function POST(request) {
+export async function POST(request, { params }) {
   const { pathname } = new URL(request.url);
+  const path = params.path || [];
   
   try {
     // POST /api/reviews - Submit a new review
-    if (pathname.startsWith('/api/reviews')) {
+    if (path[0] === 'reviews') {
       try {
         const body = await request.json();
         const { toolId, rating, comment, userName } = body;
