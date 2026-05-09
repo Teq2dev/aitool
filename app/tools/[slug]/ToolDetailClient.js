@@ -279,7 +279,7 @@ function ReviewsSection({ toolId, initialRating }) {
 
   const fetchReviews = async () => {
     try {
-      const res = await fetch(`/api/reviews?toolId=${toolId}`);
+      const res = await fetch(`/api/reviews/?toolId=${toolId}`);
       const data = await res.json();
       if (Array.isArray(data)) {
         setReviews(data);
@@ -297,7 +297,7 @@ function ReviewsSection({ toolId, initialRating }) {
     
     setSubmitting(true);
     try {
-      const res = await fetch('/api/reviews', {
+      const res = await fetch('/api/reviews/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ toolId, rating, comment, userName })
