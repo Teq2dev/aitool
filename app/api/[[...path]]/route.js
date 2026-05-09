@@ -156,7 +156,7 @@ export async function GET(request) {
                     index: 'default', // Try default first
                     text: {
                       query: query,
-                      path: ['name', 'shortDescription', 'tags'],
+                      path: 'name',
                       fuzzy: { maxEdits: 2 }
                     }
                   }
@@ -176,11 +176,7 @@ export async function GET(request) {
               results.tools = await toolsCollection
                 .find({
                   status: 'approved',
-                  $or: [
-                    { name: { $regex: regexQuery, $options: 'i' } },
-                    { shortDescription: { $regex: regexQuery, $options: 'i' } },
-                    { tags: { $regex: regexQuery, $options: 'i' } }
-                  ]
+                  name: { $regex: regexQuery, $options: 'i' }
                 })
                 .project({ name: 1, slug: 1, shortDescription: 1, logo: 1, categories: 1, pricing: 1 })
                 .sort({ votes: -1 })
