@@ -303,36 +303,39 @@ export async function GET(request) {
       });
     }
     
-    // GET /api/categories - Get all categories (dynamically from tools)
+    // GET /api/categories - Get all categories from the categories collection
     if (pathname.startsWith('/api/categories')) {
       try {
-        const toolsCollection = await getCollection('tools');
+        const categoriesCollection = await getCollection('categories');
+        const fetchedCategories = await categoriesCollection
+          .find({ status: { $ne: 'inactive' } })
+          .sort({ toolCount: -1 })
+          .toArray();
         
-        // Dynamically extract categories from approved tools
-        const categoryAggregation = await toolsCollection.aggregate([
-          { $match: { status: 'approved' } },
-          { $unwind: '$categories' },
-          { 
-            $group: { 
-              _id: '$categories', 
-              count: { $sum: 1 },
-              // Get a sample tool for the category icon
-              sampleTool: { $first: '$$ROOT' }
-            } 
-          },
-          { $sort: { count: -1 } }
-        ]).toArray();
-        
-        // Transform to category format
-        const fetchedCategories = categoryAggregation.map(item => ({
-          _id: item._id,
-          name: item._id,
-          slug: item._id.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-          description: `Explore ${item.count} AI tools in ${item._id}`,
-          toolCount: item.count,
-          icon: '🤖', // Default icon
-          type: 'topic'
-        }));
+        // If collection is empty, fall back to aggregation as a safety measure
+        if (fetchedCategories.length === 0) {
+          const toolsCollection = await getCollection('tools');
+          const categoryAggregation = await toolsCollection.aggregate([
+            { $match: { status: 'approved' } },
+            { $unwind: '$categories' },
+            { 
+              $group: { 
+                _id: '$categories', 
+                count: { $sum: 1 }
+              } 
+            },
+            { $sort: { count: -1 } }
+          ]).toArray();
+
+          return NextResponse.json(categoryAggregation.map(item => ({
+            _id: item._id,
+            name: item._id.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+            slug: item._id,
+            toolCount: item.count,
+            icon: '🤖',
+            type: 'topic'
+          })));
+        }
         
         return NextResponse.json(fetchedCategories);
       } catch (dbError) {
