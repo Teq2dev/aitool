@@ -165,6 +165,11 @@ export async function GET(request) {
                 { $limit: limit },
                 { $project: { name: 1, slug: 1, shortDescription: 1, logo: 1, categories: 1, pricing: 1, score: { $meta: 'searchScore' } } }
               ]).toArray();
+              
+              // If Atlas Search finds nothing, use fallback
+              if (results.tools.length === 0) {
+                throw new Error('No Atlas Search results');
+              }
             } catch (searchError) {
               // Fallback to Smarter Regex Search
               const regexQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
