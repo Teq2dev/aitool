@@ -3,12 +3,19 @@
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function SearchBar({ placeholder = 'Search AI tools...', className = '' }) {
-  const [search, setSearch] = useState('');
+  const searchParams = useSearchParams();
+  const currentSearch = searchParams.get('search') || '';
+  const [search, setSearch] = useState(currentSearch);
   const router = useRouter();
+
+  // Sync with URL search params when they change
+  useEffect(() => {
+    setSearch(currentSearch);
+  }, [currentSearch]);
 
   const handleSearch = (e) => {
     e.preventDefault();
