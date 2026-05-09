@@ -225,9 +225,20 @@ export async function GET(request) {
       
       // Wait for all searches to complete in parallel
       await Promise.all(searchPromises);
+
+      // Simple suggestion logic: if the top result's name is similar but not identical to the query
+      let suggestion = null;
+      if (results.tools.length > 0 && results.tools[0].name.toLowerCase() !== query.toLowerCase()) {
+        const topResult = results.tools[0].name;
+        // Only suggest if the result is reasonably similar (fuzzy)
+        if (topResult.toLowerCase().includes(query.toLowerCase()) || query.length > 3) {
+            suggestion = topResult;
+        }
+      }
       
       return NextResponse.json({
         query,
+        suggestion,
         ...results,
         totalResults: results.tools.length + results.blogs.length + results.categories.length
       });

@@ -124,6 +124,7 @@ export default async function ToolsPage({ searchParams }) {
           search,
           sort
         }}
+        suggestion={toolsData.suggestion}
       />
     </>
   );

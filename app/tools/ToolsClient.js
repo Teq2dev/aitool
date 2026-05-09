@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Filter, X, Loader2 } from 'lucide-react';
 
-export default function ToolsClient({ initialTools, initialPagination, categories, initialFilters }) {
+export default function ToolsClient({ initialTools, initialPagination, categories, initialFilters, suggestion }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -209,6 +209,19 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
             </Button>
           )}
         </div>
+
+        {/* Spelling Suggestion */}
+        {suggestion && filters.search && (
+          <div className="mb-6 p-3 bg-blue-50 border border-blue-100 rounded-lg text-sm text-blue-700">
+            Did you mean:{' '}
+            <button 
+              onClick={() => updateFilters({ ...filters, search: suggestion })}
+              className="font-bold underline hover:text-blue-800"
+            >
+              {suggestion}
+            </button>?
+          </div>
+        )}
 
         {/* Active Filters */}
         {(filters.category || filters.search) && (
