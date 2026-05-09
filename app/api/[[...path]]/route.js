@@ -153,7 +153,7 @@ export async function GET(request) {
               results.tools = await toolsCollection.aggregate([
                 {
                   $search: {
-                    index: 'default',
+                    index: 'Aitools',
                     text: {
                       query: query,
                       path: ['name', 'shortDescription', 'tags'],
