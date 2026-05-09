@@ -142,23 +142,44 @@ export async function GET(request) {
       // Run searches in parallel for speed
       const searchPromises = [];
       
-      // Search tools - optimized: search only name first
+      // Search tools - with Fuzzy matching (handles typos)
       if (type === 'all' || type === 'tools') {
         searchPromises.push(
           (async () => {
             const toolsCollection = await getCollection('tools');
-            results.tools = await toolsCollection
-              .find({
-                status: 'approved',
-                $or: [
-                  { name: fastRegex },
-                  { shortDescription: fastRegex },
-                  { tags: fastRegex }
-                ]
-              })
-              .project({ name: 1, slug: 1, shortDescription: 1, logo: 1, categories: 1, pricing: 1 })
-              .limit(limit)
-              .toArray();
+            
+            // Try Atlas Search first (if index exists), fallback to fuzzy regex
+            try {
+              results.tools = await toolsCollection.aggregate([
+                {
+                  $search: {
+                    index: 'default',
+                    text: {
+                      query: query,
+                      path: ['name', 'shortDescription', 'tags'],
+                      fuzzy: { maxEdits: 2 }
+                    }
+                  }
+                },
+                { $match: { status: 'approved' } },
+                { $limit: limit },
+                { $project: { name: 1, slug: 1, shortDescription: 1, logo: 1, categories: 1, pricing: 1, score: { $meta: 'searchScore' } } }
+              ]).toArray();
+            } catch (searchError) {
+              // Fallback to fuzzy-like regex if Atlas Search index is not yet set up
+              const fuzzyRegex = new RegExp(query.split('').join('.*'), 'i');
+              results.tools = await toolsCollection
+                .find({
+                  status: 'approved',
+                  $or: [
+                    { name: { $regex: query, $options: 'i' } },
+                    { name: fuzzyRegex }
+                  ]
+                })
+                .project({ name: 1, slug: 1, shortDescription: 1, logo: 1, categories: 1, pricing: 1 })
+                .limit(limit)
+                .toArray();
+            }
           })()
         );
       }
