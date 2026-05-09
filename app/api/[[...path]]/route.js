@@ -148,30 +148,16 @@ export async function GET(request) {
           (async () => {
             const toolsCollection = await getCollection('tools');
             
-            // Try Atlas Search with Autocomplete (partial matching)
+            // Try Atlas Search (Smart Search)
             try {
               results.tools = await toolsCollection.aggregate([
                 {
                   $search: {
-                    index: 'Aitools',
-                    compound: {
-                      should: [
-                        {
-                          autocomplete: {
-                            query: query,
-                            path: 'name',
-                            fuzzy: { maxEdits: 1 },
-                            score: { boost: { value: 5 } }
-                          }
-                        },
-                        {
-                          text: {
-                            query: query,
-                            path: ['name', 'shortDescription', 'tags'],
-                            fuzzy: { maxEdits: 2 }
-                          }
-                        }
-                      ]
+                    index: 'default', // Try default first
+                    text: {
+                      query: query,
+                      path: ['name', 'shortDescription', 'tags'],
+                      fuzzy: { maxEdits: 2 }
                     }
                   }
                 },
@@ -180,17 +166,19 @@ export async function GET(request) {
                 { $project: { name: 1, slug: 1, shortDescription: 1, logo: 1, categories: 1, pricing: 1, score: { $meta: 'searchScore' } } }
               ]).toArray();
             } catch (searchError) {
-              // Fallback to fuzzy-like regex if Atlas Search index is not yet set up
-              const fuzzyRegex = new RegExp(query.split('').join('.*'), 'i');
+              // Fallback to Smarter Regex Search
+              const regexQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
               results.tools = await toolsCollection
                 .find({
                   status: 'approved',
                   $or: [
-                    { name: { $regex: query, $options: 'i' } },
-                    { name: fuzzyRegex }
+                    { name: { $regex: regexQuery, $options: 'i' } },
+                    { shortDescription: { $regex: regexQuery, $options: 'i' } },
+                    { tags: { $regex: regexQuery, $options: 'i' } }
                   ]
                 })
                 .project({ name: 1, slug: 1, shortDescription: 1, logo: 1, categories: 1, pricing: 1 })
+                .sort({ votes: -1 })
                 .limit(limit)
                 .toArray();
             }
