@@ -148,16 +148,30 @@ export async function GET(request) {
           (async () => {
             const toolsCollection = await getCollection('tools');
             
-            // Try Atlas Search first (if index exists), fallback to fuzzy regex
+            // Try Atlas Search with Autocomplete (partial matching)
             try {
               results.tools = await toolsCollection.aggregate([
                 {
                   $search: {
                     index: 'Aitools',
-                    text: {
-                      query: query,
-                      path: ['name', 'shortDescription', 'tags'],
-                      fuzzy: { maxEdits: 2 }
+                    compound: {
+                      should: [
+                        {
+                          autocomplete: {
+                            query: query,
+                            path: 'name',
+                            fuzzy: { maxEdits: 1 },
+                            score: { boost: { value: 5 } }
+                          }
+                        },
+                        {
+                          text: {
+                            query: query,
+                            path: ['name', 'shortDescription', 'tags'],
+                            fuzzy: { maxEdits: 2 }
+                          }
+                        }
+                      ]
                     }
                   }
                 },
