@@ -707,8 +707,25 @@ export async function GET(request) {
       }
     }
 
+    }
+
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  } catch (error) {
+    console.error('API Error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error', details: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+// POST /api/tools - Submit new tool
+export async function POST(request) {
+  const { pathname } = new URL(request.url);
+  
+  try {
     // POST /api/reviews - Submit a new review
-    if (pathname.startsWith('/api/reviews') && request.method === 'POST') {
+    if (pathname.startsWith('/api/reviews')) {
       try {
         const body = await request.json();
         const { toolId, rating, comment, userName } = body;
@@ -747,21 +764,6 @@ export async function GET(request) {
       }
     }
 
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  } catch (error) {
-    console.error('API Error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
-      { status: 500 }
-    );
-  }
-}
-
-// POST /api/tools - Submit new tool
-export async function POST(request) {
-  const { pathname } = new URL(request.url);
-  
-  try {
     // POST /api/tools - Submit tool
     if (pathname === '/api/tools' || pathname === '/api/tools/') {
       console.log('=== POST /api/tools called ===');
