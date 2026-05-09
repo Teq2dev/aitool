@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -158,7 +158,7 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
               )}
 
               {/* Categories & Tags */}
-              <Card className="shadow-sm border-none">
+              <Card className="shadow-sm border-none mb-6">
                 <CardHeader>
                   <CardTitle className="text-2xl">Classification</CardTitle>
                 </CardHeader>
@@ -191,6 +191,9 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Reviews Section */}
+              <ReviewsSection toolId={tool._id} initialRating={tool.rating} />
             </div>
 
             {/* Sidebar */}
@@ -258,5 +261,180 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
         </div>
       </div>
     </>
+  );
+}
+
+function ReviewsSection({ toolId, initialRating }) {
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [hover, setHover] = useState(0);
+  const [comment, setComment] = useState('');
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    fetchReviews();
+  }, [toolId]);
+
+  const fetchReviews = async () => {
+    try {
+      const res = await fetch(`/api/reviews?toolId=${toolId}`);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setReviews(data);
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!rating) return toast.error('Please select a rating');
+    
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ toolId, rating, comment, userName })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        toast.success('Thank you for your review!');
+        setComment('');
+        setUserName('');
+        setRating(5);
+        fetchReviews(); // Refresh list
+      } else {
+        toast.error(data.error || 'Failed to submit review');
+      }
+    } catch (error) {
+      toast.error('An error occurred');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Card className="shadow-sm border-none overflow-hidden">
+      <CardHeader className="border-b bg-gray-50/50">
+        <CardTitle className="text-2xl flex items-center gap-2">
+          User Reviews & Ratings
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="grid grid-cols-1 md:grid-cols-5">
+          {/* Submit Review */}
+          <div className="md:col-span-2 p-6 border-b md:border-b-0 md:border-r bg-white">
+            <h3 className="text-lg font-bold mb-4">Write a Review</h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Your Rating</label>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      className="focus:outline-none transition-transform active:scale-90"
+                      onClick={() => setRating(star)}
+                      onMouseEnter={() => setHover(star)}
+                      onMouseLeave={() => setHover(0)}
+                    >
+                      <Star
+                        className={`w-8 h-8 ${
+                          star <= (hover || rating)
+                            ? 'fill-yellow-400 text-yellow-400'
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Your Name (Optional)</label>
+                <input
+                  type="text"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  placeholder="e.g. John Doe"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Your Feedback</label>
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="What was your experience with this tool?"
+                  rows={4}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none resize-none"
+                  required
+                />
+              </div>
+
+              <Button 
+                type="submit" 
+                disabled={submitting}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-blue-100"
+              >
+                {submitting ? 'Submitting...' : 'Post Review'}
+              </Button>
+            </form>
+          </div>
+
+          {/* Review List */}
+          <div className="md:col-span-3 bg-gray-50/30">
+            <div className="p-6">
+              <h3 className="text-lg font-bold mb-4">Community Feedback ({reviews.length})</h3>
+              
+              {loading ? (
+                <div className="flex justify-center py-12">
+                  <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : reviews.length === 0 ? (
+                <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-200">
+                  <p className="text-gray-500">No reviews yet. Be the first to share your thoughts!</p>
+                </div>
+              ) : (
+                <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                  {reviews.map((rev, idx) => (
+                    <div key={idx} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs uppercase">
+                            {rev.userName?.charAt(0) || 'A'}
+                          </div>
+                          <div>
+                            <p className="font-bold text-gray-900 text-sm">{rev.userName || 'Anonymous'}</p>
+                            <p className="text-[10px] text-gray-400">{new Date(rev.createdAt).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-0.5">
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i} 
+                              className={`w-3 h-3 ${i < rev.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`} 
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-gray-700 text-sm leading-relaxed">{rev.comment}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
