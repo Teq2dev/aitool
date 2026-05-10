@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Star, ExternalLink, ArrowLeft, Share2 } from 'lucide-react';
+import { Star, ExternalLink, ArrowLeft, Share2, Edit2, Trash2, X, Check } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { useUser } from '@clerk/nextjs';
 
 export default function ToolDetailClient({ initialTool, initialRelatedTools = [] }) {
   const [tool] = useState(initialTool);
@@ -272,20 +273,55 @@ function ReviewsSection({ toolId, initialRating }) {
   const [hover, setHover] = useState(0);
   const [comment, setComment] = useState('');
   const [userName, setUserName] = useState('');
+  const { user, isLoaded } = useUser();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editComment, setEditComment] = useState('');
+  const [editRating, setEditRating] = useState(5);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    if (user) {
+      checkAdminStatus();
+    }
+  }, [user]);
+
+  const checkAdminStatus = async () => {
+    try {
+      const res = await fetch('/api/admin/check');
+      const data = await res.json();
+      setIsAdmin(data.isAdmin);
+    } catch (e) {
+      console.error('Error checking admin status:', e);
+    }
+  };
+
+  const getEditToken = (reviewId) => {
+    if (typeof window === 'undefined') return null;
+    const tokens = JSON.parse(localStorage.getItem('review_tokens') || '{}');
+    return tokens[reviewId];
+  };
 
   useEffect(() => {
     fetchReviews();
   }, [toolId]);
 
   const fetchReviews = async () => {
+    setLoading(true);
     try {
-      const res = await fetch(`/api/reviews/?toolId=${toolId}`);
+      const res = await fetch(`/api/reviews?toolId=${toolId}`);
       const data = await res.json();
       if (Array.isArray(data)) {
         setReviews(data);
+      } else {
+        console.warn('Reviews API returned non-array:', data);
+        setReviews([]);
       }
     } catch (error) {
       console.error('Error fetching reviews:', error);
+      setReviews([]);
     } finally {
       setLoading(false);
     }
@@ -294,29 +330,104 @@ function ReviewsSection({ toolId, initialRating }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!rating) return toast.error('Please select a rating');
+    if (!comment.trim()) return toast.error('Please enter a comment');
     
     setSubmitting(true);
     try {
-      const res = await fetch('/api/reviews/', {
+      console.log('Submitting review for:', toolId);
+      const res = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ toolId, rating, comment, userName })
       });
+      
       const data = await res.json();
       
-      if (data.success) {
+      if (res.ok && data.success) {
         toast.success('Thank you for your review!');
+        
+        // Save edit token for anonymous edits
+        if (data.editToken) {
+          const tokens = JSON.parse(localStorage.getItem('review_tokens') || '{}');
+          tokens[data.review._id] = data.editToken;
+          localStorage.setItem('review_tokens', JSON.stringify(tokens));
+        }
+        
         setComment('');
         setUserName('');
         setRating(5);
-        fetchReviews(); // Refresh list
+        // Delay slightly to allow DB to propagate if needed
+        setTimeout(() => fetchReviews(), 500);
       } else {
+        console.error('Review submission failed:', data);
         toast.error(data.error || 'Failed to submit review');
       }
     } catch (error) {
-      toast.error('An error occurred');
+      console.error('Review submission exception:', error);
+      toast.error('An error occurred while submitting your review');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (reviewId) => {
+    const editToken = getEditToken(reviewId);
+    try {
+      const res = await fetch(`/api/reviews?id=${reviewId}${editToken ? `&editToken=${editToken}` : ''}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
+        toast.success('Review deleted');
+        setDeleteConfirmId(null);
+        fetchReviews();
+      } else {
+        toast.error(data.error || 'Failed to delete review');
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast.error('An error occurred while deleting');
+    }
+  };
+
+  const startEditing = (review) => {
+    setEditingId(review._id);
+    setEditComment(review.comment);
+    setEditRating(review.rating);
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditComment('');
+    setEditRating(5);
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    const editToken = getEditToken(editingId);
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          reviewId: editingId, 
+          rating: editRating, 
+          comment: editComment,
+          editToken: editToken
+        })
+      });
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
+        toast.success('Review updated');
+        setEditingId(null);
+        fetchReviews();
+      } else {
+        toast.error(data.error || 'Failed to update review');
+      }
+    } catch (error) {
+      toast.error('An error occurred while updating');
     }
   };
 
@@ -404,29 +515,93 @@ function ReviewsSection({ toolId, initialRating }) {
                   <p className="text-gray-500">No reviews yet. Be the first to share your thoughts!</p>
                 </div>
               ) : (
-                <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                   {reviews.map((rev, idx) => (
                     <div key={idx} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs uppercase">
-                            {rev.userName?.charAt(0) || 'A'}
+                      {editingId === rev._id ? (
+                        /* Edit Mode */
+                        <form onSubmit={handleUpdate} className="space-y-4">
+                          <div className="flex justify-between items-center">
+                            <div className="flex gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <button
+                                  key={star}
+                                  type="button"
+                                  onClick={() => setEditRating(star)}
+                                >
+                                  <Star className={`w-4 h-4 ${star <= editRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
+                                </button>
+                              ))}
+                            </div>
+                            <div className="flex gap-2">
+                              <Button type="button" variant="ghost" size="sm" onClick={cancelEditing} className="h-8 w-8 p-0">
+                                <X className="w-4 h-4" />
+                              </Button>
+                              <Button type="submit" variant="ghost" size="sm" className="h-8 w-8 p-0 text-green-600">
+                                <Check className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-bold text-gray-900 text-sm">{rev.userName || 'Anonymous'}</p>
-                            <p className="text-[10px] text-gray-400">{new Date(rev.createdAt).toLocaleDateString()}</p>
+                          <textarea
+                            value={editComment}
+                            onChange={(e) => setEditComment(e.target.value)}
+                            className="w-full p-3 text-sm border rounded-xl focus:ring-2 focus:ring-blue-100 outline-none"
+                            rows={3}
+                            required
+                          />
+                        </form>
+                      ) : (
+                        /* View Mode */
+                        <>
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs uppercase">
+                                {rev.userName?.charAt(0) || 'A'}
+                              </div>
+                              <div>
+                                <p className="font-bold text-gray-900 text-sm">{rev.userName || 'Anonymous'}</p>
+                                <p className="text-[10px] text-gray-400">
+                                  {isClient ? new Date(rev.createdAt).toLocaleDateString() : ''}
+                                  {rev.updatedAt && rev.updatedAt !== rev.createdAt && ' (edited)'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              {deleteConfirmId === rev._id ? (
+                                <div className="flex items-center gap-2 bg-red-50 px-2 py-1 rounded-lg">
+                                  <span className="text-[10px] font-bold text-red-600">Delete?</span>
+                                  <button onClick={() => handleDelete(rev._id)} className="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded">Yes</button>
+                                  <button onClick={() => setDeleteConfirmId(null)} className="text-[10px] text-gray-500 underline">No</button>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="flex gap-0.5">
+                                    {[...Array(5)].map((_, i) => (
+                                      <Star 
+                                        key={i} 
+                                        className={`w-3 h-3 ${i < rev.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`} 
+                                      />
+                                    ))}
+                                  </div>
+                                  
+                                  {/* Ownership/Admin Actions */}
+                                  {(isAdmin || (user && rev.userId === user.id) || getEditToken(rev._id)) && (
+                                    <div className="flex gap-1">
+                                      <button onClick={() => startEditing(rev)} className="p-1 text-gray-400 hover:text-blue-600 transition-colors">
+                                        <Edit2 className="w-3.5 h-3.5" />
+                                      </button>
+                                      <button onClick={() => setDeleteConfirmId(rev._id)} className="p-1 text-gray-400 hover:text-red-600 transition-colors">
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex gap-0.5">
-                          {[...Array(5)].map((_, i) => (
-                            <Star 
-                              key={i} 
-                              className={`w-3 h-3 ${i < rev.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`} 
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <p className="text-gray-700 text-sm leading-relaxed">{rev.comment}</p>
+                          <p className="text-gray-700 text-sm leading-relaxed">{rev.comment}</p>
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>
