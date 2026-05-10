@@ -690,10 +690,6 @@ export async function GET(request, { params }) {
       return NextResponse.json(blogs);
     }
     
-    }
-
-    }
-
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   } catch (error) {
     console.error('API Error:', error);
@@ -1397,7 +1393,6 @@ export async function DELETE(request, { params }) {
     if (!userId) {
       userId = 'anonymous-delete';
       console.log('Using anonymous userId for DELETE');
-    }
     }
     
     // Delete tool
