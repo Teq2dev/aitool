@@ -339,7 +339,7 @@ export async function GET(request) {
     }
     
     // Fallback GET handler for /api/reviews
-    if (pathname === '/api/reviews') {
+    if (pathname.replace(/\/$/, '') === '/api/reviews') {
       const toolId = searchParams.get('toolId');
       if (!toolId) return NextResponse.json({ error: 'toolId required' }, { status: 400 });
 
@@ -724,7 +724,7 @@ export async function POST(request, { params }) {
   
   try {
     // Review POST handler
-    if (pathname === '/api/reviews') {
+    if (pathname.replace(/\/$/, '') === '/api/reviews') {
       const body = await request.json();
       const { toolId, rating, comment, userName } = body;
       const { userId } = await auth();
@@ -1459,7 +1459,7 @@ export async function DELETE(request) {
     }
     
     // Review DELETE handler
-    if (pathname === '/api/reviews') {
+    if (pathname.replace(/\/$/, '') === '/api/reviews') {
       const reviewId = searchParams.get('id');
       const editToken = searchParams.get('editToken');
       const { userId } = await auth();
@@ -1498,45 +1498,6 @@ export async function DELETE(request) {
       return NextResponse.json({ success: true });
     }
     
-    // Review DELETE handler
-    if (pathname === '/api/reviews') {
-      const reviewId = searchParams.get('id');
-      const editToken = searchParams.get('editToken');
-      const { userId } = await auth();
-
-      if (!reviewId) return NextResponse.json({ error: 'Review ID required' }, { status: 400 });
-
-      const reviewsCollection = await getCollection('reviews');
-      const toolsCollection = await getCollection('tools');
-
-      let query = { _id: reviewId };
-      let review = await reviewsCollection.findOne(query);
-      if (!review) {
-        try { query = { _id: new ObjectId(reviewId) }; review = await reviewsCollection.findOne(query); } catch (e) {}
-      }
-
-      if (!review) return NextResponse.json({ error: 'Review not found' }, { status: 404 });
-
-      const usersCollection = await getCollection('users');
-      const userIsAdmin = userId && await usersCollection.findOne({ userId, role: 'admin' });
-      const userIsOwner = userId && review.userId === userId;
-      const hasValidToken = editToken && review.editToken === editToken;
-
-      if (!userIsAdmin && !userIsOwner && !hasValidToken) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
-
-      await reviewsCollection.deleteOne(query);
-
-      try {
-        const toolId = review.toolId;
-        const allReviews = await reviewsCollection.find({ toolId, status: 'approved' }).toArray();
-        const newVotes = allReviews.length;
-        const newRating = newVotes > 0 ? Number((allReviews.reduce((acc, rev) => acc + rev.rating, 0) / newVotes).toFixed(1)) : 0;
-        await toolsCollection.updateOne({ $or: [{ _id: toolId }, { _id: String(toolId) }] }, { $set: { rating: newRating, votes: newVotes } });
-      } catch (e) {}
-
-      return NextResponse.json({ success: true });
     }
     
     // Delete tool
@@ -1614,7 +1575,7 @@ export async function DELETE(request) {
 // PATCH /api/reviews - Update review (Fallback)
 export async function PATCH(request) {
   const { pathname } = new URL(request.url);
-  if (pathname !== '/api/reviews') {
+  if (pathname.replace(/\/$/, '') !== '/api/reviews') {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
