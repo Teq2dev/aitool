@@ -78,12 +78,12 @@ async function initializeDatabase() {
 
 // GET handler
 export async function GET(request, { params }) {
-  const { pathname, searchParams } = new URL(request.url);
+  const pathname = request.nextUrl.pathname;
+  const { searchParams } = new URL(request.url);
   
   try {
     // HIGH PRIORITY: Reviews API Fallback
-    const pathSegments = params.path || [];
-    if ((pathSegments[0] === 'reviews' && pathSegments.length === 1) || pathname.includes('/api/reviews')) {
+    if (pathname.match(/\/api\/reviews\/?$/)) {
       const toolId = searchParams.get('toolId');
       if (!toolId) return NextResponse.json({ error: 'toolId required' }, { status: 400 });
 
@@ -720,13 +720,11 @@ export async function GET(request, { params }) {
 
 // POST handler
 export async function POST(request, { params }) {
-  const { pathname } = new URL(request.url);
-  const path = params.path || [];
+  const pathname = request.nextUrl.pathname;
   
   try {
     // HIGH PRIORITY: Reviews API Fallback
-    const pathSegments = params.path || [];
-    if ((pathSegments[0] === 'reviews' && pathSegments.length === 1) || pathname.includes('/api/reviews')) {
+    if (pathname.match(/\/api\/reviews\/?$/)) {
       const body = await request.json();
       const { toolId, rating, comment, userName } = body;
       const { userId } = await auth();
@@ -767,13 +765,7 @@ export async function POST(request, { params }) {
 
       return NextResponse.json({ success: true, review: { ...newReview, _id: result.insertedId }, editToken });
     }
-
-    // Review POST handler
-    if (pathSegments[0] === 'reviews' && pathSegments.length === 1) {
-      return NextResponse.json({ error: 'Already handled' }, { status: 500 }); // Should not happen
-    }
     
-
     // POST /api/tools - Submit tool
     if (pathname === '/api/tools' || pathname === '/api/tools/') {
       console.log('=== POST /api/tools called ===');
@@ -1446,12 +1438,12 @@ export async function PUT(request) {
 
 // DELETE handler
 export async function DELETE(request, { params }) {
-  const { pathname, searchParams } = new URL(request.url);
+  const pathname = request.nextUrl.pathname;
+  const { searchParams } = new URL(request.url);
   
   try {
     // HIGH PRIORITY: Reviews API Fallback
-    const pathSegments = params.path || [];
-    if ((pathSegments[0] === 'reviews' && pathSegments.length === 1) || pathname.includes('/api/reviews')) {
+    if (pathname.match(/\/api\/reviews\/?$/)) {
       const reviewId = searchParams.get('id');
       const editToken = searchParams.get('editToken');
       const { userId } = await auth();
@@ -1580,8 +1572,8 @@ export async function DELETE(request, { params }) {
 
 // PATCH /api/reviews - Update review (Fallback)
 export async function PATCH(request, { params }) {
-  const pathSegments = params.path || [];
-  if (pathSegments[0] !== 'reviews' || pathSegments.length !== 1) {
+  const pathname = request.nextUrl.pathname;
+  if (!pathname.match(/\/api\/reviews\/?$/)) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
