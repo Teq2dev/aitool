@@ -26,11 +26,12 @@ export async function GET(request) {
     const reviewsCollection = await getCollection('reviews');
     
     // Find reviews - handle both string and potential ObjectId toolId
+    // Exclude editToken from public response for security
     const toolReviews = await reviewsCollection
-      .find({ 
-        toolId: toolId,
-        status: 'approved' 
-      })
+      .find(
+        { toolId: toolId, status: 'approved' },
+        { projection: { editToken: 0 } }
+      )
       .sort({ createdAt: -1 })
       .toArray();
       
