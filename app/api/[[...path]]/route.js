@@ -76,11 +76,26 @@ async function initializeDatabase() {
   }
 }
 
-// GET /api - Health check
-export async function GET(request) {
+// GET handler
+export async function GET(request, { params }) {
   const { pathname, searchParams } = new URL(request.url);
   
   try {
+    // HIGH PRIORITY: Reviews API Fallback
+    const pathSegments = params.path || [];
+    if ((pathSegments[0] === 'reviews' && pathSegments.length === 1) || pathname.includes('/api/reviews')) {
+      const toolId = searchParams.get('toolId');
+      if (!toolId) return NextResponse.json({ error: 'toolId required' }, { status: 400 });
+
+      const reviewsCollection = await getCollection('reviews');
+      const toolReviews = await reviewsCollection
+        .find({ toolId, status: 'approved' }, { projection: { editToken: 0 } })
+        .sort({ createdAt: -1 })
+        .toArray();
+        
+      return NextResponse.json(toolReviews);
+    }
+
     // Health check
     if (pathname === '/api' || pathname === '/api/') {
       return NextResponse.json({ status: 'ok', message: 'AI Directory API' });
@@ -336,20 +351,6 @@ export async function GET(request) {
         page: parseInt(searchParams.get('page') || '1'),
         totalPages: Math.ceil(total / parseInt(searchParams.get('limit') || '20')),
       });
-    }
-    
-    // Fallback GET handler for /api/reviews
-    if (pathname.replace(/\/$/, '') === '/api/reviews') {
-      const toolId = searchParams.get('toolId');
-      if (!toolId) return NextResponse.json({ error: 'toolId required' }, { status: 400 });
-
-      const reviewsCollection = await getCollection('reviews');
-      const toolReviews = await reviewsCollection
-        .find({ toolId, status: 'approved' }, { projection: { editToken: 0 } })
-        .sort({ createdAt: -1 })
-        .toArray();
-        
-      return NextResponse.json(toolReviews);
     }
     
     // GET /api/categories - Get all categories from the categories collection
@@ -717,14 +718,15 @@ export async function GET(request) {
   }
 }
 
-// POST /api/tools - Submit new tool
+// POST handler
 export async function POST(request, { params }) {
   const { pathname } = new URL(request.url);
   const path = params.path || [];
   
   try {
-    // Review POST handler
-    if (pathname.replace(/\/$/, '') === '/api/reviews') {
+    // HIGH PRIORITY: Reviews API Fallback
+    const pathSegments = params.path || [];
+    if ((pathSegments[0] === 'reviews' && pathSegments.length === 1) || pathname.includes('/api/reviews')) {
       const body = await request.json();
       const { toolId, rating, comment, userName } = body;
       const { userId } = await auth();
@@ -765,6 +767,12 @@ export async function POST(request, { params }) {
 
       return NextResponse.json({ success: true, review: { ...newReview, _id: result.insertedId }, editToken });
     }
+
+    // Review POST handler
+    if (pathSegments[0] === 'reviews' && pathSegments.length === 1) {
+      return NextResponse.json({ error: 'Already handled' }, { status: 500 }); // Should not happen
+    }
+    
 
     // POST /api/tools - Submit tool
     if (pathname === '/api/tools' || pathname === '/api/tools/') {
@@ -1436,30 +1444,14 @@ export async function PUT(request) {
   }
 }
 
-// DELETE /api/tools/:id - Delete tool or blog
-export async function DELETE(request) {
-  const { pathname } = new URL(request.url);
+// DELETE handler
+export async function DELETE(request, { params }) {
+  const { pathname, searchParams } = new URL(request.url);
   
   try {
-    // Temporarily skip auth for testing
-    let userId = null;
-    try {
-      const authResult = await auth();
-      userId = authResult?.userId;
-    } catch (authError) {
-      console.log('Auth error in DELETE (continuing):', authError.message);
-    }
-    
-    if (!userId) {
-      userId = 'anonymous-delete';
-      console.log('Using anonymous userId for DELETE');
-    }
-    
-      return NextResponse.json({ success: true });
-    }
-    
-    // Review DELETE handler
-    if (pathname.replace(/\/$/, '') === '/api/reviews') {
+    // HIGH PRIORITY: Reviews API Fallback
+    const pathSegments = params.path || [];
+    if ((pathSegments[0] === 'reviews' && pathSegments.length === 1) || pathname.includes('/api/reviews')) {
       const reviewId = searchParams.get('id');
       const editToken = searchParams.get('editToken');
       const { userId } = await auth();
@@ -1477,7 +1469,8 @@ export async function DELETE(request) {
 
       if (!review) return NextResponse.json({ error: 'Review not found' }, { status: 404 });
 
-      const userIsAdmin = userId && (await getCollection('users')).findOne({ userId, role: 'admin' });
+      const usersCollection = await getCollection('users');
+      const userIsAdmin = userId && await usersCollection.findOne({ userId, role: 'admin' });
       const userIsOwner = userId && review.userId === userId;
       const hasValidToken = editToken && review.editToken === editToken;
 
@@ -1497,7 +1490,20 @@ export async function DELETE(request) {
 
       return NextResponse.json({ success: true });
     }
+
+    // Temporarily skip auth for testing
+    let userId = null;
+    try {
+      const authResult = await auth();
+      userId = authResult?.userId;
+    } catch (authError) {
+      console.log('Auth error in DELETE (continuing):', authError.message);
+    }
     
+    if (!userId) {
+      userId = 'anonymous-delete';
+      console.log('Using anonymous userId for DELETE');
+    }
     }
     
     // Delete tool
@@ -1573,9 +1579,9 @@ export async function DELETE(request) {
 }
 
 // PATCH /api/reviews - Update review (Fallback)
-export async function PATCH(request) {
-  const { pathname } = new URL(request.url);
-  if (pathname.replace(/\/$/, '') !== '/api/reviews') {
+export async function PATCH(request, { params }) {
+  const pathSegments = params.path || [];
+  if (pathSegments[0] !== 'reviews' || pathSegments.length !== 1) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
