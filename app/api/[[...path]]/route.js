@@ -82,20 +82,6 @@ export async function GET(request, { params }) {
   const { searchParams } = new URL(request.url);
   
   try {
-    // HIGH PRIORITY: Reviews API Fallback
-    if (pathname.match(/\/api\/reviews\/?$/)) {
-      const toolId = searchParams.get('toolId');
-      if (!toolId) return NextResponse.json({ error: 'toolId required' }, { status: 400 });
-
-      const reviewsCollection = await getCollection('reviews');
-      const toolReviews = await reviewsCollection
-        .find({ toolId, status: 'approved' }, { projection: { editToken: 0 } })
-        .sort({ createdAt: -1 })
-        .toArray();
-        
-      return NextResponse.json(toolReviews);
-    }
-
     // Health check
     if (pathname === '/api' || pathname === '/api/') {
       return NextResponse.json({ status: 'ok', message: 'AI Directory API' });
@@ -723,49 +709,6 @@ export async function POST(request, { params }) {
   const pathname = request.nextUrl.pathname;
   
   try {
-    // HIGH PRIORITY: Reviews API Fallback
-    if (pathname.match(/\/api\/reviews\/?$/)) {
-      const body = await request.json();
-      const { toolId, rating, comment, userName } = body;
-      const { userId } = await auth();
-      
-      if (!toolId || !rating) return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
-
-      const reviewsCollection = await getCollection('reviews');
-      const toolsCollection = await getCollection('tools');
-      const editToken = !userId ? uuidv4() : null;
-
-      const newReview = {
-        toolId: String(toolId),
-        rating: Number(rating),
-        comment: comment || '',
-        userName: userName || 'Anonymous',
-        userId: userId || null,
-        editToken,
-        status: 'approved',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-
-      const result = await reviewsCollection.insertOne(newReview);
-
-      try {
-        let targetTool = await toolsCollection.findOne({ _id: toolId });
-        if (!targetTool && typeof toolId === 'string' && toolId.length === 24) {
-          try { targetTool = await toolsCollection.findOne({ _id: new ObjectId(toolId) }); } catch (e) {}
-        }
-        if (targetTool) {
-          const oldVotes = Number(targetTool.votes || 0);
-          const oldRating = Number(targetTool.rating || 0);
-          const newVotes = oldVotes + 1;
-          const newRating = ((oldRating * oldVotes) + Number(rating)) / newVotes;
-          await toolsCollection.updateOne({ _id: targetTool._id }, { $set: { rating: Number(newRating.toFixed(1)), votes: newVotes, updatedAt: new Date() } });
-        }
-      } catch (e) {}
-
-      return NextResponse.json({ success: true, review: { ...newReview, _id: result.insertedId }, editToken });
-    }
-    
     // POST /api/tools - Submit tool
     if (pathname === '/api/tools' || pathname === '/api/tools/') {
       console.log('=== POST /api/tools called ===');
@@ -1442,47 +1385,6 @@ export async function DELETE(request, { params }) {
   const { searchParams } = new URL(request.url);
   
   try {
-    // HIGH PRIORITY: Reviews API Fallback
-    if (pathname.match(/\/api\/reviews\/?$/)) {
-      const reviewId = searchParams.get('id');
-      const editToken = searchParams.get('editToken');
-      const { userId } = await auth();
-
-      if (!reviewId) return NextResponse.json({ error: 'Review ID required' }, { status: 400 });
-
-      const reviewsCollection = await getCollection('reviews');
-      const toolsCollection = await getCollection('tools');
-
-      let query = { _id: reviewId };
-      let review = await reviewsCollection.findOne(query);
-      if (!review) {
-        try { query = { _id: new ObjectId(reviewId) }; review = await reviewsCollection.findOne(query); } catch (e) {}
-      }
-
-      if (!review) return NextResponse.json({ error: 'Review not found' }, { status: 404 });
-
-      const usersCollection = await getCollection('users');
-      const userIsAdmin = userId && await usersCollection.findOne({ userId, role: 'admin' });
-      const userIsOwner = userId && review.userId === userId;
-      const hasValidToken = editToken && review.editToken === editToken;
-
-      if (!userIsAdmin && !userIsOwner && !hasValidToken) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
-
-      await reviewsCollection.deleteOne(query);
-
-      try {
-        const toolId = review.toolId;
-        const allReviews = await reviewsCollection.find({ toolId, status: 'approved' }).toArray();
-        const newVotes = allReviews.length;
-        const newRating = newVotes > 0 ? Number((allReviews.reduce((acc, rev) => acc + rev.rating, 0) / newVotes).toFixed(1)) : 0;
-        await toolsCollection.updateOne({ $or: [{ _id: toolId }, { _id: String(toolId) }] }, { $set: { rating: newRating, votes: newVotes } });
-      } catch (e) {}
-
-      return NextResponse.json({ success: true });
-    }
-
     // Temporarily skip auth for testing
     let userId = null;
     try {
@@ -1570,55 +1472,5 @@ export async function DELETE(request, { params }) {
   }
 }
 
-// PATCH /api/reviews - Update review (Fallback)
-export async function PATCH(request, { params }) {
-  const pathname = request.nextUrl.pathname;
-  if (!pathname.match(/\/api\/reviews\/?$/)) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  }
-
-  try {
-    const body = await request.json();
-    const { reviewId, rating, comment, editToken } = body;
-    const { userId } = await auth();
-
-    if (!reviewId) return NextResponse.json({ error: 'Review ID required' }, { status: 400 });
-
-    const reviewsCollection = await getCollection('reviews');
-    const toolsCollection = await getCollection('tools');
-
-    let query = { _id: reviewId };
-    let review = await reviewsCollection.findOne(query);
-    if (!review) {
-      try { query = { _id: new ObjectId(reviewId) }; review = await reviewsCollection.findOne(query); } catch (e) {}
-    }
-
-    if (!review) return NextResponse.json({ error: 'Review not found' }, { status: 404 });
-
-    const usersCollection = await getCollection('users');
-    const userIsAdmin = userId && await usersCollection.findOne({ userId, role: 'admin' });
-    const userIsOwner = userId && review.userId === userId;
-    const hasValidToken = editToken && review.editToken === editToken;
-
-    if (!userIsAdmin && !userIsOwner && !hasValidToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    await reviewsCollection.updateOne(query, {
-      $set: { rating: Number(rating), comment, updatedAt: new Date() }
-    });
-
-    try {
-      const toolId = review.toolId;
-      const allReviews = await reviewsCollection.find({ toolId, status: 'approved' }).toArray();
-      const newVotes = allReviews.length;
-      const newRating = Number((allReviews.reduce((acc, rev) => acc + rev.rating, 0) / newVotes).toFixed(1));
-      await toolsCollection.updateOne({ $or: [{ _id: toolId }, { _id: String(toolId) }] }, { $set: { rating: newRating, votes: newVotes } });
-    } catch (e) {}
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('PATCH Fallback Error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
-}
+// PATCH method is intentionally omitted from catch-all as it's only needed for reviews
+// If it was kept here it might conflict, so we remove the PATCH fallback block entirely.
