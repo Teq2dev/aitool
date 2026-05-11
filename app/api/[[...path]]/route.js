@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getCollection } from '@/lib/db';
 import { categories, tools, blogs } from '@/lib/sample-data';
 import { auth } from '@clerk/nextjs/server';
@@ -563,7 +564,8 @@ export async function GET(request, { params }) {
         .limit(1000)
         .toArray();
       
-      return NextResponse.json(allTools);
+      const { serializeData } = await import('@/lib/utils');
+      return NextResponse.json(serializeData(allTools));
     }
     
     // GET /api/admin/bulk-logs - Get bulk upload logs
@@ -1062,7 +1064,7 @@ export async function PUT(request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
       
-      const id = pathname.split('/api/admin/tools/')[1].replace('/approve', '');
+      const id = pathname.split('/api/admin/tools/')[1].replace('/approve', '').split('/')[0];
       const toolsCollection = await getCollection('tools');
       
       await toolsCollection.updateOne(
@@ -1070,6 +1072,8 @@ export async function PUT(request) {
         { $set: { status: 'approved' } }
       );
       
+      revalidatePath('/');
+      revalidatePath('/tools');
       return NextResponse.json({ success: true });
     }
     
@@ -1080,7 +1084,7 @@ export async function PUT(request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
       
-      const id = pathname.split('/api/admin/tools/')[1].replace('/reject', '');
+      const id = pathname.split('/api/admin/tools/')[1].replace('/reject', '').split('/')[0];
       const body = await request.json();
       const toolsCollection = await getCollection('tools');
       
@@ -1096,6 +1100,8 @@ export async function PUT(request) {
         }
       );
       
+      revalidatePath('/');
+      revalidatePath('/tools');
       return NextResponse.json({ success: true });
     }
     
@@ -1141,7 +1147,7 @@ export async function PUT(request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
       
-      const id = pathname.split('/api/admin/tools/')[1].replace('/featured', '');
+      const id = pathname.split('/api/admin/tools/')[1].replace('/featured', '').split('/')[0];
       const body = await request.json();
       const toolsCollection = await getCollection('tools');
       
@@ -1150,6 +1156,8 @@ export async function PUT(request) {
         { $set: { featured: body.featured } }
       );
       
+      revalidatePath('/');
+      revalidatePath('/tools');
       return NextResponse.json({ success: true });
     }
     
@@ -1160,7 +1168,7 @@ export async function PUT(request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
       
-      const id = pathname.split('/api/admin/tools/')[1].replace('/trending', '');
+      const id = pathname.split('/api/admin/tools/')[1].replace('/trending', '').split('/')[0];
       const body = await request.json();
       const toolsCollection = await getCollection('tools');
       
@@ -1169,6 +1177,8 @@ export async function PUT(request) {
         { $set: { trending: body.trending } }
       );
       
+      revalidatePath('/');
+      revalidatePath('/tools');
       return NextResponse.json({ success: true });
     }
     
