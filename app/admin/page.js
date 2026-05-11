@@ -525,27 +525,43 @@ export default function AdminPage() {
 
   const handleToggleFeatured = async (toolId, currentFeatured) => {
     try {
-      await fetch(`/api/admin/tools/${toolId}/featured`, {
+      const res = await fetch(`/api/admin/tools/${toolId}/featured`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ featured: !currentFeatured }),
       });
-      fetchTools();
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        alert(`Error: ${errorData.error || 'Failed to update featured status'}`);
+      } else {
+        // Success - refresh the list
+        fetchTools();
+      }
     } catch (error) {
       console.error('Error toggling featured:', error);
+      alert('Network error while toggling featured status');
     }
   };
 
   const handleToggleTrending = async (toolId, currentTrending) => {
     try {
-      await fetch(`/api/admin/tools/${toolId}/trending`, {
+      const res = await fetch(`/api/admin/tools/${toolId}/trending`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ trending: !currentTrending }),
       });
-      fetchTools();
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        alert(`Error: ${errorData.error || 'Failed to update trending status'}`);
+      } else {
+        // Success - refresh the list
+        fetchTools();
+      }
     } catch (error) {
       console.error('Error toggling trending:', error);
+      alert('Network error while toggling trending status');
     }
   };
 
