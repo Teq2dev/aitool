@@ -81,12 +81,19 @@ export default function AdminPage() {
       router.push('/');
       return;
     }
+    
     if (isSignedIn) {
-      fetchTools();
-      fetchUsers();
-      fetchBlogs();
-      fetchBulkLogs();
-      fetchShopProducts();
+      setLoading(true);
+      // Fetch all administrative data in parallel
+      Promise.all([
+        fetchTools(),
+        fetchUsers(),
+        fetchBlogs(),
+        fetchBulkLogs(),
+        fetchShopProducts()
+      ]).finally(() => {
+        setLoading(false);
+      });
     }
   }, [isLoaded, isSignedIn]);
 
@@ -97,8 +104,6 @@ export default function AdminPage() {
       setTools(data);
     } catch (error) {
       console.error('Error fetching tools:', error);
-    } finally {
-      setLoading(false);
     }
   };
 

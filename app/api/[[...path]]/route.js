@@ -542,8 +542,25 @@ export async function GET(request, { params }) {
       }
       
       const allTools = await toolsCollection
-        .find(query)
+        .find(query, {
+          projection: {
+            name: 1,
+            slug: 1,
+            status: 1,
+            featured: 1,
+            trending: 1,
+            logo: 1,
+            createdAt: 1,
+            categories: 1,
+            pricing: 1,
+            rating: 1,
+            votes: 1,
+            shortDescription: 1,
+            rejectionComment: 1
+          }
+        })
         .sort({ createdAt: -1 })
+        .limit(1000)
         .toArray();
       
       return NextResponse.json(allTools);

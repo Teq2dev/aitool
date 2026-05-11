@@ -46,7 +46,7 @@ export default async function ToolsPage({ searchParams }) {
   const search = searchParams?.search || '';
   const sort = searchParams?.sort || 'trending';
   const page = parseInt(searchParams?.page || '1');
-  const limit = parseInt(searchParams?.limit || '80');
+  const limit = parseInt(searchParams?.limit || '40');
 
   // Fetch data on the server (parallel for better performance)
   const [toolsData, categories] = await Promise.all([

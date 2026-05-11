@@ -9,6 +9,8 @@ export const metadata = {
   },
 };
 
+export const revalidate = 3600; // Revalidate home page every hour
+
 export default async function HomePage() {
   // Fetch all data for the homepage on the server
   // This is better for SEO as the content is pre-rendered
