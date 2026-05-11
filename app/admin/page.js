@@ -524,43 +524,59 @@ export default function AdminPage() {
   };
 
   const handleToggleFeatured = async (toolId, currentFeatured) => {
+    // Optimistic UI update
+    const newFeatured = !currentFeatured;
+    setTools(prev => prev.map(t => t._id === toolId ? { ...t, featured: newFeatured } : t));
+
     try {
       const res = await fetch(`/api/admin/tools/${toolId}/featured`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ featured: !currentFeatured }),
+        body: JSON.stringify({ featured: newFeatured }),
       });
       
       if (!res.ok) {
         const errorData = await res.json();
+        // Rollback on error
+        setTools(prev => prev.map(t => t._id === toolId ? { ...t, featured: currentFeatured } : t));
         alert(`Error: ${errorData.error || 'Failed to update featured status'}`);
       } else {
-        // Success - refresh the list
+        // Success - ensure full sync
         fetchTools();
       }
     } catch (error) {
       console.error('Error toggling featured:', error);
+      // Rollback on error
+      setTools(prev => prev.map(t => t._id === toolId ? { ...t, featured: currentFeatured } : t));
       alert('Network error while toggling featured status');
     }
   };
 
   const handleToggleTrending = async (toolId, currentTrending) => {
+    // Optimistic UI update
+    const newTrending = !currentTrending;
+    setTools(prev => prev.map(t => t._id === toolId ? { ...t, trending: newTrending } : t));
+
     try {
       const res = await fetch(`/api/admin/tools/${toolId}/trending`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ trending: !currentTrending }),
+        body: JSON.stringify({ trending: newTrending }),
       });
       
       if (!res.ok) {
         const errorData = await res.json();
+        // Rollback on error
+        setTools(prev => prev.map(t => t._id === toolId ? { ...t, trending: currentTrending } : t));
         alert(`Error: ${errorData.error || 'Failed to update trending status'}`);
       } else {
-        // Success - refresh the list
+        // Success - ensure full sync
         fetchTools();
       }
     } catch (error) {
       console.error('Error toggling trending:', error);
+      // Rollback on error
+      setTools(prev => prev.map(t => t._id === toolId ? { ...t, trending: currentTrending } : t));
       alert('Network error while toggling trending status');
     }
   };
