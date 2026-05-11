@@ -1132,11 +1132,27 @@ export async function PUT(request) {
       updateFields.updatedAt = new Date();
       updateFields.updatedBy = userId;
       
-      await toolsCollection.updateOne(
+      const { ObjectId } = await import('mongodb');
+      let result = await toolsCollection.updateOne(
         { _id: id },
         { $set: updateFields }
       );
       
+      if (result.matchedCount === 0) {
+        try {
+          result = await toolsCollection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: updateFields }
+          );
+        } catch (e) {}
+      }
+      
+      if (result.matchedCount === 0) {
+        return NextResponse.json({ error: 'Tool not found' }, { status: 404 });
+      }
+      
+      revalidatePath('/');
+      revalidatePath('/tools');
       return NextResponse.json({ success: true });
     }
     
@@ -1150,11 +1166,32 @@ export async function PUT(request) {
       const id = pathname.split('/api/admin/tools/')[1].replace('/featured', '').split('/')[0];
       const body = await request.json();
       const toolsCollection = await getCollection('tools');
+      const { ObjectId } = await import('mongodb');
       
-      await toolsCollection.updateOne(
+      console.log(`[Admin] Toggling featured for tool: ${id} to ${body.featured}`);
+      
+      // Try string ID first, then ObjectId as fallback
+      let result = await toolsCollection.updateOne(
         { _id: id },
         { $set: { featured: body.featured } }
       );
+      
+      if (result.matchedCount === 0) {
+        try {
+          result = await toolsCollection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { featured: body.featured } }
+          );
+        } catch (e) {
+          console.log(`[Admin] ID ${id} is not a valid ObjectId`);
+        }
+      }
+      
+      console.log(`[Admin] Update result: matched=${result.matchedCount}, modified=${result.modifiedCount}`);
+      
+      if (result.matchedCount === 0) {
+        return NextResponse.json({ error: 'Tool not found in database' }, { status: 404 });
+      }
       
       revalidatePath('/');
       revalidatePath('/tools');
@@ -1171,11 +1208,32 @@ export async function PUT(request) {
       const id = pathname.split('/api/admin/tools/')[1].replace('/trending', '').split('/')[0];
       const body = await request.json();
       const toolsCollection = await getCollection('tools');
+      const { ObjectId } = await import('mongodb');
       
-      await toolsCollection.updateOne(
+      console.log(`[Admin] Toggling trending for tool: ${id} to ${body.trending}`);
+      
+      // Try string ID first, then ObjectId as fallback
+      let result = await toolsCollection.updateOne(
         { _id: id },
         { $set: { trending: body.trending } }
       );
+      
+      if (result.matchedCount === 0) {
+        try {
+          result = await toolsCollection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { trending: body.trending } }
+          );
+        } catch (e) {
+          console.log(`[Admin] ID ${id} is not a valid ObjectId`);
+        }
+      }
+      
+      console.log(`[Admin] Update result: matched=${result.matchedCount}, modified=${result.modifiedCount}`);
+      
+      if (result.matchedCount === 0) {
+        return NextResponse.json({ error: 'Tool not found in database' }, { status: 404 });
+      }
       
       revalidatePath('/');
       revalidatePath('/tools');
