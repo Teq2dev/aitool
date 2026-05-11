@@ -254,8 +254,8 @@ export async function GET(request, { params }) {
       
       // Get single tool by slug
       if (slug) {
-        const toolsCollection = await getCollection('tools');
-        const tool = await toolsCollection.findOne({ slug });
+        const { getToolBySlug } = await import('@/lib/getTools');
+        const tool = await getToolBySlug(slug);
         
         if (!tool) {
           return NextResponse.json({ error: 'Tool not found' }, { status: 404 });
@@ -265,79 +265,29 @@ export async function GET(request, { params }) {
       }
       
       // List tools with filters
-      let toolsList = [];
-      let total = 0;
-      
       try {
-        const toolsCollection = await getCollection('tools');
+        const { getTools } = await import('@/lib/getTools');
         const category = searchParams.get('category');
         const search = searchParams.get('search');
         const sort = searchParams.get('sort') || 'trending';
-        const status = searchParams.get('status') || 'approved';
-        const limitSize = parseInt(searchParams.get('limit') || '20');
-        const pageNum = parseInt(searchParams.get('page') || '1');
+        const limit = parseInt(searchParams.get('limit') || '20');
+        const page = parseInt(searchParams.get('page') || '1');
         
-        let query = { status };
+        const result = await getTools({
+          category,
+          search,
+          sort,
+          limit,
+          page
+        });
         
-        if (category) {
-          query.categories = category;
-        }
-        
-        if (search) {
-          query.$or = [
-            { name: { $regex: search, $options: 'i' } },
-            { description: { $regex: search, $options: 'i' } },
-            { shortDescription: { $regex: search, $options: 'i' } },
-          ];
-        }
-        
-        let sortQuery = {};
-        if (sort === 'trending') sortQuery = { trending: -1, votes: -1 };
-        else if (sort === 'newest') sortQuery = { createdAt: -1 };
-        else if (sort === 'rating') sortQuery = { rating: -1 };
-        else if (sort === 'popular') sortQuery = { votes: -1 };
-        
-        const skip = (pageNum - 1) * limitSize;
-        
-        // Optimized: Use projection to fetch only needed fields
-        const projection = {
-          name: 1,
-          slug: 1,
-          shortDescription: 1,
-          logo: 1,
-          categories: 1,
-          tags: 1,
-          pricing: 1,
-          rating: 1,
-          votes: 1,
-          status: 1,
-          featured: 1,
-          trending: 1,
-          website: 1,
-          createdAt: 1
-        };
-        
-        toolsList = await toolsCollection
-          .find(query, { projection })
-          .sort(sortQuery)
-          .skip(skip)
-          .limit(limitSize)
-          .toArray();
-        
-        total = await toolsCollection.countDocuments(query);
+        return NextResponse.json(result);
       } catch (dbError) {
-        console.warn('Database connection failed, falling back to sample data:', dbError.message);
-        toolsList = tools.slice(0, 20); // Fallback to sample tools
-        total = tools.length;
+        console.error('API Error in /api/tools:', dbError);
+        return NextResponse.json({ error: 'Failed to fetch tools' }, { status: 500 });
       }
-      
-      return NextResponse.json({
-        tools: toolsList,
-        total,
-        page: parseInt(searchParams.get('page') || '1'),
-        totalPages: Math.ceil(total / parseInt(searchParams.get('limit') || '20')),
-      });
     }
+
     
     // GET /api/categories - Get all categories from the categories collection
     if (pathname.startsWith('/api/categories')) {

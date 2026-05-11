@@ -3,81 +3,107 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, TrendingUp, ExternalLink } from 'lucide-react';
+import { Star, TrendingUp, ExternalLink, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ToolCard({ tool }) {
+  const isFree = tool.pricing === 'Free';
+  
   return (
-    <Card className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-blue-500 relative overflow-hidden">
-      {tool.featured && (
-        <div className="absolute top-2 right-2 z-10">
-          <Badge className="bg-yellow-500 text-black hover:bg-yellow-600">
+    <Card className="group relative overflow-hidden bg-white border border-slate-100 hover:border-blue-200 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 flex flex-col h-full rounded-2xl">
+      {/* Decorative background element */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-transparent -mr-16 -mt-16 rounded-full group-hover:scale-150 transition-transform duration-700 opacity-50" />
+
+      {/* Badge Overlays */}
+      <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+        {tool.featured && (
+          <Badge className="bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200 transition-colors px-2 py-0.5 text-[10px] uppercase tracking-wider font-bold">
             Featured
           </Badge>
-        </div>
-      )}
-      {tool.trending && (
-        <div className="absolute top-2 left-2 z-10">
-          <Badge className="bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1">
-            <TrendingUp className="w-3 h-3" /> Trending
+        )}
+        {tool.trending && (
+          <Badge className="bg-blue-600 text-white border-transparent hover:bg-blue-700 transition-colors flex items-center gap-1 px-2 py-0.5 text-[10px] uppercase tracking-wider font-bold">
+            <TrendingUp className="w-2.5 h-2.5" /> Trending
           </Badge>
-        </div>
-      )}
-      
-      <Link href={`/tools/${tool.slug}`}>
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-4 mb-3">
-            <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 border-2 border-blue-100">
+        )}
+      </div>
+
+      <Link href={`/tools/${tool.slug}`} className="flex-grow">
+        <CardHeader className="pt-8 pb-4 relative">
+          <div className="flex items-start gap-5">
+            <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-50 flex-shrink-0 border border-slate-100 shadow-sm group-hover:shadow-md transition-all duration-300">
               <img
-                src={tool.logo}
+                src={tool.logo || '/placeholder-logo.png'}
                 alt={tool.name}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
               />
             </div>
-            <div className="flex-1 min-w-0">
-              <CardTitle className="text-lg font-bold text-black group-hover:text-blue-600 transition-colors line-clamp-1">
+            <div className="flex-1 min-w-0 pt-1">
+              <CardTitle className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1 mb-2">
                 {tool.name}
               </CardTitle>
-              <div className="flex items-center gap-2 mt-1">
-                <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm font-semibold text-gray-700">{tool.rating}</span>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                  <span className="text-sm font-bold text-slate-700">{tool.rating || '0.0'}</span>
                 </div>
-                <span className="text-xs text-gray-400">({tool.votes} votes)</span>
+                <span className="text-xs font-medium text-slate-400">
+                  {tool.votes || 0} reviews
+                </span>
               </div>
             </div>
           </div>
-          <CardDescription className="line-clamp-2 text-gray-600">
-            {(!tool.shortDescription || tool.shortDescription === tool.name) 
-              ? (tool.description?.substring(0, 120) + '...') 
-              : tool.shortDescription}
-          </CardDescription>
         </CardHeader>
+
+        <CardContent className="pb-4">
+          <CardDescription className="text-slate-600 line-clamp-2 text-sm leading-relaxed min-h-[40px]">
+            {tool.shortDescription || tool.description?.substring(0, 100) + '...'}
+          </CardDescription>
+          
+          <div className="flex flex-wrap gap-2 mt-5">
+            {tool.categories?.slice(0, 2).map((cat) => (
+              <span key={cat} className="text-[11px] font-semibold text-slate-500 bg-slate-100/50 px-2 py-1 rounded-md capitalize">
+                {cat.replace('-', ' ')}
+              </span>
+            ))}
+          </div>
+        </CardContent>
       </Link>
-      
-      <CardContent className="pb-3">
-        <div className="flex flex-wrap gap-1.5">
-          {tool.categories?.slice(0, 3).map((cat) => (
-            <Badge key={cat} variant="outline" className="text-xs border-blue-200 text-blue-700 bg-blue-50">
-              {cat.replace('-', ' ')}
-            </Badge>
-          ))}
+
+      <CardFooter className="mt-auto pt-4 pb-6 px-6 border-t border-slate-50 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className={`text-[10px] font-black uppercase tracking-tighter px-2 py-1 rounded ${
+            isFree ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-700'
+          }`}>
+            {tool.pricing}
+          </span>
         </div>
-      </CardContent>
-      
-      <CardFooter className="flex items-center justify-between pt-3 border-t">
-        <Badge variant={tool.pricing === 'Free' ? 'default' : tool.pricing === 'Paid' ? 'destructive' : 'secondary'}>
-          {tool.pricing}
-        </Badge>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-          onClick={() => window.open(tool.website, '_blank')}
-        >
-          Visit <ExternalLink className="w-3 h-3 ml-1" />
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-9 h-9 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+            onClick={(e) => {
+              e.preventDefault();
+              window.open(tool.website, '_blank');
+            }}
+          >
+            <ExternalLink className="w-4 h-4" />
+          </Button>
+          <Link href={`/tools/${tool.slug}`}>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="rounded-xl font-bold text-xs bg-slate-900 text-white hover:bg-blue-600 hover:text-white transition-all shadow-lg shadow-slate-200"
+            >
+              Details
+            </Button>
+          </Link>
+        </div>
       </CardFooter>
+      
+      {/* Interactive border element */}
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
     </Card>
   );
-}
+}

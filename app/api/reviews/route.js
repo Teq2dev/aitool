@@ -4,6 +4,51 @@ import { auth } from '@clerk/nextjs/server';
 import { v4 as uuidv4 } from 'uuid';
 import { ObjectId } from 'mongodb';
 
+/**
+ * Utility to recalculate and update tool rating/votes
+ */
+async function updateToolStats(toolId) {
+  try {
+    const reviewsCollection = await getCollection('reviews');
+    const toolsCollection = await getCollection('tools');
+
+    // Aggregate reviews to get fresh stats
+    const stats = await reviewsCollection.aggregate([
+      { $match: { toolId: String(toolId), status: 'approved' } },
+      {
+        $group: {
+          _id: '$toolId',
+          averageRating: { $avg: '$rating' },
+          totalVotes: { $sum: 1 }
+        }
+      }
+    ]).toArray();
+
+    const newStats = stats[0] || { averageRating: 0, totalVotes: 0 };
+    
+    // Support both string and ObjectId lookups for safety
+    const query = { $or: [{ _id: toolId }, { _id: String(toolId) }] };
+    try {
+      if (typeof toolId === 'string' && toolId.length === 24) {
+        query.$or.push({ _id: new ObjectId(toolId) });
+      }
+    } catch (e) {}
+
+    await toolsCollection.updateOne(query, {
+      $set: {
+        rating: Number(newStats.averageRating.toFixed(1)),
+        votes: newStats.totalVotes,
+        updatedAt: new Date()
+      }
+    });
+
+    return newStats;
+  } catch (error) {
+    console.error('Error updating tool stats:', error);
+    throw error;
+  }
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const toolId = searchParams.get('toolId');
@@ -28,19 +73,15 @@ export async function POST(request) {
     const body = await request.json();
     const { toolId, rating, comment, userName } = body;
     
-    // Temporarily skip auth for testing if needed
     let userId = null;
     try {
       const authResult = await auth();
       userId = authResult?.userId;
-    } catch (authError) {
-      console.log('Auth error in reviews POST:', authError.message);
-    }
+    } catch (authError) {}
     
     if (!toolId || !rating) return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
 
     const reviewsCollection = await getCollection('reviews');
-    const toolsCollection = await getCollection('tools');
     const editToken = !userId ? uuidv4() : null;
 
     const newReview = {
@@ -56,24 +97,15 @@ export async function POST(request) {
     };
 
     const result = await reviewsCollection.insertOne(newReview);
+    
+    // Asynchronously update stats to not block response
+    updateToolStats(toolId).catch(err => console.error('Delayed stats update failed:', err));
 
-    try {
-      let targetTool = await toolsCollection.findOne({ _id: toolId });
-      if (!targetTool && typeof toolId === 'string' && toolId.length === 24) {
-        try { targetTool = await toolsCollection.findOne({ _id: new ObjectId(toolId) }); } catch (e) {}
-      }
-      if (targetTool) {
-        const oldVotes = Number(targetTool.votes || 0);
-        const oldRating = Number(targetTool.rating || 0);
-        const newVotes = oldVotes + 1;
-        const newRating = ((oldRating * oldVotes) + Number(rating)) / newVotes;
-        await toolsCollection.updateOne({ _id: targetTool._id }, { $set: { rating: Number(newRating.toFixed(1)), votes: newVotes, updatedAt: new Date() } });
-      }
-    } catch (e) {
-      console.error('Error updating tool rating:', e);
-    }
-
-    return NextResponse.json({ success: true, review: { ...newReview, _id: result.insertedId }, editToken });
+    return NextResponse.json({ 
+      success: true, 
+      review: { ...newReview, _id: result.insertedId }, 
+      editToken 
+    });
   } catch (error) {
     console.error('Reviews POST Error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -84,19 +116,17 @@ export async function PATCH(request) {
   try {
     const body = await request.json();
     const { reviewId, rating, comment, editToken } = body;
+    
     let userId = null;
     try {
       const authResult = await auth();
       userId = authResult?.userId;
-    } catch (authError) {
-      console.log('Auth error in reviews PATCH:', authError.message);
-    }
+    } catch (e) {}
 
     if (!reviewId) return NextResponse.json({ error: 'Review ID required' }, { status: 400 });
 
     const reviewsCollection = await getCollection('reviews');
-    const toolsCollection = await getCollection('tools');
-
+    
     let query = { _id: reviewId };
     let review = await reviewsCollection.findOne(query);
     if (!review) {
@@ -105,28 +135,25 @@ export async function PATCH(request) {
 
     if (!review) return NextResponse.json({ error: 'Review not found' }, { status: 404 });
 
+    // Permissions check
     const usersCollection = await getCollection('users');
-    const userIsAdmin = userId && await usersCollection.findOne({ userId, role: 'admin' });
-    const userIsOwner = userId && review.userId === userId;
-    const hasValidToken = editToken && review.editToken === editToken;
+    const isAdmin = userId && (await usersCollection.findOne({ userId, role: 'admin' }));
+    const isOwner = userId && review.userId === userId;
+    const isTokenValid = editToken && review.editToken === editToken;
 
-    if (!userIsAdmin && !userIsOwner && !hasValidToken) {
+    if (!isAdmin && !isOwner && !isTokenValid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     await reviewsCollection.updateOne(query, {
-      $set: { rating: Number(rating), comment, updatedAt: new Date() }
+      $set: { 
+        rating: Number(rating), 
+        comment: comment || '', 
+        updatedAt: new Date() 
+      }
     });
 
-    try {
-      const toolId = review.toolId;
-      const allReviews = await reviewsCollection.find({ toolId, status: 'approved' }).toArray();
-      const newVotes = allReviews.length;
-      const newRating = Number((allReviews.reduce((acc, rev) => acc + rev.rating, 0) / newVotes).toFixed(1));
-      await toolsCollection.updateOne({ $or: [{ _id: toolId }, { _id: String(toolId) }] }, { $set: { rating: newRating, votes: newVotes } });
-    } catch (e) {
-      console.error('Error updating tool rating on PATCH:', e);
-    }
+    await updateToolStats(review.toolId);
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -144,15 +171,12 @@ export async function DELETE(request) {
   try {
     const authResult = await auth();
     userId = authResult?.userId;
-  } catch (authError) {
-    console.log('Auth error in reviews DELETE:', authError.message);
-  }
+  } catch (e) {}
 
   if (!reviewId) return NextResponse.json({ error: 'Review ID required' }, { status: 400 });
 
   try {
     const reviewsCollection = await getCollection('reviews');
-    const toolsCollection = await getCollection('tools');
 
     let query = { _id: reviewId };
     let review = await reviewsCollection.findOne(query);
@@ -163,25 +187,16 @@ export async function DELETE(request) {
     if (!review) return NextResponse.json({ error: 'Review not found' }, { status: 404 });
 
     const usersCollection = await getCollection('users');
-    const userIsAdmin = userId && await usersCollection.findOne({ userId, role: 'admin' });
-    const userIsOwner = userId && review.userId === userId;
-    const hasValidToken = editToken && review.editToken === editToken;
+    const isAdmin = userId && (await usersCollection.findOne({ userId, role: 'admin' }));
+    const isOwner = userId && review.userId === userId;
+    const isTokenValid = editToken && review.editToken === editToken;
 
-    if (!userIsAdmin && !userIsOwner && !hasValidToken) {
+    if (!isAdmin && !isOwner && !isTokenValid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     await reviewsCollection.deleteOne(query);
-
-    try {
-      const toolId = review.toolId;
-      const allReviews = await reviewsCollection.find({ toolId, status: 'approved' }).toArray();
-      const newVotes = allReviews.length;
-      const newRating = newVotes > 0 ? Number((allReviews.reduce((acc, rev) => acc + rev.rating, 0) / newVotes).toFixed(1)) : 0;
-      await toolsCollection.updateOne({ $or: [{ _id: toolId }, { _id: String(toolId) }] }, { $set: { rating: newRating, votes: newVotes } });
-    } catch (e) {
-      console.error('Error updating tool rating on DELETE:', e);
-    }
+    await updateToolStats(review.toolId);
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -189,3 +204,4 @@ export async function DELETE(request) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
