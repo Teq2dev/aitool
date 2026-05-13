@@ -1,5 +1,6 @@
 import { getFeaturedTools, getTrendingTools, getCategories, getTools } from '@/lib/getTools';
 import HomeClient from './HomeClient';
+import Script from 'next/script';
 
 export const metadata = {
   title: 'Best AI Tools Free - Discover 3000+ Top AI Tools Directory',
@@ -21,12 +22,50 @@ export default async function HomePage() {
     getTools({ sort: 'newest', limit: 6 })
   ]);
 
+  // Homepage Schema
+  const schemaData = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Best AI Tools Free - Discovery Home',
+    description: 'Explore 3000+ top free AI tools across multiple categories.',
+    url: 'https://www.bestaitoolsfree.com',
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: featured.length,
+      itemListElement: featured.map((tool, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'SoftwareApplication',
+          name: tool.name,
+          description: tool.shortDescription || tool.description,
+          url: `https://www.bestaitoolsfree.com/tools/${tool.slug}`,
+          applicationCategory: 'AI Tool',
+          image: tool.logo,
+          offers: {
+            '@type': 'Offer',
+            price: tool.pricing === 'Free' ? '0' : undefined,
+            priceCurrency: 'USD'
+          }
+        }
+      }))
+    }
+  };
+
   return (
-    <HomeClient 
-      initialFeatured={featured}
-      initialTrending={trending}
-      initialCategories={categories.slice(0, 12)}
-      initialLatest={latestData.tools || []}
-    />
+    <>
+      <Script
+        id="home-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+      />
+      <HomeClient 
+        initialFeatured={featured}
+        initialTrending={trending}
+        initialCategories={categories.slice(0, 12)}
+        initialLatest={latestData.tools || []}
+      />
+    </>
   );
 }
+

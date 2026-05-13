@@ -1,52 +1,28 @@
-'use client';
+import { getCategories } from '@/lib/getTools';
+import CategoriesClient from './CategoriesClient';
+import Script from 'next/script';
 
-import { useEffect, useState, useMemo } from 'react';
-import CategoryCard from '@/components/CategoryCard';
-import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+export const revalidate = 3600; // Revalidate every hour
 
-export default function CategoriesPage() {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
-    try {
-      const res = await fetch('/api/categories');
-      const data = await res.json();
-      setCategories(data);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    } finally {
-      setLoading(false);
+export async function generateMetadata() {
+  const categories = await getCategories();
+  
+  return {
+    title: 'AI Tool Categories - Best Free AI Tools Directory',
+    description: `Browse ${categories.length} AI tool categories. Find the best AI tools organized by topics, tasks, and roles. Discover free AI solutions for every need.`,
+    alternates: {
+      canonical: 'https://www.bestaitoolsfree.com/categories',
+    },
+    openGraph: {
+      title: 'AI Tool Categories - Discover Top AI Solutions',
+      description: `Explore ${categories.length} categories of free AI tools. Find the perfect AI software for your workflow.`,
+      url: 'https://www.bestaitoolsfree.com/categories',
     }
   };
+}
 
-  // Fast client-side filtering - instant results
-  const filteredCategories = useMemo(() => {
-    if (!searchQuery || searchQuery.length < 2) {
-      return categories;
-    }
-    const query = searchQuery.toLowerCase();
-    return categories.filter(cat => 
-      cat.name?.toLowerCase().includes(query)
-    );
-  }, [categories, searchQuery]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading categories...</p>
-        </div>
-      </div>
-    );
-  }
+export default async function CategoriesPage() {
+  const categories = await getCategories();
 
   // Schema for categories page
   const schemaData = {
@@ -58,7 +34,7 @@ export default function CategoriesPage() {
     mainEntity: {
       '@type': 'ItemList',
       numberOfItems: categories.length,
-      itemListElement: categories.slice(0, 20).map((cat, index) => ({
+      itemListElement: categories.slice(0, 40).map((cat, index) => ({
         '@type': 'ListItem',
         position: index + 1,
         item: {
@@ -72,60 +48,14 @@ export default function CategoriesPage() {
 
   return (
     <>
-      <head>
-        <title>AI Tool Categories - Best AI Tools Free Directory</title>
-        <meta name="description" content={`Browse ${categories.length} AI tool categories. Find the best AI tools organized by topics, tasks, and roles.`} />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
-        />
-      </head>
-      <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-black mb-2">AI Tool Categories</h1>
-          <p className="text-gray-600">Browse {categories.length} categories with {categories.reduce((sum, c) => sum + (c.toolCount || 0), 0)} AI tools</p>
-        </div>
-
-        {/* Search Bar - Instant filtering */}
-        <div className="max-w-xl mx-auto mb-8">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search categories..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 pr-4 py-3 w-full rounded-full border-2 border-gray-200 focus:border-blue-500 focus:ring-0"
-            />
-          </div>
-          {searchQuery.length >= 2 && (
-            <p className="text-sm text-gray-600 mt-2 text-center">
-              Found {filteredCategories.length} categories matching "{searchQuery}"
-              <button 
-                onClick={() => setSearchQuery('')}
-                className="ml-2 text-blue-600 hover:underline"
-              >
-                Clear
-              </button>
-            </p>
-          )}
-        </div>
-
-        {/* Categories Grid */}
-        {filteredCategories.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No categories found</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {filteredCategories.map((category) => (
-              <CategoryCard key={category._id || category.slug} category={category} />
-            ))}
-          </div>
-        )}
+      <Script
+        id="categories-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+      />
+      <div className="min-h-screen bg-white py-12 md:py-20">
+        <CategoriesClient initialCategories={categories} />
       </div>
-    </div>
     </>
   );
-}
+}

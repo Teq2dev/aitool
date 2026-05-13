@@ -36,8 +36,12 @@ export async function generateMetadata({ searchParams }) {
       description,
       url,
     },
+    // Noindex search results to avoid 'thin content' flags from Google
+    // but keep category pages indexed
+    robots: search ? { index: false, follow: true } : undefined,
   };
 }
+
 
 // Server Component - fetches data before rendering
 export default async function ToolsPage({ searchParams }) {

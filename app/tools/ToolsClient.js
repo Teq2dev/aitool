@@ -1,13 +1,21 @@
 'use client';
 
-import { useState, useTransition, useEffect, useRef, useCallback } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ToolCard from '@/components/ToolCard';
 import SearchBar from '@/components/SearchBar';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Filter, X, Loader2, ArrowUp } from 'lucide-react';
+import { Filter, X, Loader2, ArrowUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export default function ToolsClient({ initialTools, initialPagination, categories, initialFilters, suggestion }) {
   const router = useRouter();
@@ -17,18 +25,12 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
   const [filters, setFilters] = useState(initialFilters || { category: '', search: '', sort: 'trending' });
   const [tools, setTools] = useState(initialTools || []);
   const [pagination, setPagination] = useState(initialPagination || { page: 1, totalPages: 1, total: 0 });
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(initialPagination?.page < initialPagination?.totalPages);
   const [showScrollTop, setShowScrollTop] = useState(false);
   
-  const loadMoreRef = useRef(null);
-  const observerRef = useRef(null);
-
   // Sync state with props when server-side data changes (e.g., on navigation)
   useEffect(() => {
     setTools(initialTools || []);
     setPagination(initialPagination || { page: 1, totalPages: 1, total: 0 });
-    setHasMore(initialPagination?.page < initialPagination?.totalPages);
     if (initialFilters) setFilters(initialFilters);
   }, [initialTools, initialPagination, initialFilters]);
 
@@ -41,86 +43,27 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Load more tools function
-  const loadMoreTools = useCallback(async () => {
-    if (loadingMore || !hasMore) return;
-    
-    setLoadingMore(true);
-    try {
-      const nextPage = pagination.page + 1;
-      const params = new URLSearchParams();
-      if (filters.category) params.set('category', filters.category);
-      if (filters.search) params.set('search', filters.search);
-      if (filters.sort) params.set('sort', filters.sort);
-      params.set('page', nextPage.toString());
-      params.set('limit', '40'); // Consistent limit
-      
-      const res = await fetch(`/api/tools?${params.toString()}`);
-      if (!res.ok) throw new Error('Failed to fetch');
-      
-      const data = await res.json();
-      
-      if (data.tools && data.tools.length > 0) {
-        setTools(prev => [...prev, ...data.tools]);
-        setPagination(prev => ({ 
-          ...prev, 
-          page: nextPage, 
-          totalPages: data.totalPages || prev.totalPages 
-        }));
-        setHasMore(nextPage < (data.totalPages || 1));
-      } else {
-        setHasMore(false);
-      }
-    } catch (error) {
-      console.error('Error loading more tools:', error);
-      setHasMore(false);
-    } finally {
-      setLoadingMore(false);
-    }
-  }, [loadingMore, hasMore, pagination.page, filters]);
-
-  // Setup intersection observer
-  useEffect(() => {
-    const currentRef = loadMoreRef.current;
-    if (!currentRef) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loadingMore && !isPending) {
-          loadMoreTools();
-        }
-      },
-      { threshold: 0.1, rootMargin: '200px' }
-    );
-
-    observer.observe(currentRef);
-    observerRef.current = observer;
-
-    return () => {
-      if (currentRef) observer.unobserve(currentRef);
-      observer.disconnect();
-    };
-  }, [hasMore, loadingMore, isPending, loadMoreTools]);
-
   // Update URL and trigger server-side data fetch
-  const updateFilters = (newFilters) => {
+  const updateFilters = (newFilters, page = 1) => {
     const params = new URLSearchParams();
     
     Object.entries(newFilters).forEach(([key, value]) => {
       if (value) params.set(key, value);
     });
     
-    // Always start from page 1 when filtering
-    params.set('page', '1');
+    params.set('page', page.toString());
     params.set('limit', '40');
     
     startTransition(() => {
-      router.push(`/tools?${params.toString()}`, { scroll: false });
-      // Scroll to grid top for better feedback
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      router.push(`/tools?${params.toString()}`, { scroll: true });
     });
     
     setFilters(newFilters);
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > pagination.totalPages) return;
+    updateFilters(filters, newPage);
   };
 
   const handleCategoryChange = (value) => {
@@ -133,14 +76,41 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
 
   const clearFilters = () => {
     startTransition(() => {
-      router.push('/tools', { scroll: false });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      router.push('/tools', { scroll: true });
     });
     setFilters({ category: '', search: '', sort: 'trending' });
   };
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Helper to generate page numbers for pagination
+  const getPageNumbers = () => {
+    const total = pagination.totalPages;
+    const current = pagination.page;
+    const pages = [];
+    
+    if (total <= 7) {
+      for (let i = 1; i <= total; i++) pages.push(i);
+    } else {
+      if (current <= 4) {
+        for (let i = 1; i <= 5; i++) pages.push(i);
+        pages.push('ellipsis');
+        pages.push(total);
+      } else if (current >= total - 3) {
+        pages.push(1);
+        pages.push('ellipsis');
+        for (let i = total - 4; i <= total; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('ellipsis');
+        for (let i = current - 1; i <= current + 1; i++) pages.push(i);
+        pages.push('ellipsis');
+        pages.push(total);
+      }
+    }
+    return pages;
   };
 
   return (
@@ -214,29 +184,11 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
           </div>
         </div>
 
-        {/* Search Feedback */}
-        {suggestion && filters.search && (
-          <div className="mb-8 p-4 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center gap-3">
-            <div className="p-2 bg-indigo-100 rounded-lg">
-              <Loader2 className="w-4 h-4 text-indigo-600 animate-spin" />
-            </div>
-            <p className="text-sm text-indigo-900">
-              Low results for "{filters.search}". Did you mean{' '}
-              <button 
-                onClick={() => updateFilters({ ...filters, search: suggestion })}
-                className="font-bold underline decoration-indigo-300 underline-offset-4 hover:decoration-indigo-600 transition-all"
-              >
-                {suggestion}
-              </button>?
-            </p>
-          </div>
-        )}
-
         {/* Results Info */}
         {!isPending && tools.length > 0 && (
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-sm font-medium text-slate-500">
-              Showing {tools.length} results
+              Showing page {pagination.page} of {pagination.totalPages} ({pagination.total} tools)
             </h2>
           </div>
         )}
@@ -267,36 +219,56 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {tools.map((tool) => (
-                <ToolCard key={tool._id || tool.slug} tool={tool} />
-              ))}
-            </div>
-          )}
-
-          {/* Infinite Scroll & Footer */}
-          <div ref={loadMoreRef} className="mt-16 py-12 border-t border-slate-50 flex flex-col items-center">
-            {loadingMore ? (
-              <div className="flex flex-col items-center gap-4">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" />
-                </div>
-                <span className="text-sm font-medium text-slate-500">Loading more amazing tools...</span>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {tools.map((tool) => (
+                  <ToolCard key={tool._id || tool.slug} tool={tool} />
+                ))}
               </div>
-            ) : (
-              !hasMore && tools.length > 0 && (
-                <div className="text-center">
-                  <p className="text-slate-400 font-medium mb-4">You've reached the end of the directory</p>
-                  <Button variant="outline" size="sm" onClick={scrollToTop} className="rounded-full">
-                    <ArrowUp className="w-4 h-4 mr-2" />
-                    Back to Top
-                  </Button>
+
+              {/* Semantic Pagination */}
+              {pagination.totalPages > 1 && (
+                <div className="mt-16 py-8 border-t border-slate-100">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious 
+                          href={pagination.page > 1 ? `/tools?${new URLSearchParams({...filters, page: pagination.page - 1}).toString()}` : '#'}
+                          onClick={(e) => { e.preventDefault(); handlePageChange(pagination.page - 1); }}
+                          className={pagination.page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                      </PaginationItem>
+                      
+                      {getPageNumbers().map((pageNum, idx) => (
+                        <PaginationItem key={idx}>
+                          {pageNum === 'ellipsis' ? (
+                            <PaginationEllipsis />
+                          ) : (
+                            <PaginationLink
+                              href={`/tools?${new URLSearchParams({...filters, page: pageNum}).toString()}`}
+                              onClick={(e) => { e.preventDefault(); handlePageChange(pageNum); }}
+                              isActive={pagination.page === pageNum}
+                              className="cursor-pointer"
+                            >
+                              {pageNum}
+                            </PaginationLink>
+                          )}
+                        </PaginationItem>
+                      ))}
+
+                      <PaginationItem>
+                        <PaginationNext 
+                          href={pagination.page < pagination.totalPages ? `/tools?${new URLSearchParams({...filters, page: pagination.page + 1}).toString()}` : '#'}
+                          onClick={(e) => { e.preventDefault(); handlePageChange(pagination.page + 1); }}
+                          className={pagination.page === pagination.totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
                 </div>
-              )
-            )}
-          </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
@@ -313,4 +285,5 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
     </div>
   );
 }
+
 

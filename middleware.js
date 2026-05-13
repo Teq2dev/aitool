@@ -30,9 +30,9 @@ export default async function middleware(req, event) {
     if (url.startsWith('/admin') || url.startsWith('/dashboard') || url.startsWith('/api')) {
       response.headers.set('X-Robots-Tag', 'noindex, nofollow');
     } else {
-      // Remove Clerk's noindex for all public pages
-      response.headers.delete('X-Robots-Tag');
-      response.headers.set('X-Robots-Tag', 'index, follow');
+      // Force allow indexing for all public pages
+      // This overrides Clerk and Vercel's default noindex tags in preview/dev
+      response.headers.set('X-Robots-Tag', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
     }
     
     return response;
@@ -43,6 +43,7 @@ export default async function middleware(req, event) {
   newResponse.headers.set('X-Robots-Tag', 'index, follow');
   return newResponse;
 }
+
 
 export const config = {
   matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
