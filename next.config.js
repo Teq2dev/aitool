@@ -25,7 +25,7 @@ const nextConfig = {
   async headers() {
     return [
       {
-        // Public pages - allow indexing (overrides Clerk dev instance noindex)
+        // Public pages - security and CORS headers (no robots override)
         source: "/:path*",
         headers: [
           { key: "X-Frame-Options", value: "ALLOWALL" },
@@ -33,7 +33,6 @@ const nextConfig = {
           { key: "Access-Control-Allow-Origin", value: process.env.CORS_ORIGINS || "*" },
           { key: "Access-Control-Allow-Methods", value: "GET, POST, PUT, DELETE, PATCH, OPTIONS" },
           { key: "Access-Control-Allow-Headers", value: "*" },
-          { key: "X-Robots-Tag", value: "index, follow" },
         ],
       },
       {
