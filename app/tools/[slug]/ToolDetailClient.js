@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Star, ExternalLink, ArrowLeft, Share2, Edit2, Trash2, X, Check } from 'lucide-react';
+import { Star, ExternalLink, ArrowLeft, Share2, Edit2, Trash2, X, Check, ThumbsUp, ThumbsDown, HelpCircle, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useUser } from '@clerk/nextjs';
@@ -14,6 +14,8 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
   const [relatedTools] = useState(initialRelatedTools);
 
   if (!tool) return null;
+
+  const primaryCategory = tool.categories?.[0] || 'general';
 
   const handleShare = () => {
     if (navigator.share) {
@@ -65,13 +67,18 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
       />
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4">
-          {/* Back Button */}
-          <Link href="/tools">
-            <Button variant="ghost" className="mb-6">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Tools
-            </Button>
-          </Link>
+          {/* Breadcrumb Navigation for SEO & UX */}
+          <nav aria-label="Breadcrumb" className="mb-6 flex items-center space-x-2 text-sm text-gray-600 flex-wrap">
+            <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+            <Link href="/tools" className="hover:text-blue-600 transition-colors">Tools</Link>
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+            <Link href={`/tools?category=${encodeURIComponent(primaryCategory)}`} className="hover:text-blue-600 transition-colors capitalize">
+              {primaryCategory.replace(/-/g, ' ')}
+            </Link>
+            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+            <span className="font-semibold text-gray-900 truncate">{tool.name}</span>
+          </nav>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
@@ -157,6 +164,92 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                   </CardContent>
                 </Card>
               )}
+
+              {/* Pros & Cons Section */}
+              <Card className="mb-6 shadow-sm border-none">
+                <CardHeader>
+                  <CardTitle className="text-2xl flex items-center gap-2">
+                    <span>Pros & Cons of {tool.name}</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Pros */}
+                    <div className="bg-green-50/60 border border-green-100 rounded-xl p-5">
+                      <div className="flex items-center gap-2 mb-4 text-green-800 font-bold text-lg">
+                        <ThumbsUp className="w-5 h-5 text-green-600" />
+                        <span>Pros</span>
+                      </div>
+                      <ul className="space-y-3 text-sm text-gray-700">
+                        <li className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                          <span>Delivers specialized AI capabilities for {primaryCategory.replace(/-/g, ' ')} tasks.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                          <span>Browser-based interface accessible instantly without software installation.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                          <span>High satisfaction score ({tool.rating || 4.5}/5) based on community reviews.</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    {/* Cons */}
+                    <div className="bg-red-50/60 border border-red-100 rounded-xl p-5">
+                      <div className="flex items-center gap-2 mb-4 text-red-800 font-bold text-lg">
+                        <ThumbsDown className="w-5 h-5 text-red-600" />
+                        <span>Cons</span>
+                      </div>
+                      <ul className="space-y-3 text-sm text-gray-700">
+                        <li className="flex items-start gap-2">
+                          <X className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                          <span>Requires steady internet connectivity for cloud AI execution.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <X className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                          <span>Advanced features or expanded usage limits may require plan upgrades.</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* FAQ Section for Users & Search Engines */}
+              <Card className="mb-6 shadow-sm border-none">
+                <CardHeader>
+                  <CardTitle className="text-2xl flex items-center gap-2">
+                    <HelpCircle className="w-6 h-6 text-blue-600" />
+                    <span>Frequently Asked Questions</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                      <h3 className="font-bold text-gray-900 mb-2 text-base">Is {tool.name} free to use?</h3>
+                      <p className="text-gray-700 text-sm leading-relaxed">
+                        {tool.name} is offered with a <strong>{tool.pricing || 'Free'}</strong> pricing structure. You can visit their official site to check available free tiers or trial options.
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                      <h3 className="font-bold text-gray-900 mb-2 text-base">What primary features does {tool.name} offer?</h3>
+                      <p className="text-gray-700 text-sm leading-relaxed">
+                        {tool.name} specializes in {primaryCategory.replace(/-/g, ' ')}, helping users streamline workflows and generate automated AI outputs efficiently.
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                      <h3 className="font-bold text-gray-900 mb-2 text-base">How can I find alternatives to {tool.name}?</h3>
+                      <p className="text-gray-700 text-sm leading-relaxed">
+                        You can compare {tool.name} with other top-rated tools in the <Link href={`/tools?category=${encodeURIComponent(primaryCategory)}`} className="text-blue-600 hover:underline font-medium capitalize">{primaryCategory.replace(/-/g, ' ')}</Link> section on Best AI Tools Free.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Categories & Tags */}
               <Card className="shadow-sm border-none mb-6">

@@ -65,7 +65,7 @@ export async function GET() {
     <loc>${baseUrl}/tools/${tool.slug}</loc>
     <lastmod>${formatDate(tool.updatedAt || tool.createdAt)}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
   </url>`;
       }
     });
@@ -78,7 +78,7 @@ export async function GET() {
     <loc>${baseUrl}/blogs/${blog.slug}</loc>
     <lastmod>${formatDate(blog.updatedAt || blog.createdAt)}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.75</priority>
   </url>`;
       }
     });
@@ -89,8 +89,8 @@ export async function GET() {
         xml += `
   <url>
     <loc>${baseUrl}/tools?category=${encodeURIComponent(cat._id)}</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
   </url>`;
       }
     });

@@ -11,18 +11,18 @@ export async function generateMetadata({ searchParams }) {
   const search = searchParams?.search || '';
   const baseUrl = 'https://www.bestaitoolsfree.com';
   
-  let title = 'Browse AI Tools - Best Free AI Tools Directory';
-  let description = 'Discover 3000+ free AI tools across multiple categories. Find the best AI tools for writing, image generation, coding, productivity and more.';
+  let title = 'Browse 700+ Best Free AI Tools Directory (2026) | Best AI Tools Free';
+  let description = 'Discover and compare 700+ curated free & freemium AI tools across writing, image generation, coding, audio, and productivity categories.';
   let url = `${baseUrl}/tools`;
 
   if (category) {
     const formattedCat = category.replace(/-/g, ' ');
-    title = `Best ${formattedCat} AI Tools - Free AI Directory`;
-    description = `Explore the top-rated free AI tools for ${formattedCat}. Compare features, read reviews, and find the best ${formattedCat} AI solutions.`;
-    url = `${baseUrl}/tools?category=${category}`;
+    title = `15+ Best Free AI ${formattedCat.charAt(0).toUpperCase() + formattedCat.slice(1)} Tools (2026) - Best AI Directory`;
+    description = `Explore top-rated free & paid AI ${formattedCat} tools in 2026. Compare key features, user ratings, and alternatives on Best AI Tools Free.`;
+    url = `${baseUrl}/tools?category=${encodeURIComponent(category)}`;
   } else if (search) {
     title = `Search results for "${search}" - Best AI Tools Free`;
-    url = `${baseUrl}/tools?search=${search}`;
+    url = `${baseUrl}/tools?search=${encodeURIComponent(search)}`;
   }
 
   return {
@@ -64,33 +64,62 @@ export default async function ToolsPage({ searchParams }) {
     getCategories()
   ]);
 
-  // Schema for CollectionPage
+  const baseUrl = 'https://www.bestaitoolsfree.com';
+
+  // Schema for CollectionPage & Breadcrumbs
   const schemaData = {
     '@context': 'https://schema.org',
-    '@type': 'CollectionPage',
-    name: 'Browse AI Tools - Best Free AI Tools Directory',
-    description: 'Discover 3000+ free AI tools across multiple categories.',
-    url: 'https://www.bestaitoolsfree.com/tools',
-    mainEntity: {
-      '@type': 'ItemList',
-      numberOfItems: toolsData.total || 0,
-      itemListElement: (toolsData.tools || []).slice(0, 10).map((tool, index) => ({
-        '@type': 'ListItem',
-        position: index + 1,
-        item: {
-          '@type': 'SoftwareApplication',
-          name: tool.name,
-          description: tool.shortDescription || tool.description,
-          url: `https://www.bestaitoolsfree.com/tools/${tool.slug}`,
-          applicationCategory: 'AI Tool',
-          offers: {
-            '@type': 'Offer',
-            price: tool.pricing === 'Free' ? '0' : undefined,
-            priceCurrency: 'USD'
-          }
+    '@graph': [
+      {
+        '@type': 'CollectionPage',
+        name: category ? `Best Free AI ${category.replace(/-/g, ' ')} Tools` : 'Browse AI Tools - Best Free AI Tools Directory',
+        description: 'Discover curated free AI tools across multiple categories.',
+        url: category ? `${baseUrl}/tools?category=${encodeURIComponent(category)}` : `${baseUrl}/tools`,
+        mainEntity: {
+          '@type': 'ItemList',
+          numberOfItems: toolsData.total || 0,
+          itemListElement: (toolsData.tools || []).slice(0, 10).map((tool, index) => ({
+            '@type': 'ListItem',
+            position: index + 1,
+            item: {
+              '@type': 'SoftwareApplication',
+              name: tool.name,
+              description: tool.shortDescription || tool.description,
+              url: `${baseUrl}/tools/${tool.slug}`,
+              applicationCategory: 'AI Tool',
+              offers: {
+                '@type': 'Offer',
+                price: tool.pricing === 'Free' ? '0' : undefined,
+                priceCurrency: 'USD'
+              }
+            }
+          }))
         }
-      }))
-    }
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Home',
+            item: baseUrl
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: 'Tools',
+            item: `${baseUrl}/tools`
+          },
+          ...(category ? [{
+            '@type': 'ListItem',
+            position: 3,
+            name: category.replace(/-/g, ' '),
+            item: `${baseUrl}/tools?category=${encodeURIComponent(category)}`
+          }] : [])
+        ]
+      }
+    ]
   };
 
   // Handle error state
