@@ -5,12 +5,16 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useLanguage } from '@/context/LanguageContext';
 
-export default function SearchBar({ placeholder = 'Search AI tools...', className = '' }) {
+export default function SearchBar({ placeholder, className = '' }) {
   const searchParams = useSearchParams();
   const currentSearch = searchParams.get('search') || '';
   const [search, setSearch] = useState(currentSearch);
   const router = useRouter();
+  const { t } = useLanguage();
+
+  const activePlaceholder = placeholder || t('searchPlaceholder');
 
   // Sync with URL search params when they change
   useEffect(() => {
@@ -30,7 +34,7 @@ export default function SearchBar({ placeholder = 'Search AI tools...', classNam
         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
         <Input
           type="text"
-          placeholder={placeholder}
+          placeholder={activePlaceholder}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-12 pr-4 py-6 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-full shadow-sm"
@@ -39,7 +43,7 @@ export default function SearchBar({ placeholder = 'Search AI tools...', classNam
           type="submit"
           className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6"
         >
-          Search
+          {t('searchBtn')}
         </Button>
       </div>
     </form>

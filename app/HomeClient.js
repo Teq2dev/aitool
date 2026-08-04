@@ -8,6 +8,7 @@ import ToolCard from '@/components/ToolCard';
 import CategoryCard from '@/components/CategoryCard';
 import { ArrowRightIcon, SparklesIcon, TrendingUpIcon, ZapIcon, LayoutGridIcon, Star } from 'lucide-react';
 import Link from 'next/link';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function HomeClient({ 
   initialFeatured = [], 
@@ -19,6 +20,7 @@ export default function HomeClient({
   const [trending] = useState(initialTrending);
   const [categories] = useState(initialCategories);
   const [latest] = useState(initialLatest);
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen">
@@ -31,18 +33,18 @@ export default function HomeClient({
         <div className="container mx-auto px-4 relative z-10 text-center">
           <Badge className="mb-8 bg-white/80 backdrop-blur-sm text-blue-700 border-blue-200 px-6 py-2 text-sm rounded-full shadow-sm animate-fade-in">
             <SparklesIcon className="w-4 h-4 mr-2 inline" />
-            Join 50,000+ users discovering AI Tools
+            {t('heroBadge')}
           </Badge>
           
           <h1 className="text-6xl md:text-7xl font-extrabold text-gray-900 mb-8 leading-tight tracking-tight">
-            The Ultimate
+            {t('heroTitlePrefix')}{' '}
             <span className="block bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
-              AI Tools Directory
+              {t('heroTitleSuffix')}
             </span>
           </h1>
           
           <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed font-medium">
-            Search 3,000+ verified AI tools by category. Find the perfect artificial intelligence software for your specific business needs.
+            {t('heroSubtitle')}
           </p>
 
           <div className="max-w-3xl mx-auto mb-10 shadow-2xl rounded-2xl overflow-hidden animate-slide-up">
@@ -52,13 +54,13 @@ export default function HomeClient({
           <div className="flex flex-wrap items-center justify-center gap-6">
             <Link href="/tools">
               <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-10 py-8 rounded-2xl shadow-xl shadow-blue-200 transition-all hover:scale-105 active:scale-95">
-                Explore All Tools
+                {t('exploreAllTools')}
                 <ArrowRightIcon className="ml-2 w-6 h-6" />
               </Button>
             </Link>
             <Link href="/submit">
               <Button size="lg" variant="outline" className="border-2 border-gray-200 bg-white/50 backdrop-blur-sm text-gray-800 hover:bg-white hover:border-blue-600 hover:text-blue-600 text-lg px-10 py-8 rounded-2xl transition-all">
-                Submit Your Project
+                {t('submitYourProject')}
               </Button>
             </Link>
           </div>
@@ -73,29 +75,29 @@ export default function HomeClient({
               <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform bg-white border border-blue-100 shadow-sm">
                 <SparklesIcon className="w-8 h-8 text-blue-600" />
               </div>
-              <div className="text-4xl font-black text-gray-900 mb-1">3,000+</div>
-              <div className="text-gray-500 font-medium">AI Apps</div>
+              <div className="text-4xl font-black text-gray-900 mb-1">700+</div>
+              <div className="text-gray-500 font-medium">{t('aiApps')}</div>
             </div>
             <div className="text-center group">
               <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform bg-white border border-indigo-100 shadow-sm">
                 <LayoutGridIcon className="w-8 h-8 text-indigo-600" />
               </div>
               <div className="text-4xl font-black text-gray-900 mb-1">{categories.length}+</div>
-              <div className="text-gray-500 font-medium">Categories</div>
+              <div className="text-gray-500 font-medium">{t('categories')}</div>
             </div>
             <div className="text-center group">
               <div className="w-16 h-16 rounded-2xl bg-green-50 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform bg-white border border-green-100 shadow-sm">
                 <ZapIcon className="w-8 h-8 text-green-600" />
               </div>
               <div className="text-4xl font-black text-gray-900 mb-1">10k+</div>
-              <div className="text-gray-500 font-medium">Monthly Visits</div>
+              <div className="text-gray-500 font-medium">{t('monthlyVisits')}</div>
             </div>
             <div className="text-center group">
               <div className="w-16 h-16 rounded-2xl bg-yellow-50 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform bg-white border border-yellow-100 shadow-sm">
                 <Star className="w-8 h-8 text-yellow-500" />
               </div>
               <div className="text-4xl font-black text-gray-900 mb-1">#1</div>
-              <div className="text-gray-500 font-medium">Free Directory</div>
+              <div className="text-gray-500 font-medium">{t('freeDirectory')}</div>
             </div>
           </div>
         </div>
@@ -106,12 +108,12 @@ export default function HomeClient({
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
             <div className="text-center md:text-left">
-              <h2 className="text-4xl font-extrabold text-gray-900 mb-3">Featured Innovation</h2>
-              <p className="text-xl text-gray-500 font-medium">Handpicked AI excellence recommended by our experts</p>
+              <h2 className="text-4xl font-extrabold text-gray-900 mb-3">{t('featuredInnovation')}</h2>
+              <p className="text-xl text-gray-500 font-medium">{t('featuredSubtitle')}</p>
             </div>
             <Link href="/tools?featured=true">
               <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl px-8 transition-all">
-                View All Excellence <ArrowRightIcon className="ml-2 w-4 h-4" />
+                {t('viewAllExcellence')} <ArrowRightIcon className="ml-2 w-4 h-4" />
               </Button>
             </Link>
           </div>
@@ -135,13 +137,13 @@ export default function HomeClient({
             <div className="text-center md:text-left">
               <h2 className="text-4xl font-extrabold text-gray-900 mb-3 flex items-center gap-4 py-2">
                 <TrendingUpIcon className="w-10 h-10 text-red-500 animate-pulse" />
-                Hyper Growth Tools
+                {t('hyperGrowthTools')}
               </h2>
-              <p className="text-xl text-gray-500 font-medium">The most searched AI solutions this week</p>
+              <p className="text-xl text-gray-500 font-medium">{t('trendingSubtitle')}</p>
             </div>
             <Link href="/tools?sort=trending">
               <Button variant="default" className="bg-gray-900 hover:bg-black text-white rounded-xl px-8 shadow-lg">
-                See Trends <ArrowRightIcon className="ml-2 w-4 h-4" />
+                {t('seeTrends')} <ArrowRightIcon className="ml-2 w-4 h-4" />
               </Button>
             </Link>
           </div>
@@ -162,8 +164,8 @@ export default function HomeClient({
       <section className="py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-extrabold text-gray-900 mb-4">Discover by Intent</h2>
-            <p className="text-xl text-gray-500 max-w-2xl mx-auto font-medium">Every tool you need, professionally organized for your workflow</p>
+            <h2 className="text-4xl font-extrabold text-gray-900 mb-4">{t('discoverByIntent')}</h2>
+            <p className="text-xl text-gray-500 max-w-2xl mx-auto font-medium">{t('intentSubtitle')}</p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 mb-16">
@@ -179,7 +181,7 @@ export default function HomeClient({
           <div className="text-center">
             <Link href="/categories">
               <Button size="lg" variant="outline" className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 px-12 py-7 text-lg font-bold rounded-2xl transition-all">
-                Explore All {categories.length}+ Categories
+                {t('exploreAllCategories')} ({categories.length}+)
                 <ArrowRightIcon className="ml-2 w-6 h-6" />
               </Button>
             </Link>
@@ -193,12 +195,12 @@ export default function HomeClient({
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
               <div className="text-center md:text-left">
-                <h2 className="text-4xl font-extrabold text-gray-900 mb-3">Fresh Off The Press</h2>
-                <p className="text-xl text-gray-500 font-medium">Newest AI arrivals in our community</p>
+                <h2 className="text-4xl font-extrabold text-gray-900 mb-3">{t('freshArrivals')}</h2>
+                <p className="text-xl text-gray-500 font-medium">{t('arrivalsSubtitle')}</p>
               </div>
               <Link href="/tools?sort=newest">
                 <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-100 rounded-xl px-8">
-                  Recent Arrivals <ArrowRightIcon className="ml-2 w-4 h-4" />
+                  {t('recentArrivals')} <ArrowRightIcon className="ml-2 w-4 h-4" />
                 </Button>
               </Link>
             </div>
@@ -218,18 +220,17 @@ export default function HomeClient({
         <div className="absolute -top-48 -right-48 w-96 h-96 bg-blue-600/30 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-48 -left-48 w-96 h-96 bg-indigo-600/30 rounded-full blur-3xl"></div>
         <div className="container mx-auto px-4 text-center relative z-10">
-          <h2 className="text-5xl md:text-6xl font-black mb-8 leading-tight">Feature Your AI Product</h2>
+          <h2 className="text-5xl md:text-6xl font-black mb-8 leading-tight">{t('featureYourProduct')}</h2>
           <p className="text-2xl text-blue-100/80 mb-12 max-w-3xl mx-auto leading-relaxed font-medium">
-            Join thousands of founders who trust us to grow their AI business. Get indexed, noticed, and used by a global audience.
+            {t('ctaSubtitle')}
           </p>
           <div className="flex flex-col md:flex-row items-center justify-center gap-6">
             <Link href="/submit">
               <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white text-xl px-12 py-9 rounded-2xl shadow-2xl shadow-blue-500/20 transition-all font-black">
-                Submit Your AI Tool
+                {t('submitTool')}
                 <ArrowRightIcon className="ml-4 w-7 h-7" />
               </Button>
             </Link>
-            <p className="text-blue-200/50 text-sm font-bold uppercase tracking-widest">Takes less than 2 minutes</p>
           </div>
         </div>
       </section>
