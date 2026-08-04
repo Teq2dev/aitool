@@ -5,9 +5,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, TrendingUp, ExternalLink, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function ToolCard({ tool }) {
   const isFree = tool.pricing === 'Free';
+  const { currentLang, t } = useLanguage();
+  const detailLink = `/tools/${tool.slug}${currentLang === 'en' ? '' : `?lang=${currentLang}`}`;
   
   return (
     <Card className="group relative overflow-hidden bg-white border border-slate-100 hover:border-blue-200 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 flex flex-col h-full rounded-2xl">
@@ -28,7 +31,7 @@ export default function ToolCard({ tool }) {
         )}
       </div>
 
-      <Link href={`/tools/${tool.slug}`} className="flex-grow">
+      <Link href={detailLink} className="flex-grow">
         <CardHeader className="pt-8 pb-4 relative">
           <div className="flex items-start gap-5">
             <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-50 flex-shrink-0 border border-slate-100 shadow-sm group-hover:shadow-md transition-all duration-300">
@@ -48,7 +51,7 @@ export default function ToolCard({ tool }) {
                   <span className="text-sm font-bold text-slate-700">{tool.rating || '0.0'}</span>
                 </div>
                 <span className="text-xs font-medium text-slate-400">
-                  {tool.votes || 0} reviews
+                  {tool.votes || 0} {t('reviews')}
                 </span>
               </div>
             </div>
@@ -90,7 +93,7 @@ export default function ToolCard({ tool }) {
           >
             <ExternalLink className="w-4 h-4" />
           </Button>
-          <Link href={`/tools/${tool.slug}`}>
+          <Link href={detailLink}>
             <Button
               variant="secondary"
               size="sm"

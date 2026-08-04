@@ -8,10 +8,12 @@ import { Star, ExternalLink, ArrowLeft, Share2, Edit2, Trash2, X, Check, ThumbsU
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useUser } from '@clerk/nextjs';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function ToolDetailClient({ initialTool, initialRelatedTools = [] }) {
   const [tool] = useState(initialTool);
   const [relatedTools] = useState(initialRelatedTools);
+  const { t, currentLang } = useLanguage();
 
   if (!tool) return null;
 
@@ -30,7 +32,7 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
     }
   };
 
-  // Schema for SoftwareApplication (kept here for client-side crawlers, though server handles it too)
+  // Schema for SoftwareApplication
   const schemaData = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -67,13 +69,13 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
       />
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4">
-          {/* Breadcrumb Navigation for SEO & UX */}
+          {/* Breadcrumb Navigation */}
           <nav aria-label="Breadcrumb" className="mb-6 flex items-center space-x-2 text-sm text-gray-600 flex-wrap">
-            <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
+            <Link href={`/?lang=${currentLang}`} className="hover:text-blue-600 transition-colors">{t('home')}</Link>
             <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-            <Link href="/tools" className="hover:text-blue-600 transition-colors">Tools</Link>
+            <Link href={`/tools?lang=${currentLang}`} className="hover:text-blue-600 transition-colors">{t('tools')}</Link>
             <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-            <Link href={`/tools?category=${encodeURIComponent(primaryCategory)}`} className="hover:text-blue-600 transition-colors capitalize">
+            <Link href={`/tools?category=${encodeURIComponent(primaryCategory)}&lang=${currentLang}`} className="hover:text-blue-600 transition-colors capitalize">
               {primaryCategory.replace(/-/g, ' ')}
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
@@ -111,7 +113,7 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                         <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-full border border-yellow-100">
                           <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                           <span className="text-lg font-bold text-yellow-700">{tool.rating}</span>
-                          <span className="text-gray-500 text-sm">({tool.votes} reviews)</span>
+                          <span className="text-gray-500 text-sm">({tool.votes} {t('reviews')})</span>
                         </div>
                         <Badge className={`text-sm px-4 py-1.5 rounded-full ${
                           tool.pricing === 'Free' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 
@@ -135,7 +137,7 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
               {/* Description */}
               <Card className="mb-6 shadow-sm border-none">
                 <CardHeader>
-                  <CardTitle className="text-2xl">Overview of {tool.name}</CardTitle>
+                  <CardTitle className="text-2xl">{t('overviewOf')} {tool.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="prose prose-blue max-w-none">
@@ -148,7 +150,7 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
               {tool.features && tool.features.length > 0 && (
                 <Card className="mb-6 shadow-sm border-none house">
                   <CardHeader>
-                    <CardTitle className="text-2xl">Key Benefits & Features</CardTitle>
+                    <CardTitle className="text-2xl">{t('keyBenefits')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -169,7 +171,7 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
               <Card className="mb-6 shadow-sm border-none">
                 <CardHeader>
                   <CardTitle className="text-2xl flex items-center gap-2">
-                    <span>Pros & Cons of {tool.name}</span>
+                    <span>{t('prosAndConsOf')} {tool.name}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -178,7 +180,7 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                     <div className="bg-green-50/60 border border-green-100 rounded-xl p-5">
                       <div className="flex items-center gap-2 mb-4 text-green-800 font-bold text-lg">
                         <ThumbsUp className="w-5 h-5 text-green-600" />
-                        <span>Pros</span>
+                        <span>{t('pros')}</span>
                       </div>
                       <ul className="space-y-3 text-sm text-gray-700">
                         <li className="flex items-start gap-2">
@@ -200,7 +202,7 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                     <div className="bg-red-50/60 border border-red-100 rounded-xl p-5">
                       <div className="flex items-center gap-2 mb-4 text-red-800 font-bold text-lg">
                         <ThumbsDown className="w-5 h-5 text-red-600" />
-                        <span>Cons</span>
+                        <span>{t('cons')}</span>
                       </div>
                       <ul className="space-y-3 text-sm text-gray-700">
                         <li className="flex items-start gap-2">
@@ -217,12 +219,12 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                 </CardContent>
               </Card>
 
-              {/* FAQ Section for Users & Search Engines */}
+              {/* FAQ Section */}
               <Card className="mb-6 shadow-sm border-none">
                 <CardHeader>
                   <CardTitle className="text-2xl flex items-center gap-2">
                     <HelpCircle className="w-6 h-6 text-blue-600" />
-                    <span>Frequently Asked Questions</span>
+                    <span>{t('faqTitle')}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -244,7 +246,7 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                     <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
                       <h3 className="font-bold text-gray-900 mb-2 text-base">How can I find alternatives to {tool.name}?</h3>
                       <p className="text-gray-700 text-sm leading-relaxed">
-                        You can compare {tool.name} with other top-rated tools in the <Link href={`/tools?category=${encodeURIComponent(primaryCategory)}`} className="text-blue-600 hover:underline font-medium capitalize">{primaryCategory.replace(/-/g, ' ')}</Link> section on Best AI Tools Free.
+                        You can compare {tool.name} with other top-rated tools in the <Link href={`/tools?category=${encodeURIComponent(primaryCategory)}&lang=${currentLang}`} className="text-blue-600 hover:underline font-medium capitalize">{primaryCategory.replace(/-/g, ' ')}</Link> section on Best AI Tools Free.
                       </p>
                     </div>
                   </div>
@@ -254,15 +256,15 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
               {/* Categories & Tags */}
               <Card className="shadow-sm border-none mb-6">
                 <CardHeader>
-                  <CardTitle className="text-2xl">Classification</CardTitle>
+                  <CardTitle className="text-2xl">{t('classification')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
                     <div>
-                      <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">Main Categories</h4>
+                      <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">{t('mainCategories')}</h4>
                       <div className="flex flex-wrap gap-3">
                         {tool.categories?.map((cat) => (
-                          <Link key={cat} href={`/tools?category=${cat}`}>
+                          <Link key={cat} href={`/tools?category=${cat}&lang=${currentLang}`}>
                             <Badge variant="outline" className="px-4 py-2 text-sm cursor-pointer border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white transition-all bg-blue-50">
                               {cat.replace('-', ' ')}
                             </Badge>
@@ -272,7 +274,7 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                     </div>
                     {tool.tags && tool.tags.length > 0 && (
                       <div>
-                        <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">Related Topics</h4>
+                        <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">{t('relatedTopics')}</h4>
                         <div className="flex flex-wrap gap-2">
                           {tool.tags.map((tag) => (
                             <Badge key={tag} variant="secondary" className="px-3 py-1 text-xs bg-gray-100 text-gray-700 hover:bg-gray-200">
@@ -295,25 +297,25 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
               <Card className="sticky top-24 mb-6 shadow-lg border-none bg-white overflow-hidden">
                 <div className="h-2 bg-blue-600 w-full"></div>
                 <CardContent className="p-8">
-                  <h3 className="text-xl font-bold mb-6 text-center">Ready to try {tool.name}?</h3>
+                  <h3 className="text-xl font-bold mb-6 text-center">{t('readyToTry')} {tool.name}?</h3>
                   <Button
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white mb-6 py-8 text-lg font-bold rounded-2xl shadow-blue-200 shadow-xl transition-all hover:scale-[1.02]"
                     onClick={() => window.open(tool.website, '_blank')}
                   >
-                    Get Started Free
+                    {t('getStartedFree')}
                     <ExternalLink className="w-5 h-5 ml-2" />
                   </Button>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between text-sm py-2 border-b">
-                      <span className="text-gray-500">Pricing Model</span>
+                      <span className="text-gray-500">{t('pricingModel')}</span>
                       <span className="font-bold text-blue-700">{tool.pricing}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm py-2 border-b">
-                      <span className="text-gray-500">Global Rating</span>
+                      <span className="text-gray-500">{t('globalRating')}</span>
                       <span className="font-bold text-yellow-600">{tool.rating} / 5.0</span>
                     </div>
                     <div className="flex items-center justify-between text-sm py-2">
-                      <span className="text-gray-500">Last Updated</span>
+                      <span className="text-gray-500">{t('lastUpdated')}</span>
                       <span className="font-bold text-gray-700">
                         {new Date(tool.updatedAt || tool.createdAt).toLocaleDateString()}
                       </span>
@@ -328,13 +330,13 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                   <CardHeader>
                     <CardTitle className="text-xl flex items-center gap-2">
                       <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
-                      Similar AI Tools
+                      {t('similarAiTools')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       {relatedTools.map((relatedTool) => (
-                        <Link key={relatedTool._id} href={`/tools/${relatedTool.slug}`}>
+                        <Link key={relatedTool._id} href={`/tools/${relatedTool.slug}?lang=${currentLang}`}>
                           <div className="flex items-center gap-4 p-4 rounded-xl hover:bg-blue-50/50 transition-all cursor-pointer border border-transparent hover:border-blue-100 group">
                             <div className="w-14 h-14 rounded-xl overflow-hidden bg-white shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform">
                               <img src={relatedTool.logo} alt={relatedTool.name} className="w-full h-full object-cover" />

@@ -1,4 +1,5 @@
 import { getCollection } from '@/lib/db';
+import { LANGUAGES } from '@/lib/languages';
 
 export async function GET() {
   const baseUrl = 'https://www.bestaitoolsfree.com';
@@ -43,30 +44,57 @@ export async function GET() {
       }
     };
 
-    // Build the XML string
+    // Build the XML string with xhtml hreflang support for Google International Indexing
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">`;
 
-    // Add Static Pages
+    // Add Static Pages for all languages
     staticPages.forEach(page => {
-      xml += `
-  <url>
-    <loc>${baseUrl}${page.url}</loc>
-    <changefreq>${page.changefreq}</changefreq>
-    <priority>${page.priority}</priority>
-  </url>`;
-    });
-
-    // Add Tool Pages
-    tools.forEach(tool => {
-      if (tool.slug) {
+      LANGUAGES.forEach(lang => {
+        const langParam = lang.code === 'en' ? '' : (page.url.includes('?') ? `&amp;lang=${lang.code}` : `?lang=${lang.code}`);
+        const fullUrl = `${baseUrl}${page.url}${langParam}`;
+        
         xml += `
   <url>
-    <loc>${baseUrl}/tools/${tool.slug}</loc>
+    <loc>${fullUrl}</loc>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${lang.code === 'en' ? page.priority : '0.7'}</priority>`;
+        
+        // Add hreflang links
+        LANGUAGES.forEach(alt => {
+          const altParam = alt.code === 'en' ? '' : (page.url.includes('?') ? `&amp;lang=${alt.code}` : `?lang=${alt.code}`);
+          xml += `
+    <xhtml:link rel="alternate" hreflang="${alt.code}" href="${baseUrl}${page.url}${altParam}" />`;
+        });
+
+        xml += `
+  </url>`;
+      });
+    });
+
+    // Add Tool Pages for all languages
+    tools.forEach(tool => {
+      if (tool.slug) {
+        LANGUAGES.forEach(lang => {
+          const langParam = lang.code === 'en' ? '' : `?lang=${lang.code}`;
+          const fullUrl = `${baseUrl}/tools/${tool.slug}${langParam}`;
+          
+          xml += `
+  <url>
+    <loc>${fullUrl}</loc>
     <lastmod>${formatDate(tool.updatedAt || tool.createdAt)}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>${lang.code === 'en' ? '0.8' : '0.65'}</priority>`;
+
+          LANGUAGES.forEach(alt => {
+            const altParam = alt.code === 'en' ? '' : `?lang=${alt.code}`;
+            xml += `
+    <xhtml:link rel="alternate" hreflang="${alt.code}" href="${baseUrl}/tools/${tool.slug}${altParam}" />`;
+          });
+
+          xml += `
   </url>`;
+        });
       }
     });
 
@@ -83,15 +111,20 @@ export async function GET() {
       }
     });
 
-    // Add Category Pages (Tools filtered by category)
+    // Add Category Pages for all languages
     categories.forEach(cat => {
       if (cat._id) {
-        xml += `
+        LANGUAGES.forEach(lang => {
+          const langParam = lang.code === 'en' ? '' : `&amp;lang=${lang.code}`;
+          const fullUrl = `${baseUrl}/tools?category=${encodeURIComponent(cat._id)}${langParam}`;
+          
+          xml += `
   <url>
-    <loc>${baseUrl}/tools?category=${encodeURIComponent(cat._id)}</loc>
+    <loc>${fullUrl}</loc>
     <changefreq>daily</changefreq>
-    <priority>0.85</priority>
+    <priority>${lang.code === 'en' ? '0.85' : '0.7'}</priority>
   </url>`;
+        });
       }
     });
 
@@ -106,7 +139,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Sitemap generation error:', error);
-    // Fallback basic sitemap if DB fails
     return new Response(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>${baseUrl}</loc><priority>1.0</priority></url>
