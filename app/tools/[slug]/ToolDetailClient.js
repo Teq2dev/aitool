@@ -9,6 +9,13 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { useUser } from '@clerk/nextjs';
 import { useLanguage } from '@/context/LanguageContext';
+import { 
+  getLocalizedPricing, 
+  getLocalizedBadge, 
+  getLocalizedProsList, 
+  getLocalizedConsList, 
+  getLocalizedDescription 
+} from '@/lib/languages';
 
 export default function ToolDetailClient({ initialTool, initialRelatedTools = [] }) {
   const [tool] = useState(initialTool);
@@ -18,12 +25,16 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
   if (!tool) return null;
 
   const primaryCategory = tool.categories?.[0] || 'general';
+  const localizedInfo = getLocalizedDescription(tool, currentLang);
+  const prosList = getLocalizedProsList(primaryCategory, tool.rating, currentLang);
+  const consList = getLocalizedConsList(currentLang);
+  const localizedPricing = getLocalizedPricing(tool.pricing, currentLang);
 
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
         title: `${tool.name} - Best AI Tools Free`,
-        text: tool.shortDescription,
+        text: localizedInfo.shortDescription,
         url: window.location.href,
       }).catch(console.error);
     } else {
@@ -37,7 +48,7 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: tool.name,
-    description: tool.description || tool.shortDescription,
+    description: localizedInfo.description || tool.shortDescription,
     url: `https://www.bestaitoolsfree.com/tools/${tool.slug}`,
     applicationCategory: 'AI Tool',
     operatingSystem: 'Web',
@@ -100,9 +111,7 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                         <div>
                           <h1 className="text-4xl font-bold text-gray-900 mb-2">{tool.name}</h1>
                           <p className="text-xl text-gray-600 font-medium">
-                            {(!tool.shortDescription || tool.shortDescription === tool.name) 
-                              ? (tool.description?.substring(0, 160) + '...') 
-                              : tool.shortDescription}
+                            {localizedInfo.shortDescription}
                           </p>
                         </div>
                         <Button variant="outline" size="icon" onClick={handleShare} className="rounded-full">
@@ -120,13 +129,13 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                           tool.pricing === 'Paid' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 
                           'bg-blue-100 text-blue-700 hover:bg-blue-200'
                         }`}>
-                          {tool.pricing}
+                          {localizedPricing}
                         </Badge>
                         {tool.featured && (
-                          <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-none shadow-sm">Featured</Badge>
+                          <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-none shadow-sm">{getLocalizedBadge('Featured', currentLang)}</Badge>
                         )}
                         {tool.trending && (
-                          <Badge className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-none shadow-sm">Trending</Badge>
+                          <Badge className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-none shadow-sm">{getLocalizedBadge('Trending', currentLang)}</Badge>
                         )}
                       </div>
                     </div>
@@ -141,7 +150,7 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                 </CardHeader>
                 <CardContent>
                   <div className="prose prose-blue max-w-none">
-                    <p className="text-gray-700 text-lg leading-relaxed whitespace-pre-wrap">{tool.description}</p>
+                    <p className="text-gray-700 text-lg leading-relaxed whitespace-pre-wrap">{localizedInfo.description}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -183,18 +192,12 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                         <span>{t('pros')}</span>
                       </div>
                       <ul className="space-y-3 text-sm text-gray-700">
-                        <li className="flex items-start gap-2">
-                          <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span>Delivers specialized AI capabilities for {primaryCategory.replace(/-/g, ' ')} tasks.</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span>Browser-based interface accessible instantly without software installation.</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span>High satisfaction score ({tool.rating || 4.5}/5) based on community reviews.</span>
-                        </li>
+                        {prosList.map((proItem, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                            <span>{proItem}</span>
+                          </li>
+                        ))}
                       </ul>
                     </div>
 
@@ -205,14 +208,12 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                         <span>{t('cons')}</span>
                       </div>
                       <ul className="space-y-3 text-sm text-gray-700">
-                        <li className="flex items-start gap-2">
-                          <X className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                          <span>Requires steady internet connectivity for cloud AI execution.</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <X className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                          <span>Advanced features or expanded usage limits may require plan upgrades.</span>
-                        </li>
+                        {consList.map((conItem, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <X className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                            <span>{conItem}</span>
+                          </li>
+                        ))}
                       </ul>
                     </div>
                   </div>
@@ -232,7 +233,7 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                     <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
                       <h3 className="font-bold text-gray-900 mb-2 text-base">Is {tool.name} free to use?</h3>
                       <p className="text-gray-700 text-sm leading-relaxed">
-                        {tool.name} is offered with a <strong>{tool.pricing || 'Free'}</strong> pricing structure. You can visit their official site to check available free tiers or trial options.
+                        {tool.name} is offered with a <strong>{localizedPricing}</strong> pricing structure. You can visit their official site to check available free tiers or trial options.
                       </p>
                     </div>
 
@@ -308,7 +309,7 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                   <div className="space-y-4">
                     <div className="flex items-center justify-between text-sm py-2 border-b">
                       <span className="text-gray-500">{t('pricingModel')}</span>
-                      <span className="font-bold text-blue-700">{tool.pricing}</span>
+                      <span className="font-bold text-blue-700">{localizedPricing}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm py-2 border-b">
                       <span className="text-gray-500">{t('globalRating')}</span>
@@ -335,19 +336,22 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {relatedTools.map((relatedTool) => (
-                        <Link key={relatedTool._id} href={`/tools/${relatedTool.slug}?lang=${currentLang}`}>
-                          <div className="flex items-center gap-4 p-4 rounded-xl hover:bg-blue-50/50 transition-all cursor-pointer border border-transparent hover:border-blue-100 group">
-                            <div className="w-14 h-14 rounded-xl overflow-hidden bg-white shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform">
-                              <img src={relatedTool.logo} alt={relatedTool.name} className="w-full h-full object-cover" />
+                      {relatedTools.map((relatedTool) => {
+                        const relDesc = getLocalizedDescription(relatedTool, currentLang).shortDescription;
+                        return (
+                          <Link key={relatedTool._id} href={`/tools/${relatedTool.slug}?lang=${currentLang}`}>
+                            <div className="flex items-center gap-4 p-4 rounded-xl hover:bg-blue-50/50 transition-all cursor-pointer border border-transparent hover:border-blue-100 group">
+                              <div className="w-14 h-14 rounded-xl overflow-hidden bg-white shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform">
+                                <img src={relatedTool.logo} alt={relatedTool.name} className="w-full h-full object-cover" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-bold text-gray-900 group-hover:text-blue-700 transition-colors truncate">{relatedTool.name}</p>
+                                <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{relDesc}</p>
+                              </div>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-bold text-gray-900 group-hover:text-blue-700 transition-colors truncate">{relatedTool.name}</p>
-                              <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{relatedTool.shortDescription}</p>
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
+                          </Link>
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>

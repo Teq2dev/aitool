@@ -6,11 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Star, TrendingUp, ExternalLink, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
+import { getLocalizedPricing, getLocalizedBadge, getLocalizedDescription } from '@/lib/languages';
 
 export default function ToolCard({ tool }) {
   const isFree = tool.pricing === 'Free';
   const { currentLang, t } = useLanguage();
   const detailLink = `/tools/${tool.slug}${currentLang === 'en' ? '' : `?lang=${currentLang}`}`;
+  const localizedInfo = getLocalizedDescription(tool, currentLang);
+  const localizedPricing = getLocalizedPricing(tool.pricing, currentLang);
   
   return (
     <Card className="group relative overflow-hidden bg-white border border-slate-100 hover:border-blue-200 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 flex flex-col h-full rounded-2xl">
@@ -21,12 +24,12 @@ export default function ToolCard({ tool }) {
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
         {tool.featured && (
           <Badge className="bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200 transition-colors px-2 py-0.5 text-[10px] uppercase tracking-wider font-bold">
-            Featured
+            {getLocalizedBadge('Featured', currentLang)}
           </Badge>
         )}
         {tool.trending && (
           <Badge className="bg-blue-600 text-white border-transparent hover:bg-blue-700 transition-colors flex items-center gap-1 px-2 py-0.5 text-[10px] uppercase tracking-wider font-bold">
-            <TrendingUp className="w-2.5 h-2.5" /> Trending
+            <TrendingUp className="w-2.5 h-2.5" /> {getLocalizedBadge('Trending', currentLang)}
           </Badge>
         )}
       </div>
@@ -60,7 +63,7 @@ export default function ToolCard({ tool }) {
 
         <CardContent className="pb-4">
           <CardDescription className="text-slate-600 line-clamp-2 text-sm leading-relaxed min-h-[40px]">
-            {tool.shortDescription || tool.description?.substring(0, 100) + '...'}
+            {localizedInfo.shortDescription}
           </CardDescription>
           
           <div className="flex flex-wrap gap-2 mt-5">
@@ -78,7 +81,7 @@ export default function ToolCard({ tool }) {
           <span className={`text-[10px] font-black uppercase tracking-tighter px-2 py-1 rounded ${
             isFree ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-700'
           }`}>
-            {tool.pricing}
+            {localizedPricing}
           </span>
         </div>
         <div className="flex gap-2">
