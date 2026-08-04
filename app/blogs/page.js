@@ -8,9 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Clock, Eye, Calendar, Search } from 'lucide-react';
 import Link from 'next/link';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function BlogsPage() {
   const searchParams = useSearchParams();
+  const { t, getLangUrl, currentLang } = useLanguage();
   const [blogs, setBlogs] = useState([]);
   const [featuredBlogs, setFeaturedBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -139,7 +141,7 @@ export default function BlogsPage() {
             <h2 className="text-2xl font-bold text-black mb-6">Featured Articles</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {featuredBlogs.map((blog) => (
-                <Link key={blog._id} href={`/blogs/${blog.slug}`}>
+                <Link key={blog._id} href={getLangUrl(`/blogs/${blog.slug}`)}>
                   <Card className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-blue-500 h-full cursor-pointer">
                     <div className="aspect-video overflow-hidden rounded-t-lg">
                       <img
@@ -178,7 +180,7 @@ export default function BlogsPage() {
         <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-black">Latest Articles</h2>
-            <Link href="/submit-blog">
+            <Link href={getLangUrl('/submit-blog')}>
               <Button className="bg-blue-600 hover:bg-blue-700">Write a Blog</Button>
             </Link>
           </div>
@@ -198,7 +200,7 @@ export default function BlogsPage() {
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 {blogs.map((blog) => (
-                  <Link key={blog._id} href={`/blogs/${blog.slug}`}>
+                  <Link key={blog._id} href={getLangUrl(`/blogs/${blog.slug}`)}>
                     <Card className="group hover:shadow-lg transition-all duration-300 border hover:border-blue-300 h-full cursor-pointer">
                       <div className="aspect-video overflow-hidden rounded-t-lg">
                         <img
