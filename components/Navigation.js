@@ -13,7 +13,7 @@ export default function Navigation() {
   const { user, isSignedIn } = useUser();
   const [isAdmin, setIsAdmin] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
-  const { currentLang, setLanguage, t, langObj, languages } = useLanguage();
+  const { currentLang, setLanguage, t, langObj, languages, getLangUrl } = useLanguage();
   const dropdownRef = useRef(null);
 
   // Check if user is admin
@@ -50,45 +50,45 @@ export default function Navigation() {
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
-          <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity" prefetch={true}>
+          <Link href={getLangUrl('/')} className="flex items-center space-x-2 hover:opacity-80 transition-opacity" prefetch={true}>
             <img src="/logo.jpg" alt="Best AI Tools Free" className="w-10 h-10 rounded-lg object-cover" />
             <span className="font-bold text-xl text-black hidden sm:inline">Best AI Tools Free</span>
           </Link>
 
           <nav className="hidden md:flex items-center space-x-6">
             <Link 
-              href="/tools" 
-              className={`transition-colors font-medium ${pathname === '/tools' ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'}`}
+              href={getLangUrl('/tools')} 
+              className={`transition-colors font-medium ${pathname?.includes('/tools') ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'}`}
               prefetch={true}
             >
               {t('browseTools')}
             </Link>
             <Link 
-              href="/categories" 
-              className={`transition-colors font-medium ${pathname === '/categories' ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'}`}
+              href={getLangUrl('/categories')} 
+              className={`transition-colors font-medium ${pathname?.includes('/categories') ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'}`}
               prefetch={true}
             >
               {t('categories')}
             </Link>
             <Link 
-              href="/blogs" 
-              className={`transition-colors font-medium ${pathname === '/blogs' ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'}`}
+              href={getLangUrl('/blogs')} 
+              className={`transition-colors font-medium ${pathname?.includes('/blogs') ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'}`}
               prefetch={true}
             >
               {t('blogs')}
             </Link>
             <SignedIn>
               <Link 
-                href="/dashboard" 
-                className={`transition-colors font-medium ${pathname === '/dashboard' ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'}`}
+                href={getLangUrl('/dashboard')} 
+                className={`transition-colors font-medium ${pathname?.includes('/dashboard') ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'}`}
                 prefetch={true}
               >
                 {t('myDashboard')}
               </Link>
               {isAdmin && (
                 <Link 
-                  href="/admin" 
-                  className={`transition-colors font-medium ${pathname === '/admin' ? 'text-blue-600' : 'text-blue-700 hover:text-blue-600'}`}
+                  href={getLangUrl('/admin')} 
+                  className={`transition-colors font-medium ${pathname?.includes('/admin') ? 'text-blue-600' : 'text-blue-700 hover:text-blue-600'}`}
                   prefetch={true}
                 >
                   {t('admin')}
@@ -140,7 +140,7 @@ export default function Navigation() {
             </div>
 
             <SignedIn>
-              <Link href="/submit" prefetch={true}>
+              <Link href={getLangUrl('/submit')} prefetch={true}>
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                   <Upload className="w-4 h-4 mr-2" />
                   {t('submitTool')}

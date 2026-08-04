@@ -127,7 +127,7 @@ export default async function RootLayout({ children }) {
             <link 
               key={lang.code} 
               rel="alternate" 
-              href={`https://www.bestaitoolsfree.com${lang.code === 'en' ? '' : `?lang=${lang.code}`}`} 
+              href={`https://www.bestaitoolsfree.com${lang.code === 'en' ? '' : `/${lang.code}`}`} 
               hrefLang={lang.code} 
             />
           ))}

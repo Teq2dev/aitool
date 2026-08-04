@@ -44,6 +44,12 @@ export async function GET() {
       }
     };
 
+    // Helper for subpath URL e.g. /fr/tools/midjourney
+    const getSubpathUrl = (path, langCode) => {
+      if (langCode === 'en') return `${baseUrl}${path}`;
+      return `${baseUrl}/${langCode}${path}`;
+    };
+
     // Build the XML string with xhtml hreflang support for Google International Indexing
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">`;
@@ -51,8 +57,7 @@ export async function GET() {
     // Add Static Pages for all languages
     staticPages.forEach(page => {
       LANGUAGES.forEach(lang => {
-        const langParam = lang.code === 'en' ? '' : (page.url.includes('?') ? `&amp;lang=${lang.code}` : `?lang=${lang.code}`);
-        const fullUrl = `${baseUrl}${page.url}${langParam}`;
+        const fullUrl = getSubpathUrl(page.url, lang.code);
         
         xml += `
   <url>
@@ -62,9 +67,8 @@ export async function GET() {
         
         // Add hreflang links
         LANGUAGES.forEach(alt => {
-          const altParam = alt.code === 'en' ? '' : (page.url.includes('?') ? `&amp;lang=${alt.code}` : `?lang=${alt.code}`);
           xml += `
-    <xhtml:link rel="alternate" hreflang="${alt.code}" href="${baseUrl}${page.url}${altParam}" />`;
+    <xhtml:link rel="alternate" hreflang="${alt.code}" href="${getSubpathUrl(page.url, alt.code)}" />`;
         });
 
         xml += `
@@ -76,8 +80,7 @@ export async function GET() {
     tools.forEach(tool => {
       if (tool.slug) {
         LANGUAGES.forEach(lang => {
-          const langParam = lang.code === 'en' ? '' : `?lang=${lang.code}`;
-          const fullUrl = `${baseUrl}/tools/${tool.slug}${langParam}`;
+          const fullUrl = getSubpathUrl(`/tools/${tool.slug}`, lang.code);
           
           xml += `
   <url>
@@ -87,9 +90,8 @@ export async function GET() {
     <priority>${lang.code === 'en' ? '0.8' : '0.65'}</priority>`;
 
           LANGUAGES.forEach(alt => {
-            const altParam = alt.code === 'en' ? '' : `?lang=${alt.code}`;
             xml += `
-    <xhtml:link rel="alternate" hreflang="${alt.code}" href="${baseUrl}/tools/${tool.slug}${altParam}" />`;
+    <xhtml:link rel="alternate" hreflang="${alt.code}" href="${getSubpathUrl(`/tools/${tool.slug}`, alt.code)}" />`;
           });
 
           xml += `
@@ -115,8 +117,8 @@ export async function GET() {
     categories.forEach(cat => {
       if (cat._id) {
         LANGUAGES.forEach(lang => {
-          const langParam = lang.code === 'en' ? '' : `&amp;lang=${lang.code}`;
-          const fullUrl = `${baseUrl}/tools?category=${encodeURIComponent(cat._id)}${langParam}`;
+          const path = `/tools?category=${encodeURIComponent(cat._id)}`;
+          const fullUrl = lang.code === 'en' ? `${baseUrl}${path}` : `${baseUrl}/${lang.code}${path}`;
           
           xml += `
   <url>

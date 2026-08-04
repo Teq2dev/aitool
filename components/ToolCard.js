@@ -10,8 +10,8 @@ import { getLocalizedPricing, getLocalizedBadge, getLocalizedDescription } from 
 
 export default function ToolCard({ tool }) {
   const isFree = tool.pricing === 'Free';
-  const { currentLang, t } = useLanguage();
-  const detailLink = `/tools/${tool.slug}${currentLang === 'en' ? '' : `?lang=${currentLang}`}`;
+  const { currentLang, t, getLangUrl } = useLanguage();
+  const detailLink = getLangUrl(`/tools/${tool.slug}`);
   const localizedInfo = getLocalizedDescription(tool, currentLang);
   const localizedPricing = getLocalizedPricing(tool.pricing, currentLang);
   
