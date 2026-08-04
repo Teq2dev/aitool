@@ -30,6 +30,20 @@ export async function generateMetadata({ searchParams }) {
     description,
     alternates: {
       canonical: url,
+      languages: {
+        'x-default': `${baseUrl}/tools`,
+        'en': `${baseUrl}/tools`,
+        'es': `${baseUrl}/es/tools`,
+        'fr': `${baseUrl}/fr/tools`,
+        'de': `${baseUrl}/de/tools`,
+        'pt': `${baseUrl}/pt/tools`,
+        'ar': `${baseUrl}/ar/tools`,
+        'ru': `${baseUrl}/ru/tools`,
+        'ja': `${baseUrl}/ja/tools`,
+        'zh': `${baseUrl}/zh/tools`,
+        'it': `${baseUrl}/it/tools`,
+        'nl': `${baseUrl}/nl/tools`,
+      }
     },
     openGraph: {
       title,

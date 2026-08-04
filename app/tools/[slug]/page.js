@@ -22,6 +22,20 @@ export async function generateMetadata({ params }) {
     description,
     alternates: {
       canonical: url,
+      languages: {
+        'x-default': `${baseUrl}/tools/${tool.slug}`,
+        'en': `${baseUrl}/tools/${tool.slug}`,
+        'es': `${baseUrl}/es/tools/${tool.slug}`,
+        'fr': `${baseUrl}/fr/tools/${tool.slug}`,
+        'de': `${baseUrl}/de/tools/${tool.slug}`,
+        'pt': `${baseUrl}/pt/tools/${tool.slug}`,
+        'ar': `${baseUrl}/ar/tools/${tool.slug}`,
+        'ru': `${baseUrl}/ru/tools/${tool.slug}`,
+        'ja': `${baseUrl}/ja/tools/${tool.slug}`,
+        'zh': `${baseUrl}/zh/tools/${tool.slug}`,
+        'it': `${baseUrl}/it/tools/${tool.slug}`,
+        'nl': `${baseUrl}/nl/tools/${tool.slug}`,
+      }
     },
     openGraph: {
       title,
