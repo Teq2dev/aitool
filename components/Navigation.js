@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { UserButton, useUser, useClerk, SignInButton, SignedIn, SignedOut } from '@clerk/nextjs';
+import { UserButton, useUser, useClerk } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Upload, Globe, ChevronDown, Check } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
@@ -47,17 +47,31 @@ export default function Navigation() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSignInClick = () => {
-    try {
-      if (clerk && typeof clerk.openSignIn === 'function') {
+  const handleSignInClick = async () => {
+    // If clerk is already loaded, open immediately
+    if (clerk && clerk.loaded && typeof clerk.openSignIn === 'function') {
+      clerk.openSignIn({
+        afterSignInUrl: '/dashboard',
+        afterSignUpUrl: '/dashboard',
+      });
+      return;
+    }
+    // Otherwise wait briefly for clerk to finish loading, then open
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts++;
+      if (clerk && clerk.loaded && typeof clerk.openSignIn === 'function') {
+        clearInterval(interval);
         clerk.openSignIn({
           afterSignInUrl: '/dashboard',
           afterSignUpUrl: '/dashboard',
         });
+      } else if (attempts > 30) {
+        clearInterval(interval);
+        // Fallback: redirect to Clerk hosted sign-in
+        window.location.href = '/sign-in';
       }
-    } catch (e) {
-      console.error('Sign in trigger error:', e);
-    }
+    }, 200);
   };
 
   return (
@@ -174,15 +188,13 @@ export default function Navigation() {
                   </Button>
                 </Link>
                 
-                <SignInButton mode="modal">
-                  <Button 
-                    type="button"
-                    onClick={handleSignInClick}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-all shadow-md cursor-pointer"
-                  >
-                    {t('signIn')}
-                  </Button>
-                </SignInButton>
+                <button 
+                  type="button"
+                  onClick={handleSignInClick}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-lg text-sm transition-all shadow-sm cursor-pointer"
+                >
+                  {t('signIn')}
+                </button>
               </div>
             )}
           </div>
