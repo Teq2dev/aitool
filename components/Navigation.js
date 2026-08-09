@@ -148,9 +148,9 @@ export default function Navigation() {
                   </Button>
                 </Link>
                 <SignInButton mode="modal">
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
+                  <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
                     {t('signIn')}
-                  </Button>
+                  </button>
                 </SignInButton>
               </div>
             ) : (
@@ -165,18 +165,20 @@ export default function Navigation() {
                   <UserButton afterSignOutUrl="/" />
                 </SignedIn>
                 <SignedOut>
-                  <Link href={getLangUrl('/submit')}>
-                    <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 hidden sm:flex">
-                      <Upload className="w-4 h-4 mr-2" />
-                      {t('submitTool')}
-                    </Button>
-                  </Link>
-                  
-                  <SignInButton mode="modal">
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
-                      {t('signIn')}
-                    </Button>
-                  </SignInButton>
+                  <div className="flex items-center gap-2">
+                    <Link href={getLangUrl('/submit')}>
+                      <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 hidden sm:flex">
+                        <Upload className="w-4 h-4 mr-2" />
+                        {t('submitTool')}
+                      </Button>
+                    </Link>
+                    
+                    <SignInButton mode="modal">
+                      <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
+                        {t('signIn')}
+                      </button>
+                    </SignInButton>
+                  </div>
                 </SignedOut>
               </>
             )}
