@@ -24,15 +24,20 @@ export default function DashboardPage() {
     if (status === 'authenticated') {
       fetchSubmissions();
     }
-  }, [status]);
+  }, [status, router]);
 
   const fetchSubmissions = async () => {
     try {
       const res = await fetch('/api/my-submissions');
+      if (!res.ok) {
+        setSubmissions([]);
+        return;
+      }
       const data = await res.json();
-      setSubmissions(data);
+      setSubmissions(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching submissions:', error);
+      setSubmissions([]);
     } finally {
       setLoading(false);
     }
@@ -40,18 +45,42 @@ export default function DashboardPage() {
 
   if (status === 'loading') {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600 font-medium">Loading Dashboard...</p>
         </div>
       </div>
     );
   }
 
-  const pendingTools = submissions.filter((s) => s.status === 'pending');
-  const approvedTools = submissions.filter((s) => s.status === 'approved');
-  const rejectedTools = submissions.filter((s) => s.status === 'rejected');
+  if (status === 'unauthenticated') {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
+        <Card className="max-w-md w-full text-center p-6 shadow-xl border border-gray-100 rounded-2xl">
+          <CardContent className="pt-6">
+            <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Clock className="w-8 h-8" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Sign In Required</h2>
+            <p className="text-gray-600 mb-6 text-sm">
+              Please sign in with your Google account to access your dashboard and manage submitted tools.
+            </p>
+            <Link href="/sign-in">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full py-2.5 font-semibold rounded-xl">
+                Sign In with Google
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const safeSubmissions = Array.isArray(submissions) ? submissions : [];
+  const pendingTools = safeSubmissions.filter((s) => s?.status === 'pending');
+  const approvedTools = safeSubmissions.filter((s) => s?.status === 'approved');
+  const rejectedTools = safeSubmissions.filter((s) => s?.status === 'rejected');
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -113,14 +142,14 @@ export default function DashboardPage() {
           <CardContent>
             <Tabs defaultValue="all">
               <TabsList>
-                <TabsTrigger value="all">All ({submissions.length})</TabsTrigger>
+                <TabsTrigger value="all">All ({safeSubmissions.length})</TabsTrigger>
                 <TabsTrigger value="pending">Pending ({pendingTools.length})</TabsTrigger>
                 <TabsTrigger value="approved">Approved ({approvedTools.length})</TabsTrigger>
                 <TabsTrigger value="rejected">Rejected ({rejectedTools.length})</TabsTrigger>
               </TabsList>
 
               <TabsContent value="all" className="mt-6">
-                <SubmissionList tools={submissions} />
+                <SubmissionList tools={safeSubmissions} />
               </TabsContent>
               <TabsContent value="pending" className="mt-6">
                 <SubmissionList tools={pendingTools} />
@@ -140,7 +169,9 @@ export default function DashboardPage() {
 }
 
 function SubmissionList({ tools }) {
-  if (tools.length === 0) {
+  const safeTools = Array.isArray(tools) ? tools : [];
+
+  if (safeTools.length === 0) {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500">No submissions found</p>
@@ -150,10 +181,10 @@ function SubmissionList({ tools }) {
 
   return (
     <div className="space-y-4">
-      {tools.map((tool) => (
-        <div key={tool._id} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+      {safeTools.map((tool) => (
+        <div key={tool._id || tool.slug || Math.random()} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
           <div className="flex items-center gap-4">
-            <img src={tool.logo} alt={tool.name} className="w-16 h-16 rounded-lg object-cover" />
+            <img src={tool.logo || '/logo.jpg'} alt={tool.name || 'Tool'} className="w-16 h-16 rounded-lg object-cover" />
             <div className="flex-1">
               <h3 className="font-semibold text-black mb-1">{tool.name}</h3>
               <p className="text-sm text-gray-600 mb-2">{tool.shortDescription}</p>
@@ -170,7 +201,7 @@ function SubmissionList({ tools }) {
                   {tool.status}
                 </Badge>
                 <span className="text-xs text-gray-500">
-                  Submitted {new Date(tool.createdAt).toLocaleDateString()}
+                  Submitted {tool.createdAt ? new Date(tool.createdAt).toLocaleDateString() : 'recently'}
                 </span>
               </div>
             </div>
