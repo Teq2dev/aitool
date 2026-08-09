@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { UserButton, useUser, useClerk } from '@clerk/nextjs';
+import { UserButton, useUser, useClerk, SignInButton, SignedIn, SignedOut } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Upload, Globe, ChevronDown, Check } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
@@ -50,12 +50,13 @@ export default function Navigation() {
   const handleSignInClick = () => {
     try {
       if (clerk && typeof clerk.openSignIn === 'function') {
-        clerk.openSignIn();
-      } else {
-        window.location.href = '/submit';
+        clerk.openSignIn({
+          afterSignInUrl: '/dashboard',
+          afterSignUpUrl: '/dashboard',
+        });
       }
     } catch (e) {
-      window.location.href = '/submit';
+      console.error('Sign in trigger error:', e);
     }
   };
 
@@ -173,12 +174,15 @@ export default function Navigation() {
                   </Button>
                 </Link>
                 
-                <Button 
-                  onClick={handleSignInClick}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-all shadow-md cursor-pointer"
-                >
-                  {t('signIn')}
-                </Button>
+                <SignInButton mode="modal">
+                  <Button 
+                    type="button"
+                    onClick={handleSignInClick}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-all shadow-md cursor-pointer"
+                  >
+                    {t('signIn')}
+                  </Button>
+                </SignInButton>
               </div>
             )}
           </div>
