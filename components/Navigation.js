@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { UserButton, useUser, useClerk } from '@clerk/nextjs';
+import { UserButton, useUser } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Upload, Globe, ChevronDown, Check } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
@@ -11,7 +11,6 @@ import { useLanguage } from '@/context/LanguageContext';
 export default function Navigation() {
   const pathname = usePathname();
   const { user, isLoaded, isSignedIn } = useUser();
-  const clerk = useClerk();
   const [isAdmin, setIsAdmin] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const { currentLang, setLanguage, t, langObj, languages, getLangUrl } = useLanguage();
@@ -46,28 +45,6 @@ export default function Navigation() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const handleSignInClick = () => {
-    if (typeof clerk?.openSignIn === 'function') {
-      clerk.openSignIn({
-        afterSignInUrl: '/dashboard',
-        afterSignUpUrl: '/dashboard',
-      });
-    } else {
-      // Clerk not ready yet — poll until it is
-      const interval = setInterval(() => {
-        if (typeof clerk?.openSignIn === 'function') {
-          clearInterval(interval);
-          clerk.openSignIn({
-            afterSignInUrl: '/dashboard',
-            afterSignUpUrl: '/dashboard',
-          });
-        }
-      }, 300);
-      // Stop polling after 6 seconds
-      setTimeout(() => clearInterval(interval), 6000);
-    }
-  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
@@ -183,13 +160,11 @@ export default function Navigation() {
                   </Button>
                 </Link>
                 
-                <button 
-                  type="button"
-                  onClick={handleSignInClick}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-lg text-sm transition-all shadow-sm cursor-pointer"
-                >
-                  {t('signIn')}
-                </button>
+                <Link href={getLangUrl('/sign-in')} prefetch={true}>
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl text-sm transition-all shadow-sm cursor-pointer">
+                    {t('signIn')}
+                  </Button>
+                </Link>
               </div>
             )}
           </div>
