@@ -103,50 +103,60 @@ export default function AdminPage() {
   const fetchTools = async () => {
     try {
       const res = await fetch('/api/admin/tools?status=all');
+      if (!res.ok) { setTools([]); return; }
       const data = await res.json();
-      setTools(data);
+      setTools(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching tools:', error);
+      setTools([]);
     }
   };
 
   const fetchUsers = async () => {
     try {
       const res = await fetch('/api/admin/users');
+      if (!res.ok) { setUsers([]); return; }
       const data = await res.json();
-      setUsers(data);
+      setUsers(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching users:', error);
+      setUsers([]);
     }
   };
 
   const fetchBlogs = async () => {
     try {
       const res = await fetch('/api/admin/blogs');
+      if (!res.ok) { setBlogs([]); return; }
       const data = await res.json();
-      setBlogs(data);
+      setBlogs(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching blogs:', error);
+      setBlogs([]);
     }
   };
 
   const fetchBulkLogs = async () => {
     try {
       const res = await fetch('/api/admin/bulk-logs');
+      if (!res.ok) { setBulkLogs([]); return; }
       const data = await res.json();
-      setBulkLogs(data);
+      setBulkLogs(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching bulk logs:', error);
+      setBulkLogs([]);
     }
   };
 
   const fetchShopProducts = async () => {
     try {
       const res = await fetch('/api/admin/shop');
+      if (!res.ok) { setShopProducts([]); return; }
       const data = await res.json();
-      setShopProducts(data);
+      setShopProducts(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching shop products:', error);
+      setShopProducts([]);
     }
   };
 
@@ -693,21 +703,50 @@ export default function AdminPage() {
     URL.revokeObjectURL(url);
   };
 
-  if (!isLoaded || !isSignedIn) {
+  if (status === 'loading') {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600 font-medium">Loading Admin Panel...</p>
         </div>
       </div>
     );
   }
 
-  const pendingTools = tools.filter((t) => t.status === 'pending');
-  const approvedTools = tools.filter((t) => t.status === 'approved');
-  const rejectedTools = tools.filter((t) => t.status === 'rejected');
-  const adminUsers = users.filter((u) => u.isAdmin);
+  if (status === 'unauthenticated') {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
+        <Card className="max-w-md w-full text-center p-6 shadow-xl border border-gray-100 rounded-2xl">
+          <CardContent className="pt-6">
+            <div className="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <ShieldOff className="w-8 h-8" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Admin Access Required</h2>
+            <p className="text-gray-600 mb-6 text-sm">
+              Please sign in with your authorized Google admin account to access the Admin Panel.
+            </p>
+            <Link href="/sign-in">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full py-2.5 font-semibold rounded-xl">
+                Sign In with Google
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const safeTools = Array.isArray(tools) ? tools : [];
+  const safeUsers = Array.isArray(users) ? users : [];
+  const safeBlogs = Array.isArray(blogs) ? blogs : [];
+  const safeBulkLogs = Array.isArray(bulkLogs) ? bulkLogs : [];
+  const safeShopProducts = Array.isArray(shopProducts) ? shopProducts : [];
+
+  const pendingTools = safeTools.filter((t) => t?.status === 'pending');
+  const approvedTools = safeTools.filter((t) => t?.status === 'approved');
+  const rejectedTools = safeTools.filter((t) => t?.status === 'rejected');
+  const adminUsers = safeUsers.filter((u) => u?.isAdmin || u?.role === 'admin');
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
