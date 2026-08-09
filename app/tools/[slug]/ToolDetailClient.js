@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Star, ExternalLink, ArrowLeft, Share2, Edit2, Trash2, X, Check, ThumbsUp, ThumbsDown, HelpCircle, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { useUser } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/context/LanguageContext';
 import { 
   getLocalizedPricing, 
@@ -18,6 +18,8 @@ import {
 } from '@/lib/languages';
 
 export default function ToolDetailClient({ initialTool, initialRelatedTools = [] }) {
+  const { data: session } = useSession();
+  const user = session?.user;
   const [tool] = useState(initialTool);
   const [relatedTools] = useState(initialRelatedTools);
   const { t, currentLang } = useLanguage();
