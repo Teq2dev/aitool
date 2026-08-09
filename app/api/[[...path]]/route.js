@@ -523,18 +523,23 @@ export async function GET(request, { params }) {
     
     // GET /api/admin/check - Check if current user is admin
     if (pathname === '/api/admin/check') {
-      const userId = await getAuthUserId();
+      const session = await getServerSession(authOptions);
+      const userEmail = session?.user?.email?.toLowerCase();
       
+      const ADMIN_EMAILS = ['parwal111@gmail.com', 'admin@bestaitoolsfree.com'];
+      if (userEmail && ADMIN_EMAILS.includes(userEmail)) {
+        return NextResponse.json({ isAdmin: true, email: userEmail });
+      }
+      
+      const userId = await getAuthUserId();
       if (!userId) {
         return NextResponse.json({ isAdmin: false });
       }
       
       const usersCollection = await getCollection('users');
-      const user = await usersCollection.findOne({ $or: [{ userId }, { email: userId }], role: 'admin' });
+      const user = await usersCollection.findOne({ $or: [{ userId }, { email: userId }, { email: userEmail }], role: 'admin' });
       
-      // Default fallback: allow access if no admin users exist yet or match
-      const adminCount = await usersCollection.countDocuments({ role: 'admin' });
-      return NextResponse.json({ isAdmin: !!user || adminCount === 0 });
+      return NextResponse.json({ isAdmin: !!user });
     }
     
     // GET /api/admin/tools - Get all tools for admin
