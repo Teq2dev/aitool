@@ -401,8 +401,12 @@ function ReviewsSection({ toolId, initialRating }) {
 
   const getEditToken = (reviewId) => {
     if (typeof window === 'undefined') return null;
-    const tokens = JSON.parse(localStorage.getItem('review_tokens') || '{}');
-    return tokens[reviewId];
+    try {
+      const tokens = JSON.parse(localStorage.getItem('review_tokens') || '{}');
+      return tokens[reviewId] || null;
+    } catch (e) {
+      return null;
+    }
   };
 
   useEffect(() => {
@@ -413,6 +417,7 @@ function ReviewsSection({ toolId, initialRating }) {
     setLoading(true);
     try {
       const res = await fetch(`/api/reviews?toolId=${toolId}`);
+      if (!res.ok) { setReviews([]); return; }
       const data = await res.json();
       if (Array.isArray(data)) {
         setReviews(data);
@@ -449,9 +454,13 @@ function ReviewsSection({ toolId, initialRating }) {
         
         // Save edit token for anonymous edits
         if (data.editToken) {
-          const tokens = JSON.parse(localStorage.getItem('review_tokens') || '{}');
-          tokens[data.review._id] = data.editToken;
-          localStorage.setItem('review_tokens', JSON.stringify(tokens));
+          try {
+            const tokens = JSON.parse(localStorage.getItem('review_tokens') || '{}');
+            tokens[data.review._id] = data.editToken;
+            localStorage.setItem('review_tokens', JSON.stringify(tokens));
+          } catch (e) {
+            console.warn('LocalStorage error:', e);
+          }
         }
         
         setComment('');
@@ -605,19 +614,23 @@ function ReviewsSection({ toolId, initialRating }) {
           {/* Review List */}
           <div className="md:col-span-3 bg-gray-50/30">
             <div className="p-6">
-              <h3 className="text-lg font-bold mb-4">Community Feedback ({reviews.length})</h3>
-              
-              {loading ? (
-                <div className="flex justify-center py-12">
-                  <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                </div>
-              ) : reviews.length === 0 ? (
-                <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-200">
-                  <p className="text-gray-500">No reviews yet. Be the first to share your thoughts!</p>
-                </div>
-              ) : (
-                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                  {reviews.map((rev, idx) => (
+              {(() => {
+                const safeReviews = Array.isArray(reviews) ? reviews : [];
+                return (
+                  <>
+                    <h3 className="text-lg font-bold mb-4">Community Feedback ({safeReviews.length})</h3>
+                    
+                    {loading ? (
+                      <div className="flex justify-center py-12">
+                        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    ) : safeReviews.length === 0 ? (
+                      <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-200">
+                        <p className="text-gray-500">No reviews yet. Be the first to share your thoughts!</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                        {safeReviews.map((rev, idx) => (
                     <div key={idx} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
                       {editingId === rev._id ? (
                         /* Edit Mode */
@@ -707,6 +720,9 @@ function ReviewsSection({ toolId, initialRating }) {
                   ))}
                 </div>
               )}
+            </>
+          );
+        })()}
             </div>
           </div>
         </div>
