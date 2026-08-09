@@ -47,31 +47,26 @@ export default function Navigation() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSignInClick = async () => {
-    // If clerk is already loaded, open immediately
-    if (clerk && clerk.loaded && typeof clerk.openSignIn === 'function') {
+  const handleSignInClick = () => {
+    if (typeof clerk?.openSignIn === 'function') {
       clerk.openSignIn({
         afterSignInUrl: '/dashboard',
         afterSignUpUrl: '/dashboard',
       });
-      return;
+    } else {
+      // Clerk not ready yet — poll until it is
+      const interval = setInterval(() => {
+        if (typeof clerk?.openSignIn === 'function') {
+          clearInterval(interval);
+          clerk.openSignIn({
+            afterSignInUrl: '/dashboard',
+            afterSignUpUrl: '/dashboard',
+          });
+        }
+      }, 300);
+      // Stop polling after 6 seconds
+      setTimeout(() => clearInterval(interval), 6000);
     }
-    // Otherwise wait briefly for clerk to finish loading, then open
-    let attempts = 0;
-    const interval = setInterval(() => {
-      attempts++;
-      if (clerk && clerk.loaded && typeof clerk.openSignIn === 'function') {
-        clearInterval(interval);
-        clerk.openSignIn({
-          afterSignInUrl: '/dashboard',
-          afterSignUpUrl: '/dashboard',
-        });
-      } else if (attempts > 30) {
-        clearInterval(interval);
-        // Fallback: redirect to Clerk hosted sign-in
-        window.location.href = '/sign-in';
-      }
-    }, 200);
   };
 
   return (
