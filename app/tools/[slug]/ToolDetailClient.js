@@ -374,7 +374,9 @@ function ReviewsSection({ toolId, initialRating }) {
   const [hover, setHover] = useState(0);
   const [comment, setComment] = useState('');
   const [userName, setUserName] = useState('');
-  const { user, isLoaded } = useUser();
+  const { data: session, status } = useSession();
+  const user = session?.user;
+  const isLoaded = status !== 'loading';
   const [isAdmin, setIsAdmin] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editComment, setEditComment] = useState('');
