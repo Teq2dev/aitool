@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,13 +10,13 @@ import { Clock, Eye, Calendar, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 
-export default function BlogsPage() {
+function BlogsContent() {
   const searchParams = useSearchParams();
-  const { t, getLangUrl, currentLang } = useLanguage();
+  const { t, getLangUrl } = useLanguage();
   const [blogs, setBlogs] = useState([]);
   const [featuredBlogs, setFeaturedBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [search, setSearch] = useState(searchParams ? searchParams.get('search') || '' : '');
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
 
   useEffect(() => {
@@ -30,10 +30,12 @@ export default function BlogsPage() {
   const fetchFeaturedBlogs = async () => {
     try {
       const res = await fetch('/api/featured-blogs');
+      if (!res.ok) { setFeaturedBlogs([]); return; }
       const data = await res.json();
-      setFeaturedBlogs(data);
+      setFeaturedBlogs(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching featured blogs:', error);
+      setFeaturedBlogs([]);
     }
   };
 
@@ -48,16 +50,18 @@ export default function BlogsPage() {
       if (search) params.append('search', search);
 
       const res = await fetch(`/api/blogs?${params}`);
+      if (!res.ok) { setBlogs([]); setLoading(false); return; }
       const data = await res.json();
 
-      setBlogs(data.blogs || []);
+      setBlogs(Array.isArray(data.blogs) ? data.blogs : []);
       setPagination({
-        page: data.page,
-        totalPages: data.totalPages,
-        total: data.total,
+        page: data.page || 1,
+        totalPages: data.totalPages || 1,
+        total: data.total || 0,
       });
     } catch (error) {
       console.error('Error fetching blogs:', error);
+      setBlogs([]);
     } finally {
       setLoading(false);
     }
@@ -69,45 +73,11 @@ export default function BlogsPage() {
     fetchBlogs();
   };
 
-  // Schema for Blog listing page
-  const schemaData = {
-    '@context': 'https://schema.org',
-    '@type': 'Blog',
-    name: 'AI Tools Blog - Best AI Tools Free',
-    description: 'Insights, tutorials, and news about AI tools. Learn about the latest AI technologies and how to use them.',
-    url: 'https://www.bestaitoolsfree.com/blogs',
-    publisher: {
-      '@type': 'Organization',
-      name: 'Best AI Tools Free',
-      logo: {
-        '@type': 'ImageObject',
-        url: 'https://www.bestaitoolsfree.com/logo.jpg'
-      }
-    },
-    blogPost: blogs.slice(0, 10).map(blog => ({
-      '@type': 'BlogPosting',
-      headline: blog.title,
-      description: blog.excerpt,
-      url: `https://www.bestaitoolsfree.com/blogs/${blog.slug}`,
-      datePublished: blog.createdAt,
-      author: {
-        '@type': 'Person',
-        name: blog.author || 'Best AI Tools Free'
-      }
-    }))
-  };
+  const safeBlogs = Array.isArray(blogs) ? blogs : [];
+  const safeFeaturedBlogs = Array.isArray(featuredBlogs) ? featuredBlogs : [];
 
   return (
-    <>
-      <head>
-        <title>AI Tools Blog - Best AI Tools Free</title>
-        <meta name="description" content="Insights, tutorials, and news about AI tools. Learn about the latest AI technologies and how to use them." />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
-        />
-      </head>
-      <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="mb-8 text-center">
@@ -136,17 +106,17 @@ export default function BlogsPage() {
         </form>
 
         {/* Featured Blogs */}
-        {featuredBlogs.length > 0 && (
+        {safeFeaturedBlogs.length > 0 && (
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-black mb-6">Featured Articles</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {featuredBlogs.map((blog) => (
-                <Link key={blog._id} href={getLangUrl(`/blogs/${blog.slug}`)}>
+              {safeFeaturedBlogs.map((blog) => (
+                <Link key={blog._id || blog.slug} href={getLangUrl(`/blogs/${blog.slug}`)}>
                   <Card className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-blue-500 h-full cursor-pointer">
                     <div className="aspect-video overflow-hidden rounded-t-lg">
                       <img
-                        src={blog.coverImage}
-                        alt={blog.title}
+                        src={blog.coverImage || '/logo.jpg'}
+                        alt={blog.title || 'Blog'}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
                     </div>
@@ -161,11 +131,11 @@ export default function BlogsPage() {
                       <div className="flex items-center gap-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
-                          <span>{blog.readTime} min read</span>
+                          <span>{blog.readTime || 5} min read</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Eye className="w-4 h-4" />
-                          <span>{blog.views} views</span>
+                          <span>{blog.views || 0} views</span>
                         </div>
                       </div>
                     </CardContent>
@@ -192,29 +162,29 @@ export default function BlogsPage() {
                 <p className="text-gray-600">Loading blogs...</p>
               </div>
             </div>
-          ) : blogs.length === 0 ? (
+          ) : safeBlogs.length === 0 ? (
             <div className="text-center py-20">
               <p className="text-xl text-gray-600">No blogs found</p>
             </div>
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                {blogs.map((blog) => (
-                  <Link key={blog._id} href={getLangUrl(`/blogs/${blog.slug}`)}>
+                {safeBlogs.map((blog) => (
+                  <Link key={blog._id || blog.slug} href={getLangUrl(`/blogs/${blog.slug}`)}>
                     <Card className="group hover:shadow-lg transition-all duration-300 border hover:border-blue-300 h-full cursor-pointer">
                       <div className="aspect-video overflow-hidden rounded-t-lg">
                         <img
-                          src={blog.coverImage}
-                          alt={blog.title}
+                          src={blog.coverImage || '/logo.jpg'}
+                          alt={blog.title || 'Blog'}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
                       <CardHeader>
                         <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="secondary">{blog.category}</Badge>
+                          <Badge variant="secondary">{blog.category || 'General'}</Badge>
                           <div className="flex items-center gap-1 text-xs text-gray-500">
                             <Calendar className="w-3 h-3" />
-                            {new Date(blog.publishedAt).toLocaleDateString()}
+                            {blog.publishedAt ? new Date(blog.publishedAt).toLocaleDateString() : 'Recently'}
                           </div>
                         </div>
                         <CardTitle className="text-lg group-hover:text-blue-600 transition-colors line-clamp-2">
@@ -226,11 +196,11 @@ export default function BlogsPage() {
                         <div className="flex items-center justify-between text-sm text-gray-600">
                           <div className="flex items-center gap-1">
                             <Clock className="w-4 h-4" />
-                            <span>{blog.readTime} min</span>
+                            <span>{blog.readTime || 5} min</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Eye className="w-4 h-4" />
-                            <span>{blog.views}</span>
+                            <span>{blog.views || 0}</span>
                           </div>
                         </div>
                       </CardContent>
@@ -266,6 +236,17 @@ export default function BlogsPage() {
         </section>
       </div>
     </div>
-    </>
+  );
+}
+
+export default function BlogsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    }>
+      <BlogsContent />
+    </Suspense>
   );
 }

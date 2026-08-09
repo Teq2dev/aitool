@@ -3,13 +3,13 @@
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
 
-export default function SearchBar({ placeholder, className = '' }) {
+function SearchInput({ placeholder, className = '' }) {
   const searchParams = useSearchParams();
-  const currentSearch = searchParams.get('search') || '';
+  const currentSearch = searchParams ? searchParams.get('search') || '' : '';
   const [search, setSearch] = useState(currentSearch);
   const router = useRouter();
   const { t } = useLanguage();
@@ -47,5 +47,17 @@ export default function SearchBar({ placeholder, className = '' }) {
         </Button>
       </div>
     </form>
+  );
+}
+
+export default function SearchBar(props) {
+  return (
+    <Suspense fallback={
+      <div className={`relative ${props.className || ''}`}>
+        <div className="h-14 bg-gray-100 rounded-full animate-pulse"></div>
+      </div>
+    }>
+      <SearchInput {...props} />
+    </Suspense>
   );
 }
