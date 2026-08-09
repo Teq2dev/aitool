@@ -10,7 +10,7 @@ import { useLanguage } from '@/context/LanguageContext';
 
 export default function Navigation() {
   const pathname = usePathname();
-  const { user, isSignedIn } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser();
   const [isAdmin, setIsAdmin] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const { currentLang, setLanguage, t, langObj, languages, getLangUrl } = useLanguage();
@@ -139,36 +139,47 @@ export default function Navigation() {
               )}
             </div>
 
-            <SignedIn>
-              <Link href={getLangUrl('/submit')} prefetch={true}>
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                  <Upload className="w-4 h-4 mr-2" />
-                  {t('submitTool')}
-                </Button>
-              </Link>
-              <UserButton afterSignOutUrl="/" />
-            </SignedIn>
-            <SignedOut>
-              <SignInButton 
-                mode="modal" 
-                redirectUrl="/submit"
-                signUpUrl="/sign-up"
-              >
-                <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 hidden sm:flex">
-                  <Upload className="w-4 h-4 mr-2" />
-                  {t('submitTool')}
-                </Button>
-              </SignInButton>
-              
-              <SignInButton 
-                mode="modal"
-                signUpUrl="/sign-up"
-              >
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                  {t('signIn')}
-                </Button>
-              </SignInButton>
-            </SignedOut>
+            {!isLoaded ? (
+              <div className="flex items-center gap-2">
+                <Link href={getLangUrl('/submit')}>
+                  <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 hidden sm:flex">
+                    <Upload className="w-4 h-4 mr-2" />
+                    {t('submitTool')}
+                  </Button>
+                </Link>
+                <SignInButton mode="modal">
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
+                    {t('signIn')}
+                  </Button>
+                </SignInButton>
+              </div>
+            ) : (
+              <>
+                <SignedIn>
+                  <Link href={getLangUrl('/submit')} prefetch={true}>
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                      <Upload className="w-4 h-4 mr-2" />
+                      {t('submitTool')}
+                    </Button>
+                  </Link>
+                  <UserButton afterSignOutUrl="/" />
+                </SignedIn>
+                <SignedOut>
+                  <Link href={getLangUrl('/submit')}>
+                    <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 hidden sm:flex">
+                      <Upload className="w-4 h-4 mr-2" />
+                      {t('submitTool')}
+                    </Button>
+                  </Link>
+                  
+                  <SignInButton mode="modal">
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
+                      {t('signIn')}
+                    </Button>
+                  </SignInButton>
+                </SignedOut>
+              </>
+            )}
           </div>
         </div>
       </div>
