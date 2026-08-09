@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,10 @@ import { CheckCircle, XCircle, Eye, Star, Trash2, Users, Shield, ShieldOff, Uplo
 import Link from 'next/link';
 
 export default function AdminPage() {
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { data: session, status } = useSession();
+  const isSignedIn = status === 'authenticated';
+  const isLoaded = status !== 'loading';
+  const user = session?.user;
   const router = useRouter();
   const [tools, setTools] = useState([]);
   const [users, setUsers] = useState([]);

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,20 +11,20 @@ import { Clock, CheckCircle, XCircle, Eye } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DashboardPage() {
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      router.push('/');
+    if (status === 'unauthenticated') {
+      router.push('/sign-in');
       return;
     }
-    if (isSignedIn) {
+    if (status === 'authenticated') {
       fetchSubmissions();
     }
-  }, [isLoaded, isSignedIn]);
+  }, [status]);
 
   const fetchSubmissions = async () => {
     try {
@@ -38,7 +38,7 @@ export default function DashboardPage() {
     }
   };
 
-  if (!isLoaded || !isSignedIn) {
+  if (status === 'loading') {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">

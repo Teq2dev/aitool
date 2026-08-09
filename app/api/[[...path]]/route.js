@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { getCollection } from '@/lib/db';
-import { categories, tools, blogs } from '@/lib/sample-data';
-import { auth } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { v4 as uuidv4 } from 'uuid';
 
 // Helper function to create text indexes for search

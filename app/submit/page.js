@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Upload, CheckCircle, X, Image as ImageIcon, Globe } from 'lucide-react';
 
 export default function SubmitToolPage() {
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { data: session, status } = useSession();
+  const isSignedIn = status === 'authenticated';
+  const isLoaded = status !== 'loading';
+  const user = session?.user;
   const router = useRouter();
   const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,10 @@ import { Badge } from '@/components/ui/badge';
 import { Upload, CheckCircle, X } from 'lucide-react';
 
 export default function SubmitBlogPage() {
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { data: session, status } = useSession();
+  const isSignedIn = status === 'authenticated';
+  const isLoaded = status !== 'loading';
+  const user = session?.user;
   const router = useRouter();
   const [formData, setFormData] = useState({
     title: '',

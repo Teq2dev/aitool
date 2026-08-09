@@ -3,14 +3,17 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { UserButton, useUser } from '@clerk/nextjs';
+import { useSession, signIn, signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Upload, Globe, ChevronDown, Check } from 'lucide-react';
+import { Sparkles, Upload, Globe, ChevronDown, Check, LogOut, User } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function Navigation() {
   const pathname = usePathname();
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { data: session, status } = useSession();
+  const isSignedIn = status === 'authenticated';
+  const user = session?.user;
+  
   const [isAdmin, setIsAdmin] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const { currentLang, setLanguage, t, langObj, languages, getLangUrl } = useLanguage();
@@ -149,7 +152,22 @@ export default function Navigation() {
                     {t('submitTool')}
                   </Button>
                 </Link>
-                <UserButton afterSignOutUrl="/" />
+                <div className="flex items-center gap-2">
+                  {user?.image ? (
+                    <img src={user.image} alt={user.name || 'User'} className="w-8 h-8 rounded-full border border-gray-200" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">
+                      {user?.name?.[0] || 'U'}
+                    </div>
+                  )}
+                  <button 
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="text-gray-500 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                    title="Sign Out"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="flex items-center gap-2">
@@ -160,11 +178,15 @@ export default function Navigation() {
                   </Button>
                 </Link>
                 
-                <Link href={getLangUrl('/sign-in')} prefetch={true}>
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl text-sm transition-all shadow-sm cursor-pointer">
-                    {t('signIn')}
-                  </Button>
-                </Link>
+                <button 
+                  onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-all shadow-md cursor-pointer"
+                >
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#FFF"/>
+                  </svg>
+                  <span>{t('signIn')}</span>
+                </button>
               </div>
             )}
           </div>

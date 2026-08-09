@@ -1,18 +1,8 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
 const VALID_LANGS = ['es', 'fr', 'de', 'pt', 'ar', 'ru', 'ja', 'zh', 'it', 'nl'];
 
-const isProtectedRoute = createRouteMatcher([
-  '/dashboard(.*)',
-  '/admin(.*)',
-]);
-
-const clerk = clerkMiddleware((auth, req) => {
-  if (isProtectedRoute(req)) auth().protect();
-});
-
-export default async function middleware(req, event) {
+export default async function middleware(req) {
   const url = req.nextUrl.pathname;
   const segments = url.split('/').filter(Boolean);
   const firstSegment = segments[0];
@@ -40,17 +30,13 @@ export default async function middleware(req, event) {
     return response;
   }
 
-  // Run Clerk middleware for normal routes
-  const response = await clerk(req, event);
-  
-  if (response) {
-    if (url.startsWith('/admin') || url.startsWith('/dashboard') || url.startsWith('/api')) {
-      response.headers.set('X-Robots-Tag', 'noindex, nofollow');
-    }
-    return response;
+  const response = NextResponse.next();
+
+  if (url.startsWith('/admin') || url.startsWith('/dashboard') || url.startsWith('/api')) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
   }
-  
-  return NextResponse.next();
+
+  return response;
 }
 
 export const config = {
