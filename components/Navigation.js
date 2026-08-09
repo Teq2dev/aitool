@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { SignInButton, UserButton, SignedIn, SignedOut, useUser } from '@clerk/nextjs';
+import { UserButton, useUser, useClerk } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Upload, Globe, ChevronDown, Check } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
@@ -11,6 +11,7 @@ import { useLanguage } from '@/context/LanguageContext';
 export default function Navigation() {
   const pathname = usePathname();
   const { user, isLoaded, isSignedIn } = useUser();
+  const clerk = useClerk();
   const [isAdmin, setIsAdmin] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const { currentLang, setLanguage, t, langObj, languages, getLangUrl } = useLanguage();
@@ -46,6 +47,18 @@ export default function Navigation() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleSignInClick = () => {
+    try {
+      if (clerk && typeof clerk.openSignIn === 'function') {
+        clerk.openSignIn();
+      } else {
+        window.location.href = '/submit';
+      }
+    } catch (e) {
+      window.location.href = '/submit';
+    }
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <div className="container mx-auto px-4">
@@ -77,24 +90,26 @@ export default function Navigation() {
             >
               {t('blogs')}
             </Link>
-            <SignedIn>
-              <Link 
-                href={getLangUrl('/dashboard')} 
-                className={`transition-colors font-medium ${pathname?.includes('/dashboard') ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'}`}
-                prefetch={true}
-              >
-                {t('myDashboard')}
-              </Link>
-              {isAdmin && (
+            {isSignedIn && (
+              <>
                 <Link 
-                  href={getLangUrl('/admin')} 
-                  className={`transition-colors font-medium ${pathname?.includes('/admin') ? 'text-blue-600' : 'text-blue-700 hover:text-blue-600'}`}
+                  href={getLangUrl('/dashboard')} 
+                  className={`transition-colors font-medium ${pathname?.includes('/dashboard') ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'}`}
                   prefetch={true}
                 >
-                  {t('admin')}
+                  {t('myDashboard')}
                 </Link>
-              )}
-            </SignedIn>
+                {isAdmin && (
+                  <Link 
+                    href={getLangUrl('/admin')} 
+                    className={`transition-colors font-medium ${pathname?.includes('/admin') ? 'text-blue-600' : 'text-blue-700 hover:text-blue-600'}`}
+                    prefetch={true}
+                  >
+                    {t('admin')}
+                  </Link>
+                )}
+              </>
+            )}
           </nav>
 
           <div className="flex items-center gap-3">
@@ -102,7 +117,7 @@ export default function Navigation() {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full border border-gray-200 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full border border-gray-200 transition-colors cursor-pointer"
                 aria-label="Select Language"
               >
                 <span className="text-base">{langObj?.flag || '🌐'}</span>
@@ -139,48 +154,32 @@ export default function Navigation() {
               )}
             </div>
 
-            {!isLoaded ? (
-              <div className="flex items-center gap-2">
-                <Link href={getLangUrl('/submit')}>
-                  <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 hidden sm:flex">
+            {isSignedIn ? (
+              <div className="flex items-center gap-3">
+                <Link href={getLangUrl('/submit')} prefetch={true}>
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white font-medium">
                     <Upload className="w-4 h-4 mr-2" />
                     {t('submitTool')}
                   </Button>
                 </Link>
-                <SignInButton mode="modal">
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
-                    {t('signIn')}
-                  </button>
-                </SignInButton>
+                <UserButton afterSignOutUrl="/" />
               </div>
             ) : (
-              <>
-                <SignedIn>
-                  <Link href={getLangUrl('/submit')} prefetch={true}>
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                      <Upload className="w-4 h-4 mr-2" />
-                      {t('submitTool')}
-                    </Button>
-                  </Link>
-                  <UserButton afterSignOutUrl="/" />
-                </SignedIn>
-                <SignedOut>
-                  <div className="flex items-center gap-2">
-                    <Link href={getLangUrl('/submit')}>
-                      <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 hidden sm:flex">
-                        <Upload className="w-4 h-4 mr-2" />
-                        {t('submitTool')}
-                      </Button>
-                    </Link>
-                    
-                    <SignInButton mode="modal">
-                      <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors shadow-sm cursor-pointer">
-                        {t('signIn')}
-                      </button>
-                    </SignInButton>
-                  </div>
-                </SignedOut>
-              </>
+              <div className="flex items-center gap-2">
+                <Link href={getLangUrl('/submit')}>
+                  <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 font-medium">
+                    <Upload className="w-4 h-4 mr-[6px]" />
+                    {t('submitTool')}
+                  </Button>
+                </Link>
+                
+                <Button 
+                  onClick={handleSignInClick}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-all shadow-md cursor-pointer"
+                >
+                  {t('signIn')}
+                </Button>
+              </div>
             )}
           </div>
         </div>
