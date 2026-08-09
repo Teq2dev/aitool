@@ -1,8 +1,20 @@
 import { NextResponse } from 'next/server';
 import { getCollection } from '@/lib/db';
-import { auth } from '@clerk/nextjs/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { v4 as uuidv4 } from 'uuid';
 import { ObjectId } from 'mongodb';
+
+// Helper to authenticate user via NextAuth session
+async function auth() {
+  try {
+    const session = await getServerSession(authOptions);
+    return { userId: session?.user?.id || null };
+  } catch (error) {
+    console.error('Error in auth helper:', error);
+    return { userId: null };
+  }
+}
 
 /**
  * Utility to recalculate and update tool rating/votes

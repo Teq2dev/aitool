@@ -5,6 +5,23 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { v4 as uuidv4 } from 'uuid';
 
+// Helper to get authenticated user ID from session
+async function getAuthUserId() {
+  try {
+    const session = await getServerSession(authOptions);
+    return session?.user?.id || null;
+  } catch (error) {
+    console.error('Error getting auth user ID:', error);
+    return null;
+  }
+}
+
+// Clerk auth compatibility helper
+async function auth() {
+  const userId = await getAuthUserId();
+  return { userId };
+}
+
 // Helper function to create text indexes for search
 async function createSearchIndexes() {
   try {
