@@ -718,9 +718,13 @@ function ReviewsSection({ toolId, initialRating, initialVotes }) {
                         <>
                           <div className="flex justify-between items-start mb-2">
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs uppercase">
-                                {rev.userName?.charAt(0) || 'A'}
-                              </div>
+                              {rev.userPhoto ? (
+                                <img src={rev.userPhoto} alt={rev.userName} className="w-8 h-8 rounded-full object-cover border border-gray-100 shadow-sm" />
+                              ) : (
+                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs uppercase">
+                                  {rev.userName?.charAt(0) || 'A'}
+                                </div>
+                              )}
                               <div>
                                 <p className="font-bold text-gray-900 text-sm">{rev.userName || 'Anonymous'}</p>
                                 <p className="text-[10px] text-gray-400">
