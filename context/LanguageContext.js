@@ -8,9 +8,20 @@ const LanguageContext = createContext();
 const VALID_LANGS = ['es', 'fr', 'de', 'pt', 'ar', 'ru', 'ja', 'zh', 'it', 'nl'];
 
 export function LanguageProvider({ children }) {
-  const [currentLang, setCurrentLangState] = useState('en');
   const router = useRouter();
   const pathname = usePathname();
+
+  // Initialize language from pathname during SSR to avoid English flash
+  const [currentLang, setCurrentLangState] = useState(() => {
+    const segments = pathname ? pathname.split('/').filter(Boolean) : [];
+    const firstSegment = segments[0];
+    if (firstSegment && VALID_LANGS.includes(firstSegment)) {
+      return firstSegment;
+    }
+    // Fallback: we cannot reliably check localStorage/URLSearchParams during SSR,
+    // so we default to 'en'. The useEffect will pick up saved prefs on mount.
+    return 'en';
+  });
 
   useEffect(() => {
     // 1. Detect language from URL pathname prefix (e.g. /fr, /es/tools/midjourney)
