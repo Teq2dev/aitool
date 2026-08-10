@@ -315,7 +315,7 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
               </Card>
 
               {/* Reviews Section */}
-              <ReviewsSection toolId={tool._id} initialRating={tool.rating} />
+              <ReviewsSection toolId={tool._id} initialRating={tool.rating} initialVotes={tool.votes} />
             </div>
 
             {/* Sidebar */}
@@ -407,7 +407,8 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
   );
 }
 
-function ReviewsSection({ toolId, initialRating }) {
+function ReviewsSection({ toolId, initialRating, initialVotes }) {
+  const { t } = useLanguage();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -586,10 +587,15 @@ function ReviewsSection({ toolId, initialRating }) {
 
   return (
     <Card className="shadow-sm border-none overflow-hidden">
-      <CardHeader className="border-b bg-gray-50/50">
+      <CardHeader className="border-b bg-gray-50/50 flex flex-row flex-wrap items-center justify-between gap-4 py-5">
         <CardTitle className="text-2xl flex items-center gap-2">
           User Reviews & Ratings
         </CardTitle>
+        <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-full border border-yellow-100 m-0">
+          <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+          <span className="text-lg font-bold text-yellow-700">{initialRating}</span>
+          <span className="text-gray-500 text-sm">({initialVotes} {t('reviews')})</span>
+        </div>
       </CardHeader>
       <CardContent className="p-0">
         <div className="grid grid-cols-1 md:grid-cols-5">
