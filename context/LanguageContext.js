@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { LANGUAGES, TRANSLATIONS } from '@/lib/languages';
 
 const LanguageContext = createContext();
@@ -9,7 +9,6 @@ const VALID_LANGS = ['es', 'fr', 'de', 'pt', 'ar', 'ru', 'ja', 'zh', 'it', 'nl']
 
 export function LanguageProvider({ children }) {
   const [currentLang, setCurrentLangState] = useState('en');
-  const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -31,7 +30,12 @@ export function LanguageProvider({ children }) {
     }
 
     // 2. Check query parameter ?lang=code
-    const urlLang = searchParams?.get('lang');
+    let urlLang = null;
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      urlLang = urlParams.get('lang');
+    }
+    
     if (urlLang && TRANSLATIONS[urlLang]) {
       setCurrentLangState(urlLang);
       localStorage.setItem('app_lang', urlLang);
@@ -45,16 +49,18 @@ export function LanguageProvider({ children }) {
     }
 
     // 3. Fallback to localStorage
-    const savedLang = localStorage.getItem('app_lang');
-    if (savedLang && TRANSLATIONS[savedLang]) {
-      setCurrentLangState(savedLang);
-      const langObj = LANGUAGES.find(l => l.code === savedLang);
-      if (langObj) {
-        document.documentElement.lang = savedLang;
-        document.documentElement.dir = langObj.dir || 'ltr';
+    if (typeof window !== 'undefined') {
+      const savedLang = localStorage.getItem('app_lang');
+      if (savedLang && TRANSLATIONS[savedLang]) {
+        setCurrentLangState(savedLang);
+        const langObj = LANGUAGES.find(l => l.code === savedLang);
+        if (langObj) {
+          document.documentElement.lang = savedLang;
+          document.documentElement.dir = langObj.dir || 'ltr';
+        }
       }
     }
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   const setLanguage = (langCode) => {
     if (TRANSLATIONS[langCode]) {
@@ -84,9 +90,13 @@ export function LanguageProvider({ children }) {
       }
 
       // Retain non-lang search params
-      const currentParams = new URLSearchParams(searchParams ? searchParams.toString() : '');
-      currentParams.delete('lang');
-      const queryStr = currentParams.toString();
+      let queryStr = '';
+      if (typeof window !== 'undefined') {
+        const currentParams = new URLSearchParams(window.location.search);
+        currentParams.delete('lang');
+        queryStr = currentParams.toString();
+      }
+      
       if (queryStr) {
         newUrl += `?${queryStr}`;
       }
