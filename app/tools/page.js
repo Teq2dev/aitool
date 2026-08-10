@@ -11,8 +11,8 @@ export async function generateMetadata({ searchParams }) {
   const search = searchParams?.search || '';
   const baseUrl = 'https://www.bestaitoolsfree.com';
   
-  let title = 'Browse 700+ Best Free AI Tools Directory (2026) | Best AI Tools Free';
-  let description = 'Discover and compare 700+ curated free & freemium AI tools across writing, image generation, coding, audio, and productivity categories.';
+  let title = 'Browse 1000+ Best Free AI Tools Directory (2026) | Best AI Tools Free';
+  let description = 'Discover and compare 1000+ curated free & freemium AI tools across writing, image generation, coding, audio, and productivity categories.';
   let url = `${baseUrl}/tools`;
 
   if (category) {

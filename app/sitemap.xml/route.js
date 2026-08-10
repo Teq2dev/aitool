@@ -117,7 +117,7 @@ export async function GET() {
     categories.forEach(cat => {
       if (cat._id) {
         LANGUAGES.forEach(lang => {
-          const path = `/tools?category=${encodeURIComponent(cat._id)}`;
+          const path = `/categories/${cat._id}`;
           const fullUrl = lang.code === 'en' ? `${baseUrl}${path}` : `${baseUrl}/${lang.code}${path}`;
           
           xml += `

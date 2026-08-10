@@ -3,8 +3,11 @@ import { getToolBySlug, getTools } from '@/lib/getTools';
 import ToolDetailClient from './ToolDetailClient';
 import { notFound } from 'next/navigation';
 
-export async function generateMetadata({ params }) {
+import { getLocalizedDescription } from '@/lib/languages';
+
+export async function generateMetadata({ params, searchParams }) {
   const tool = await getToolBySlug(params.slug);
+  const lang = searchParams?.lang || 'en';
   
   if (!tool) {
     return {
@@ -13,14 +16,26 @@ export async function generateMetadata({ params }) {
   }
 
   const categoryName = tool.categories?.[0] ? tool.categories[0].replace(/-/g, ' ') : 'AI';
+  
+  // Localized SEO Tags
+  const localizedInfo = getLocalizedDescription(tool, lang);
+  const translationOverride = tool.translations?.[lang] || {};
+  const localizedDesc = translationOverride.fullDescription 
+    ? translationOverride.fullDescription.substring(0, 160) 
+    : (localizedInfo.description || tool.shortDescription || '').substring(0, 160);
+    
   const title = `${tool.name} Review & Alternatives (2026) - Best Free ${categoryName} AI Tool`;
-  const description = tool.shortDescription || tool.description?.substring(0, 160);
+  const description = localizedDesc;
   const baseUrl = 'https://www.bestaitoolsfree.com';
-  const url = `${baseUrl}/tools/${tool.slug}`;
+  const canonicalPath = lang === 'en' ? `/tools/${tool.slug}` : `/${lang}/tools/${tool.slug}`;
+  const url = `${baseUrl}${canonicalPath}`;
+
+  const robots = tool.contentStatus === 'draft' ? { index: false, follow: false } : undefined;
 
   return {
     title,
     description,
+    robots,
     alternates: {
       canonical: url,
       languages: {
@@ -61,11 +76,12 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function ToolPage({ params }) {
+export default async function ToolPage({ params, searchParams }) {
   const tool = await getToolBySlug(params.slug);
+  const lang = searchParams?.lang || 'en';
 
   if (!tool) {
-    notFound();
+    return notFound();
   }
 
   // Fetch related tools on the server for faster loading and better SEO
@@ -77,6 +93,13 @@ export default async function ToolPage({ params }) {
   const relatedTools = relatedToolsData.tools?.filter(t => t.slug !== tool.slug).slice(0, 3) || [];
   const primaryCategory = tool.categories?.[0] || 'general';
   const baseUrl = 'https://www.bestaitoolsfree.com';
+  const canonicalPath = lang === 'en' ? `/tools/${tool.slug}` : `/${lang}/tools/${tool.slug}`;
+
+  // Localized Info
+  const localizedInfo = getLocalizedDescription(tool, lang);
+  const translationOverride = tool.translations?.[lang] || {};
+  const displayFullDescription = translationOverride.fullDescription || localizedInfo.description || tool.shortDescription;
+  const displayFaqs = (translationOverride.faqs && translationOverride.faqs.length > 0) ? translationOverride.faqs : tool.faqs;
 
   // Server-rendered Graph Schema for Rich Snippets (Star Ratings, Breadcrumbs, FAQs)
   const jsonLdGraph = {
@@ -85,8 +108,8 @@ export default async function ToolPage({ params }) {
       {
         '@type': 'SoftwareApplication',
         name: tool.name,
-        description: tool.description || tool.shortDescription,
-        url: `${baseUrl}/tools/${tool.slug}`,
+        description: displayFullDescription,
+        url: `${baseUrl}${canonicalPath}`,
         applicationCategory: 'AI Tool',
         operatingSystem: 'Web',
         offers: {
@@ -139,7 +162,14 @@ export default async function ToolPage({ params }) {
       },
       {
         '@type': 'FAQPage',
-        mainEntity: [
+        mainEntity: displayFaqs && displayFaqs.length > 0 ? displayFaqs.map(faq => ({
+          '@type': 'Question',
+          name: faq.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: faq.answer
+          }
+        })) : [
           {
             '@type': 'Question',
             name: `Is ${tool.name} free to use?`,
@@ -154,14 +184,6 @@ export default async function ToolPage({ params }) {
             acceptedAnswer: {
               '@type': 'Answer',
               text: `${tool.name} is designed for ${primaryCategory.replace(/-/g, ' ')} tasks, offering automated AI workflows and intuitive features.`
-            }
-          },
-          {
-            '@type': 'Question',
-            name: `Where can I find alternatives to ${tool.name}?`,
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text: `You can browse top-rated free and paid alternatives to ${tool.name} in the ${primaryCategory.replace(/-/g, ' ')} directory on Best AI Tools Free.`
             }
           }
         ]

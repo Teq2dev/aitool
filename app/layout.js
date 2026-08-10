@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { getCategories } from '@/lib/getTools';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { LANGUAGES } from '@/lib/languages';
+import NextTopLoader from 'nextjs-toploader';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -166,6 +167,7 @@ export default async function RootLayout({ children }) {
           />
         </head>
         <body className={inter.className}>
+          <NextTopLoader color="#2563eb" showSpinner={false} height={3} shadow="0 0 10px #2563eb,0 0 5px #2563eb" />
           {/* Google Tag Manager (noscript) */}
           <noscript>
             <iframe 

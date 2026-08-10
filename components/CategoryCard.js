@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 export default function CategoryCard({ category }) {
   return (
-    <Link href={`/tools?category=${category.slug}`}>
+    <Link href={`/categories/${category.slug}`}>
       <Card className="group hover:shadow-md transition-all duration-300 border hover:border-blue-400 cursor-pointer h-full">
         <CardContent className="p-4">
           <div className="flex items-center gap-3">

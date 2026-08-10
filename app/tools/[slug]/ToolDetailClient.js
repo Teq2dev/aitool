@@ -28,6 +28,12 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
 
   const primaryCategory = tool.categories?.[0] || 'general';
   const localizedInfo = getLocalizedDescription(tool, currentLang);
+  
+  // Apply translation overrides from DB if they exist
+  const translationOverride = tool.translations?.[currentLang] || {};
+  const displayFullDescription = translationOverride.fullDescription || tool.fullDescription || localizedInfo.description;
+  const displayPricingDetails = translationOverride.pricingDetails || tool.pricingDetails;
+  const displayFaqs = (translationOverride.faqs && translationOverride.faqs.length > 0) ? translationOverride.faqs : tool.faqs;
   const prosList = getLocalizedProsList(primaryCategory, tool.rating, currentLang);
   const consList = getLocalizedConsList(currentLang);
   const localizedPricing = getLocalizedPricing(tool.pricing, currentLang);
@@ -50,7 +56,7 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: tool.name,
-    description: localizedInfo.description || tool.shortDescription,
+    description: displayFullDescription,
     url: `https://www.bestaitoolsfree.com/tools/${tool.slug}`,
     applicationCategory: 'AI Tool',
     operatingSystem: 'Web',
@@ -148,11 +154,11 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
               {/* Description */}
               <Card className="mb-6 shadow-sm border-none">
                 <CardHeader>
-                  <CardTitle className="text-2xl">{t('overviewOf')} {tool.name}</CardTitle>
+                  <CardTitle className="text-2xl">What is {tool.name}?</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="prose prose-blue max-w-none">
-                    <p className="text-gray-700 text-lg leading-relaxed whitespace-pre-wrap">{localizedInfo.description}</p>
+                    <p className="text-gray-700 text-lg leading-relaxed whitespace-pre-wrap">{displayFullDescription}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -173,6 +179,20 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                           <span className="text-gray-800 font-medium">{feature}</span>
                         </div>
                       ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Pricing Details */}
+              {displayPricingDetails && (
+                <Card className="mb-6 shadow-sm border-none">
+                  <CardHeader>
+                    <CardTitle className="text-2xl">{tool.name} Pricing Details</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="prose prose-blue max-w-none text-gray-700 text-lg leading-relaxed">
+                      {displayPricingDetails}
                     </div>
                   </CardContent>
                 </Card>
@@ -232,26 +252,29 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                      <h3 className="font-bold text-gray-900 mb-2 text-base">Is {tool.name} free to use?</h3>
-                      <p className="text-gray-700 text-sm leading-relaxed">
-                        {tool.name} is offered with a <strong>{localizedPricing}</strong> pricing structure. You can visit their official site to check available free tiers or trial options.
-                      </p>
-                    </div>
-
-                    <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                      <h3 className="font-bold text-gray-900 mb-2 text-base">What primary features does {tool.name} offer?</h3>
-                      <p className="text-gray-700 text-sm leading-relaxed">
-                        {tool.name} specializes in {primaryCategory.replace(/-/g, ' ')}, helping users streamline workflows and generate automated AI outputs efficiently.
-                      </p>
-                    </div>
-
-                    <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                      <h3 className="font-bold text-gray-900 mb-2 text-base">How can I find alternatives to {tool.name}?</h3>
-                      <p className="text-gray-700 text-sm leading-relaxed">
-                        You can compare {tool.name} with other top-rated tools in the <Link href={`/tools?category=${encodeURIComponent(primaryCategory)}&lang=${currentLang}`} className="text-blue-600 hover:underline font-medium capitalize">{primaryCategory.replace(/-/g, ' ')}</Link> section on Best AI Tools Free.
-                      </p>
-                    </div>
+                    {displayFaqs && displayFaqs.length > 0 ? (
+                      displayFaqs.map((faq, index) => (
+                        <div key={index} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                          <h3 className="font-bold text-gray-900 mb-2 text-base">{faq.question}</h3>
+                          <p className="text-gray-700 text-sm leading-relaxed">{faq.answer}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <>
+                        <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                          <h3 className="font-bold text-gray-900 mb-2 text-base">Is {tool.name} free to use?</h3>
+                          <p className="text-gray-700 text-sm leading-relaxed">
+                            {tool.name} is offered with a <strong>{localizedPricing}</strong> pricing structure. You can visit their official site to check available free tiers or trial options.
+                          </p>
+                        </div>
+                        <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                          <h3 className="font-bold text-gray-900 mb-2 text-base">What primary features does {tool.name} offer?</h3>
+                          <p className="text-gray-700 text-sm leading-relaxed">
+                            {tool.name} specializes in {primaryCategory.replace(/-/g, ' ')}, helping users streamline workflows and generate automated AI outputs efficiently.
+                          </p>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -310,12 +333,30 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                   </Button>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between text-sm py-2 border-b">
+                      <span className="text-gray-500">Category</span>
+                      <Link href={`/categories/${primaryCategory}`} className="font-bold text-blue-700 hover:underline capitalize">{primaryCategory.replace(/-/g, ' ')}</Link>
+                    </div>
+                    <div className="flex items-center justify-between text-sm py-2 border-b">
                       <span className="text-gray-500">{t('pricingModel')}</span>
                       <span className="font-bold text-blue-700">{localizedPricing}</span>
                     </div>
+                    {tool.platforms && tool.platforms.length > 0 && (
+                      <div className="flex flex-col text-sm py-2 border-b space-y-1">
+                        <span className="text-gray-500">Supported Platforms</span>
+                        <div className="flex flex-wrap gap-1 justify-end">
+                          {tool.platforms.map(p => (
+                            <span key={p} className="text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-700 font-medium">{p}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between text-sm py-2 border-b">
                       <span className="text-gray-500">{t('globalRating')}</span>
                       <span className="font-bold text-yellow-600">{tool.rating} / 5.0</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm py-2 border-b">
+                      <span className="text-gray-500">Free Plan Available</span>
+                      <span className="font-bold text-gray-700">{tool.pricing === 'Paid' ? 'No' : 'Yes'}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm py-2">
                       <span className="text-gray-500">{t('lastUpdated')}</span>

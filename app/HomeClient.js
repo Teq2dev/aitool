@@ -31,14 +31,14 @@ export default function HomeClient({
         <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-indigo-200/30 rounded-full blur-3xl opacity-50"></div>
         
         <div className="container mx-auto px-4 relative z-10 text-center">
-          <Badge className="mb-8 bg-white/80 backdrop-blur-sm text-blue-700 border-blue-200 px-6 py-2 text-sm rounded-full shadow-sm animate-fade-in">
+          <Badge className="mb-8 bg-white/80 backdrop-blur-sm text-blue-1000 border-blue-200 px-6 py-2 text-sm rounded-full shadow-sm animate-fade-in">
             <SparklesIcon className="w-4 h-4 mr-2 inline" />
             {t('heroBadge')}
           </Badge>
           
           <h1 className="text-6xl md:text-7xl font-extrabold text-gray-900 mb-8 leading-tight tracking-tight">
             {t('heroTitlePrefix')}{' '}
-            <span className="block bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-blue-600 to-indigo-1000 bg-clip-text text-transparent">
               {t('heroTitleSuffix')}
             </span>
           </h1>
@@ -53,7 +53,7 @@ export default function HomeClient({
 
           <div className="flex flex-wrap items-center justify-center gap-6">
             <Link href="/tools">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-10 py-8 rounded-2xl shadow-xl shadow-blue-200 transition-all hover:scale-105 active:scale-95">
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-1000 text-white text-lg px-10 py-8 rounded-2xl shadow-xl shadow-blue-200 transition-all hover:scale-105 active:scale-95">
                 {t('exploreAllTools')}
                 <ArrowRightIcon className="ml-2 w-6 h-6" />
               </Button>
@@ -75,7 +75,7 @@ export default function HomeClient({
               <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform bg-white border border-blue-100 shadow-sm">
                 <SparklesIcon className="w-8 h-8 text-blue-600" />
               </div>
-              <div className="text-4xl font-black text-gray-900 mb-1">700+</div>
+              <div className="text-4xl font-black text-gray-900 mb-1">1000+</div>
               <div className="text-gray-500 font-medium">{t('aiApps')}</div>
             </div>
             <div className="text-center group">
@@ -199,7 +199,7 @@ export default function HomeClient({
                 <p className="text-xl text-gray-500 font-medium">{t('arrivalsSubtitle')}</p>
               </div>
               <Link href="/tools?sort=newest">
-                <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-100 rounded-xl px-8">
+                <Button variant="outline" className="border-gray-300 text-gray-1000 hover:bg-gray-100 rounded-xl px-8">
                   {t('recentArrivals')} <ArrowRightIcon className="ml-2 w-4 h-4" />
                 </Button>
               </Link>
@@ -226,7 +226,7 @@ export default function HomeClient({
           </p>
           <div className="flex flex-col md:flex-row items-center justify-center gap-6">
             <Link href="/submit">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white text-xl px-12 py-9 rounded-2xl shadow-2xl shadow-blue-500/20 transition-all font-black">
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-1000 text-white text-xl px-12 py-9 rounded-2xl shadow-2xl shadow-blue-500/20 transition-all font-black">
                 {t('submitTool')}
                 <ArrowRightIcon className="ml-4 w-7 h-7" />
               </Button>
