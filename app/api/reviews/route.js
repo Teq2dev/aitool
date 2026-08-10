@@ -24,6 +24,17 @@ async function updateToolStats(toolId) {
     const reviewsCollection = await getCollection('reviews');
     const toolsCollection = await getCollection('tools');
 
+    // Support both string and ObjectId lookups for safety
+    const query = { $or: [{ _id: toolId }, { _id: String(toolId) }] };
+    try {
+      if (typeof toolId === 'string' && toolId.length === 24) {
+        query.$or.push({ _id: new ObjectId(toolId) });
+      }
+    } catch (e) {}
+
+    const tool = await toolsCollection.findOne(query);
+    if (!tool) return null;
+
     // Aggregate reviews to get fresh stats
     const stats = await reviewsCollection.aggregate([
       { $match: { toolId: String(toolId), status: 'approved' } },
@@ -36,25 +47,29 @@ async function updateToolStats(toolId) {
       }
     ]).toArray();
 
-    const newStats = stats[0] || { averageRating: 0, totalVotes: 0 };
+    const writtenStats = stats[0] || { averageRating: 0, totalVotes: 0 };
+    const baseVotes = tool.baseVotes || 150;
+    const baseRating = tool.baseRating || 4.5;
+
+    const writtenVotes = writtenStats.totalVotes;
+    const writtenRatingSum = writtenStats.averageRating * writtenVotes;
+
+    const finalVotes = baseVotes + writtenVotes;
+    let finalRating = baseRating;
     
-    // Support both string and ObjectId lookups for safety
-    const query = { $or: [{ _id: toolId }, { _id: String(toolId) }] };
-    try {
-      if (typeof toolId === 'string' && toolId.length === 24) {
-        query.$or.push({ _id: new ObjectId(toolId) });
-      }
-    } catch (e) {}
+    if (finalVotes > 0) {
+      finalRating = ((baseRating * baseVotes) + writtenRatingSum) / finalVotes;
+    }
 
     await toolsCollection.updateOne(query, {
       $set: {
-        rating: Number(newStats.averageRating.toFixed(1)),
-        votes: newStats.totalVotes,
+        rating: Number(finalRating.toFixed(1)),
+        votes: finalVotes,
         updatedAt: new Date()
       }
     });
 
-    return newStats;
+    return { averageRating: finalRating, totalVotes: finalVotes };
   } catch (error) {
     console.error('Error updating tool stats:', error);
     throw error;
