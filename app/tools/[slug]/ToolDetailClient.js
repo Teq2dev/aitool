@@ -34,7 +34,11 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
   const translationOverride = tool.translations?.[currentLang] || {};
   const displayFullDescription = translationOverride.fullDescription || tool.fullDescription || localizedInfo.description;
   const displayPricingDetails = translationOverride.pricingDetails || tool.pricingDetails;
-  const displayFaqs = (translationOverride.faqs && translationOverride.faqs.length > 0) ? translationOverride.faqs : tool.faqs;
+  
+  let displayFaqs = tool.faqs;
+  if (currentLang !== 'en' && translationOverride.faqs && translationOverride.faqs.length > 0) {
+    displayFaqs = translationOverride.faqs;
+  }
   const prosList = getLocalizedProsList(primaryCategory, tool.rating, currentLang);
   const consList = getLocalizedConsList(currentLang);
   const localizedPricing = getLocalizedPricing(tool.pricing, currentLang);

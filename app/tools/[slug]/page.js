@@ -96,7 +96,11 @@ export default async function ToolPage({ params, searchParams }) {
   const localizedInfo = getLocalizedDescription(tool, lang);
   const translationOverride = tool.translations?.[lang] || {};
   const displayFullDescription = translationOverride.fullDescription || localizedInfo.description || tool.shortDescription;
-  const displayFaqs = (translationOverride.faqs && translationOverride.faqs.length > 0) ? translationOverride.faqs : tool.faqs;
+  
+  let displayFaqs = tool.faqs;
+  if (lang !== 'en' && translationOverride.faqs && translationOverride.faqs.length > 0) {
+    displayFaqs = translationOverride.faqs;
+  }
 
   // Server-rendered Graph Schema for Rich Snippets (Star Ratings, Breadcrumbs, FAQs)
   const jsonLdGraph = {

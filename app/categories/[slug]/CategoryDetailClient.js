@@ -11,7 +11,11 @@ export default function CategoryDetailClient({ category, popularTools, freeTools
   const displayName = translationOverride.name || category.name;
   const displayDescription = translationOverride.longDescription || translationOverride.description || category.longDescription || category.description;
   const displayBuyingGuide = translationOverride.buyingGuide || category.buyingGuide;
-  const displayFaqs = (translationOverride.faqs && translationOverride.faqs.length > 0) ? translationOverride.faqs : category.faqs;
+  
+  let displayFaqs = category.faqs;
+  if (currentLang !== 'en' && translationOverride.faqs && translationOverride.faqs.length > 0) {
+    displayFaqs = translationOverride.faqs;
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen pb-20">
