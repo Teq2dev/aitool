@@ -161,47 +161,12 @@ export async function GET(request, { params }) {
       // Run searches in parallel for speed
       const searchPromises = [];
       
-      // Search tools - with Fuzzy matching (handles typos)
+      // Search tools - V6 Capability-Aware Hybrid Search
       if (type === 'all' || type === 'tools') {
         searchPromises.push(
           (async () => {
-            const toolsCollection = await getCollection('tools');
-            
-            // Try Atlas Search (Smart Search)
-            try {
-              results.tools = await toolsCollection.aggregate([
-                {
-                  $search: {
-                    index: 'default', // Try default first
-                    text: {
-                      query: query,
-                      path: 'name',
-                      fuzzy: { maxEdits: 2 }
-                    }
-                  }
-                },
-                { $match: { status: 'approved' } },
-                { $limit: limit },
-                { $project: { name: 1, slug: 1, shortDescription: 1, logo: 1, categories: 1, pricing: 1, score: { $meta: 'searchScore' } } }
-              ]).toArray();
-              
-              // If Atlas Search finds nothing, use fallback
-              if (results.tools.length === 0) {
-                throw new Error('No Atlas Search results');
-              }
-            } catch (searchError) {
-              // Fallback to Smarter Regex Search
-              const regexQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-              results.tools = await toolsCollection
-                .find({
-                  status: 'approved',
-                  name: { $regex: regexQuery, $options: 'i' }
-                })
-                .project({ name: 1, slug: 1, shortDescription: 1, logo: 1, categories: 1, pricing: 1 })
-                .sort({ votes: -1 })
-                .limit(limit)
-                .toArray();
-            }
+            const { searchToolsV6 } = await import('@/lib/searchV6');
+            results.tools = await searchToolsV6(query, limit);
           })()
         );
       }

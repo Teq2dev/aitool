@@ -17,10 +17,11 @@ import {
   getLocalizedDescription 
 } from '@/lib/languages';
 
-export default function ToolDetailClient({ initialTool, initialRelatedTools = [] }) {
+export default function ToolDetailClient({ initialTool, initialStrongSimilar = [], initialRelatedTools = [] }) {
   const { data: session } = useSession();
   const user = session?.user;
   const [tool] = useState(initialTool);
+  const [strongSimilar] = useState(initialStrongSimilar);
   const [relatedTools] = useState(initialRelatedTools);
   const { t, currentLang } = useLanguage();
 
@@ -398,27 +399,67 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                 </CardContent>
               </Card>
 
-              {/* Related Tools */}
-              {relatedTools.length > 0 && (
-                <Card className="shadow-sm border-none">
+              {/* Strong Similar Tools */}
+              {strongSimilar.length > 0 && (
+                <Card className="shadow-sm border-none mb-6">
                   <CardHeader>
                     <CardTitle className="text-xl flex items-center gap-2">
                       <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
-                      {t('similarAiTools')}
+                      Strong Similar Tools
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {strongSimilar.map((similarTool) => {
+                        const relDesc = similarTool.shortDescription || '';
+                        return (
+                          <Link key={similarTool.slug} href={`/tools/${similarTool.slug}?lang=${currentLang}`}>
+                            <div className="flex items-center gap-4 p-4 rounded-xl hover:bg-blue-50/50 transition-all cursor-pointer border border-transparent hover:border-blue-100 group">
+                              <div className="w-14 h-14 rounded-xl overflow-hidden bg-white shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform">
+                                {similarTool.logo ? (
+                                  <img src={similarTool.logo} alt={similarTool.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-400">{similarTool.name.charAt(0)}</div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-bold text-gray-900 group-hover:text-blue-700 transition-colors truncate">{similarTool.name}</p>
+                                <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{relDesc}</p>
+                              </div>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Related Tools */}
+              {relatedTools.length > 0 && (
+                <Card className="shadow-sm border-none mb-6">
+                  <CardHeader>
+                    <CardTitle className="text-xl flex items-center gap-2">
+                      <div className="w-1 h-6 bg-gray-400 rounded-full"></div>
+                      Related Tools
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       {relatedTools.map((relatedTool) => {
-                        const relDesc = getLocalizedDescription(relatedTool, currentLang).shortDescription;
+                        const relDesc = relatedTool.shortDescription || '';
                         return (
-                          <Link key={relatedTool._id} href={`/tools/${relatedTool.slug}?lang=${currentLang}`}>
-                            <div className="flex items-center gap-4 p-4 rounded-xl hover:bg-blue-50/50 transition-all cursor-pointer border border-transparent hover:border-blue-100 group">
+                          <Link key={relatedTool.slug} href={`/tools/${relatedTool.slug}?lang=${currentLang}`}>
+                            <div className="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50/50 transition-all cursor-pointer border border-transparent hover:border-gray-200 group">
                               <div className="w-14 h-14 rounded-xl overflow-hidden bg-white shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform">
-                                <img src={relatedTool.logo} alt={relatedTool.name} className="w-full h-full object-cover" />
+                                {relatedTool.logo ? (
+                                  <img src={relatedTool.logo} alt={relatedTool.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-400">{relatedTool.name.charAt(0)}</div>
+                                )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="font-bold text-gray-900 group-hover:text-blue-700 transition-colors truncate">{relatedTool.name}</p>
+                                <p className="font-bold text-gray-900 group-hover:text-gray-700 transition-colors truncate">{relatedTool.name}</p>
                                 <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{relDesc}</p>
                               </div>
                             </div>

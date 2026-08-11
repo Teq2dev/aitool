@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { getToolBySlug, getTools } from '@/lib/getTools';
+import { getSimilarTools } from '@/lib/similarTools';
 import ToolDetailClient from './ToolDetailClient';
 import { notFound } from 'next/navigation';
 
@@ -85,12 +86,8 @@ export default async function ToolPage({ params, searchParams }) {
   }
 
   // Fetch related tools on the server for faster loading and better SEO
-  const relatedToolsData = await getTools({ 
-    category: tool.categories?.[0], 
-    limit: 4 
-  });
+  const { strongSimilar, relatedTools } = await getSimilarTools(tool.slug, 5, 3);
   
-  const relatedTools = relatedToolsData.tools?.filter(t => t.slug !== tool.slug).slice(0, 3) || [];
   const primaryCategory = tool.categories?.[0] || 'general';
   const baseUrl = 'https://www.bestaitoolsfree.com';
   const canonicalPath = lang === 'en' ? `/tools/${tool.slug}` : `/${lang}/tools/${tool.slug}`;
@@ -204,6 +201,7 @@ export default async function ToolPage({ params, searchParams }) {
       }>
         <ToolDetailClient 
           initialTool={tool} 
+          initialStrongSimilar={strongSimilar}
           initialRelatedTools={relatedTools} 
         />
       </Suspense>
