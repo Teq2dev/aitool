@@ -184,19 +184,49 @@ export default function ToolDetailClient({ initialTool, initialRelatedTools = []
                 </Card>
               )}
 
-              {/* Pricing Details */}
-              {displayPricingDetails && (
-                <Card className="mb-6 shadow-sm border-none">
-                  <CardHeader>
-                    <CardTitle className="text-2xl">{tool.name} Pricing Details</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="prose prose-blue max-w-none text-gray-700 text-lg leading-relaxed">
-                      {displayPricingDetails}
+              {/* Pricing Section */}
+              <Card className="mb-6 shadow-sm border-none">
+                <CardHeader>
+                  <CardTitle className="text-2xl">{tool.name} Pricing</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    <div className="flex flex-col p-4 bg-gray-50 rounded-xl border border-gray-100">
+                      <span className="text-sm font-semibold text-gray-500 mb-1 tracking-wider uppercase">Pricing model</span>
+                      <span className="font-bold text-gray-900 text-lg">{tool.pricingModel || tool.pricing || '—'}</span>
                     </div>
-                  </CardContent>
-                </Card>
-              )}
+                    <div className="flex flex-col p-4 bg-gray-50 rounded-xl border border-gray-100">
+                      <span className="text-sm font-semibold text-gray-500 mb-1 tracking-wider uppercase">Starting price</span>
+                      <span className="font-bold text-gray-900 text-lg">{tool.startingPrice || '—'}</span>
+                    </div>
+                    <div className="flex flex-col p-4 bg-gray-50 rounded-xl border border-gray-100">
+                      <span className="text-sm font-semibold text-gray-500 mb-1 tracking-wider uppercase">Free plan</span>
+                      <span className="font-bold text-gray-900 text-lg">
+                        {tool.hasFreePlan !== undefined 
+                          ? (tool.hasFreePlan ? 'Yes' : 'No') 
+                          : (tool.pricing === 'Free' || tool.pricing === 'Freemium' ? 'Yes' : '—')}
+                      </span>
+                    </div>
+                    <div className="flex flex-col p-4 bg-gray-50 rounded-xl border border-gray-100">
+                      <span className="text-sm font-semibold text-gray-500 mb-1 tracking-wider uppercase">Free trial</span>
+                      <span className="font-bold text-gray-900 text-lg">{tool.hasFreeTrial !== undefined ? (tool.hasFreeTrial ? 'Available' : 'No') : '—'}</span>
+                    </div>
+                    <div className="flex flex-col p-4 bg-gray-50 rounded-xl border border-gray-100">
+                      <span className="text-sm font-semibold text-gray-500 mb-1 tracking-wider uppercase">Billing</span>
+                      <span className="font-bold text-gray-900 text-lg">{tool.billingCycle || '—'}</span>
+                    </div>
+                  </div>
+                  
+                  {displayPricingDetails && (
+                    <div className="p-5 bg-blue-50/50 rounded-xl border border-blue-100/50">
+                      <h4 className="text-sm font-bold text-blue-900 mb-2 uppercase tracking-wider">Detailed Pricing Info</h4>
+                      <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
+                        {displayPricingDetails}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
               {/* Pros & Cons Section */}
               <Card className="mb-6 shadow-sm border-none">

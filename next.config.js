@@ -58,6 +58,39 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    const toolsToRedirect = [
+      { old: 'lessonplansai', new: 'lessonplans-ai' },
+      { old: 'closerscopy', new: 'closers-copy' },
+      { old: 'wolfram-alpha', new: 'wolframalpha' },
+      { old: 'originalityai', new: 'originality-ai' },
+      { old: 'seoai', new: 'seo-ai' },
+      { old: 'seowritingai', new: 'seowriting-ai' },
+      { old: 'easy-peasyai', new: 'easy-peasy-ai' },
+      { old: 'adcreativeai', new: 'adcreative-ai' },
+      { old: 'hoppy-copy', new: 'hoppycopy' },
+      { old: 'warmerai', new: 'warmer-ai' },
+      { old: 'tensorart', new: 'tensor-art' },
+      { old: 'surfer-seo', new: 'surferseo' },
+      { old: 'tugan-ai', new: 'tuganai' },
+    ];
+    
+    const redirectsList = [];
+    for (const tool of toolsToRedirect) {
+      redirectsList.push({
+        source: `/tools/${tool.old}`,
+        destination: `/tools/${tool.new}`,
+        permanent: true,
+      });
+      redirectsList.push({
+        source: `/:lang(es|fr|de|pt|ar|ru|ja|zh|it|nl)/tools/${tool.old}`,
+        destination: `/:lang/tools/${tool.new}`,
+        permanent: true,
+      });
+    }
+    
+    return redirectsList;
+  },
 };
 
 module.exports = nextConfig;
