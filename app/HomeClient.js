@@ -20,7 +20,7 @@ export default function HomeClient({
   const [trending] = useState(initialTrending);
   const [categories] = useState(initialCategories);
   const [latest] = useState(initialLatest);
-  const { t } = useLanguage();
+  const { t, getLangUrl } = useLanguage();
 
   return (
     <div className="min-h-screen">
@@ -52,13 +52,13 @@ export default function HomeClient({
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-6">
-            <Link href="/tools">
+            <Link href={getLangUrl('/tools')}>
               <Button size="lg" className="bg-blue-600 hover:bg-blue-1000 text-white text-lg px-10 py-8 rounded-2xl shadow-xl shadow-blue-200 transition-all hover:scale-105 active:scale-95">
                 {t('exploreAllTools')}
                 <ArrowRightIcon className="ml-2 w-6 h-6" />
               </Button>
             </Link>
-            <Link href="/submit">
+            <Link href={getLangUrl('/submit')}>
               <Button size="lg" variant="outline" className="border-2 border-gray-200 bg-white/50 backdrop-blur-sm text-gray-800 hover:bg-white hover:border-blue-600 hover:text-blue-600 text-lg px-10 py-8 rounded-2xl transition-all">
                 {t('submitYourProject')}
               </Button>
@@ -111,7 +111,7 @@ export default function HomeClient({
               <h2 className="text-4xl font-extrabold text-gray-900 mb-3">{t('featuredInnovation')}</h2>
               <p className="text-xl text-gray-500 font-medium">{t('featuredSubtitle')}</p>
             </div>
-            <Link href="/tools?featured=true">
+            <Link href={getLangUrl('/tools?featured=true')}>
               <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl px-8 transition-all">
                 {t('viewAllExcellence')} <ArrowRightIcon className="ml-2 w-4 h-4" />
               </Button>
@@ -141,7 +141,7 @@ export default function HomeClient({
               </h2>
               <p className="text-xl text-gray-500 font-medium">{t('trendingSubtitle')}</p>
             </div>
-            <Link href="/tools?sort=trending">
+            <Link href={getLangUrl('/tools?sort=trending')}>
               <Button variant="default" className="bg-gray-900 hover:bg-black text-white rounded-xl px-8 shadow-lg">
                 {t('seeTrends')} <ArrowRightIcon className="ml-2 w-4 h-4" />
               </Button>
@@ -179,7 +179,7 @@ export default function HomeClient({
           </div>
 
           <div className="text-center">
-            <Link href="/categories">
+            <Link href={getLangUrl('/categories')}>
               <Button size="lg" variant="outline" className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 px-12 py-7 text-lg font-bold rounded-2xl transition-all">
                 {t('exploreAllCategories')} ({categories.length}+)
                 <ArrowRightIcon className="ml-2 w-6 h-6" />
@@ -198,7 +198,7 @@ export default function HomeClient({
                 <h2 className="text-4xl font-extrabold text-gray-900 mb-3">{t('freshArrivals')}</h2>
                 <p className="text-xl text-gray-500 font-medium">{t('arrivalsSubtitle')}</p>
               </div>
-              <Link href="/tools?sort=newest">
+              <Link href={getLangUrl('/tools?sort=newest')}>
                 <Button variant="outline" className="border-gray-300 text-gray-1000 hover:bg-gray-100 rounded-xl px-8">
                   {t('recentArrivals')} <ArrowRightIcon className="ml-2 w-4 h-4" />
                 </Button>
@@ -225,7 +225,7 @@ export default function HomeClient({
             {t('ctaSubtitle')}
           </p>
           <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-            <Link href="/submit">
+            <Link href={getLangUrl('/submit')}>
               <Button size="lg" className="bg-blue-600 hover:bg-blue-1000 text-white text-xl px-12 py-9 rounded-2xl shadow-2xl shadow-blue-500/20 transition-all font-black">
                 {t('submitTool')}
                 <ArrowRightIcon className="ml-4 w-7 h-7" />

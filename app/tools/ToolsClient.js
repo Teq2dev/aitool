@@ -7,6 +7,7 @@ import SearchBar from '@/components/SearchBar';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Filter, X, Loader2, ArrowUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 import {
   Pagination,
   PaginationContent,
@@ -21,6 +22,7 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  const { getLangUrl } = useLanguage();
   
   const [filters, setFilters] = useState(initialFilters || { category: '', search: '', sort: 'trending' });
   const [tools, setTools] = useState(initialTools || []);
@@ -55,7 +57,7 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
     params.set('limit', '40');
     
     startTransition(() => {
-      router.push(`/tools?${params.toString()}`, { scroll: true });
+      router.push(getLangUrl(`/tools?${params.toString()}`), { scroll: true });
     });
     
     setFilters(newFilters);
@@ -76,7 +78,7 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
 
   const clearFilters = () => {
     startTransition(() => {
-      router.push('/tools', { scroll: true });
+      router.push(getLangUrl('/tools'), { scroll: true });
     });
     setFilters({ category: '', search: '', sort: 'trending' });
   };

@@ -5,16 +5,18 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function SignInPage() {
+  const { getLangUrl } = useLanguage();
   const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
     if (session) {
-      router.push('/dashboard');
+      router.push(getLangUrl('/dashboard'));
     }
-  }, [session, router]);
+  }, [session, router, getLangUrl]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -31,7 +33,7 @@ export default function SignInPage() {
         <CardContent className="pt-6">
           <Button
             type="button"
-            onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+            onClick={() => signIn('google', { callbackUrl: getLangUrl('/dashboard') })}
             className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 border border-gray-300 rounded-xl shadow-sm transition-all text-base"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">

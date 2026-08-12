@@ -12,7 +12,7 @@ function SearchInput({ placeholder, className = '' }) {
   const currentSearch = searchParams ? searchParams.get('search') || '' : '';
   const [search, setSearch] = useState(currentSearch);
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, getLangUrl } = useLanguage();
 
   const activePlaceholder = placeholder || t('searchPlaceholder');
 
@@ -24,7 +24,7 @@ function SearchInput({ placeholder, className = '' }) {
   const handleSearch = (e) => {
     e.preventDefault();
     if (search.trim()) {
-      router.push(`/tools?search=${encodeURIComponent(search)}`);
+      router.push(getLangUrl(`/tools?search=${encodeURIComponent(search)}`));
     }
   };
 

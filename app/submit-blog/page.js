@@ -11,8 +11,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Upload, CheckCircle, X } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function SubmitBlogPage() {
+  const { getLangUrl } = useLanguage();
   const { data: session, status } = useSession();
   const isSignedIn = status === 'authenticated';
   const isLoaded = status !== 'loading';
@@ -227,7 +229,7 @@ export default function SubmitBlogPage() {
                 </>
               )}
             </Button>
-            <Button type="button" variant="outline" onClick={() => router.push('/blogs')}>
+            <Button type="button" variant="outline" onClick={() => router.push(getLangUrl('/blogs'))}>
               Cancel
             </Button>
           </div>

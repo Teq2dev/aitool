@@ -375,7 +375,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                   <div className="space-y-4">
                     <div className="flex items-center justify-between text-sm py-2 border-b">
                       <span className="text-gray-500">Category</span>
-                      <Link href={`/categories/${primaryCategory}`} className="font-bold text-blue-700 hover:underline capitalize">{primaryCategory.replace(/-/g, ' ')}</Link>
+                      <Link href={getLangUrl(`/categories/${primaryCategory}`)} className="font-bold text-blue-700 hover:underline capitalize">{primaryCategory.replace(/-/g, ' ')}</Link>
                     </div>
                     <div className="flex items-center justify-between text-sm py-2 border-b">
                       <span className="text-gray-500">{t('pricingModel')}</span>

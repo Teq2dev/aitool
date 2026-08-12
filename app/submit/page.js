@@ -12,8 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Upload, CheckCircle, X, Image as ImageIcon, Globe } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function SubmitToolPage() {
+  const { getLangUrl } = useLanguage();
   const { data: session, status } = useSession();
   const isSignedIn = status === 'authenticated';
   const isLoaded = status !== 'loading';
@@ -168,7 +170,7 @@ export default function SubmitToolPage() {
 
       if (res.ok) {
         setSuccess(true);
-        setTimeout(() => router.push('/dashboard'), 2000);
+        setTimeout(() => router.push(getLangUrl('/dashboard')), 2000);
       } else if (res.status === 409) {
         // Duplicate tool detected
         alert(`This tool already exists: "${data.existingTool?.name || 'Unknown'}". Status: ${data.existingTool?.status || 'unknown'}`);
@@ -200,7 +202,7 @@ export default function SubmitToolPage() {
             <p className="text-gray-600 mb-6">
               Your tool has been submitted for review.
             </p>
-            <Button onClick={() => router.push('/dashboard')} className="bg-blue-600 hover:bg-blue-700">
+            <Button onClick={() => router.push(getLangUrl('/dashboard'))} className="bg-blue-600 hover:bg-blue-700">
               Go to Dashboard
             </Button>
           </CardContent>

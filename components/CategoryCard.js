@@ -3,10 +3,12 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function CategoryCard({ category }) {
+  const { getLangUrl } = useLanguage();
   return (
-    <Link href={`/categories/${category.slug}`}>
+    <Link href={getLangUrl(`/categories/${category.slug}`)}>
       <Card className="group hover:shadow-md transition-all duration-300 border hover:border-blue-400 cursor-pointer h-full">
         <CardContent className="p-4">
           <div className="flex items-center gap-3">

@@ -5,7 +5,7 @@ import ToolCard from '@/components/ToolCard';
 import Link from 'next/link';
 
 export default function CategoryDetailClient({ category, popularTools, freeTools, newTools, allTools }) {
-  const { t, currentLang } = useLanguage();
+  const { t, currentLang, getLangUrl } = useLanguage();
   
   const translationOverride = category.translations?.[currentLang] || {};
   const displayName = translationOverride.name || category.name;
@@ -23,9 +23,9 @@ export default function CategoryDetailClient({ category, popularTools, freeTools
       <div className="bg-white border-b border-gray-200 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center space-x-3 mb-4 text-sm text-gray-500">
-            <Link href="/" className="hover:text-blue-600">Home</Link>
+            <Link href={getLangUrl('/')} className="hover:text-blue-600">Home</Link>
             <span>/</span>
-            <Link href="/categories" className="hover:text-blue-600">Categories</Link>
+            <Link href={getLangUrl('/categories')} className="hover:text-blue-600">Categories</Link>
             <span>/</span>
             <span className="text-gray-900 font-medium">{displayName}</span>
           </div>
@@ -113,7 +113,7 @@ export default function CategoryDetailClient({ category, popularTools, freeTools
               <h3 className="text-lg font-bold text-gray-900 mb-4">Latest Arrivals</h3>
               <div className="space-y-4">
                 {newTools.map((tool) => (
-                  <Link href={`/tools/${tool.slug}`} key={tool._id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition">
+                  <Link href={getLangUrl(`/tools/${tool.slug}`)} key={tool._id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition">
                     <img src={tool.logo} alt={tool.name} className="w-12 h-12 rounded-lg object-cover border border-gray-200" />
                     <div>
                       <h4 className="font-semibold text-gray-900 text-sm">{tool.name}</h4>
