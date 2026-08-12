@@ -40,7 +40,9 @@ export async function generateMetadata({ params, searchParams }) {
     ? stripHtml(rawMetaDesc).substring(0, 160)
     : stripHtml(rawLongDesc).substring(0, 160);
 
-  const title = `Best Free ${displayName} Tools & Software (2026)`;
+  // Option C: use the custom DB title; fall back to the template for any category without one.
+  const titleFromDb = translationOverride.title || category.title || null;
+  const title = titleFromDb || `Best Free ${displayName} Tools & Software (2026)`;
   const baseUrl = 'https://www.bestaitoolsfree.com';
   const canonicalPath = lang === 'en' ? `/categories/${category.slug}` : `/${lang}/categories/${category.slug}`;
   const url = `${baseUrl}${canonicalPath}`;
@@ -113,7 +115,7 @@ export default async function CategoryPage({ params }) {
     '@graph': [
       {
         '@type': 'CollectionPage',
-        name: `Best Free ${category.name} Tools`,
+        name: category.title || `Best Free ${category.name} Tools`,
         description: category.longDescription || category.description,
         url: `${baseUrl}/categories/${category.slug}`,
       },
