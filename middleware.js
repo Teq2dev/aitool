@@ -20,7 +20,14 @@ export default async function middleware(req) {
       if (key !== 'lang') rewriteUrl.searchParams.set(key, value);
     });
 
-    const response = NextResponse.rewrite(rewriteUrl);
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set('x-invoke-lang', lang);
+
+    const response = NextResponse.rewrite(rewriteUrl, {
+      request: {
+        headers: requestHeaders,
+      },
+    });
     response.cookies.set('app_lang', lang, { path: '/', maxAge: 31536000, sameSite: 'lax' });
     
     if (targetPath.startsWith('/admin') || targetPath.startsWith('/dashboard')) {

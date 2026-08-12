@@ -1,7 +1,16 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { headers } from 'next/headers';
+
+const VALID_LANGS = ['es', 'fr', 'de', 'pt', 'ar', 'ru', 'ja', 'zh', 'it', 'nl'];
 
 export default function NotFound() {
+  const h = headers();
+  const reqLang = h.get('x-invoke-lang');
+  const lang = VALID_LANGS.includes(reqLang) ? reqLang : 'en';
+  const prefix = lang === 'en' ? '' : `/${lang}`;
+  const homeHref = lang === 'en' ? '/' : `${prefix}/`;
+  const toolsHref = `${prefix}/tools`;
   return (
     <div className="min-h-[80vh] flex items-center justify-center bg-gray-50 px-4">
       <div className="max-w-2xl w-full bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row items-center p-8 md:p-12 gap-8 border border-gray-100">
@@ -33,7 +42,7 @@ export default function NotFound() {
           
           <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
             <Link 
-              href="/"
+              href={homeHref}
               className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
             >
               <svg xmlns="http://www.w3.org/.svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -42,7 +51,7 @@ export default function NotFound() {
               Back to Home
             </Link>
             <Link 
-              href="/tools"
+              href={toolsHref}
               className="px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all flex items-center justify-center"
             >
               Browse Tools
