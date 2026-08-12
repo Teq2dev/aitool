@@ -24,8 +24,8 @@ export async function generateMetadata({ params, searchParams }) {
   const localizedDesc = translationOverride.fullDescription 
     ? translationOverride.fullDescription.substring(0, 160) 
     : (localizedInfo.description || tool.shortDescription || '').substring(0, 160);
-    
-  const title = `${tool.name} Review & Alternatives (2026) - Best Free ${categoryName} AI Tool`;
+  const baseTitle = `${tool.name} Review & Alternatives (2026) - Best Free ${categoryName} AI Tool`;
+  const title = translationOverride.title || baseTitle;
   const description = localizedDesc;
   const baseUrl = 'https://www.bestaitoolsfree.com';
   const canonicalPath = lang === 'en' ? `/tools/${tool.slug}` : `/${lang}/tools/${tool.slug}`;
@@ -207,6 +207,7 @@ export default async function ToolPage({ params, searchParams }) {
           initialTool={tool} 
           initialStrongSimilar={strongSimilar}
           initialRelatedTools={relatedTools} 
+          initialLang={lang}
         />
       </Suspense>
     </>

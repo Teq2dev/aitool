@@ -17,36 +17,37 @@ import {
   getLocalizedDescription 
 } from '@/lib/languages';
 
-export default function ToolDetailClient({ initialTool, initialStrongSimilar = [], initialRelatedTools = [] }) {
+export default function ToolDetailClient({ initialTool, initialStrongSimilar = [], initialRelatedTools = [], initialLang = 'en' }) {
   const { data: session } = useSession();
   const user = session?.user;
   const [tool] = useState(initialTool);
   const [strongSimilar] = useState(initialStrongSimilar);
   const [relatedTools] = useState(initialRelatedTools);
-  const { t, currentLang } = useLanguage();
+  const { t, currentLang, getLangUrl } = useLanguage();
 
   if (!tool) return null;
 
+  const effectiveLang = initialLang || currentLang;
   const primaryCategory = tool.categories?.[0] || 'general';
-  const localizedInfo = getLocalizedDescription(tool, currentLang);
+  const localizedInfo = getLocalizedDescription(tool, effectiveLang);
   
   // Apply translation overrides from DB if they exist
-  const translationOverride = tool.translations?.[currentLang] || {};
+  const translationOverride = tool.translations?.[effectiveLang] || {};
   const displayFullDescription = translationOverride.fullDescription || tool.fullDescription || localizedInfo.description;
   const displayPricingDetails = translationOverride.pricingDetails || tool.pricingDetails;
   
   let displayFaqs = tool.faqs;
-  if (currentLang !== 'en' && translationOverride.faqs && translationOverride.faqs.length > 0) {
+  if (effectiveLang !== 'en' && translationOverride.faqs && translationOverride.faqs.length > 0) {
     displayFaqs = translationOverride.faqs;
   }
 
   let displayFeatures = tool.features;
-  if (currentLang !== 'en' && translationOverride.features && translationOverride.features.length > 0) {
+  if (effectiveLang !== 'en' && translationOverride.features && translationOverride.features.length > 0) {
     displayFeatures = translationOverride.features;
   }
-  const prosList = getLocalizedProsList(primaryCategory, tool.rating, currentLang);
-  const consList = getLocalizedConsList(currentLang);
-  const localizedPricing = getLocalizedPricing(tool.pricing, currentLang);
+  const prosList = getLocalizedProsList(primaryCategory, tool.rating, effectiveLang);
+  const consList = getLocalizedConsList(effectiveLang);
+  const localizedPricing = getLocalizedPricing(tool.pricing, effectiveLang);
 
   const handleShare = () => {
     if (navigator.share) {
@@ -100,11 +101,11 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
         <div className="container mx-auto px-4">
           {/* Breadcrumb Navigation */}
           <nav aria-label="Breadcrumb" className="mb-6 flex items-center space-x-2 text-sm text-gray-600 flex-wrap">
-            <Link href={`/?lang=${currentLang}`} className="hover:text-blue-600 transition-colors">{t('home')}</Link>
+            <Link href={getLangUrl('/')} className="hover:text-blue-600 transition-colors">{t('home')}</Link>
             <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-            <Link href={`/tools?lang=${currentLang}`} className="hover:text-blue-600 transition-colors">{t('tools')}</Link>
+            <Link href={getLangUrl('/tools')} className="hover:text-blue-600 transition-colors">{t('tools')}</Link>
             <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
-            <Link href={`/tools?category=${encodeURIComponent(primaryCategory)}&lang=${currentLang}`} className="hover:text-blue-600 transition-colors capitalize">
+            <Link href={getLangUrl(`/tools?category=${encodeURIComponent(primaryCategory)}`)} className="hover:text-blue-600 transition-colors capitalize">
               {primaryCategory.replace(/-/g, ' ')}
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
@@ -330,7 +331,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                       <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">{t('mainCategories')}</h4>
                       <div className="flex flex-wrap gap-3">
                         {tool.categories?.map((cat) => (
-                          <Link key={cat} href={`/tools?category=${cat}&lang=${currentLang}`}>
+                          <Link key={cat} href={getLangUrl(`/tools?category=${cat}`)}>
                             <Badge variant="outline" className="px-4 py-2 text-sm cursor-pointer border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white transition-all bg-blue-50">
                               {cat.replace('-', ' ')}
                             </Badge>
@@ -422,7 +423,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                       {strongSimilar.map((similarTool) => {
                         const relDesc = similarTool.shortDescription || '';
                         return (
-                          <Link key={similarTool.slug} href={`/tools/${similarTool.slug}?lang=${currentLang}`}>
+                          <Link key={similarTool.slug} href={getLangUrl(`/tools/${similarTool.slug}`)}>
                             <div className="flex items-center gap-4 p-4 rounded-xl hover:bg-blue-50/50 transition-all cursor-pointer border border-transparent hover:border-blue-100 group">
                               <div className="w-14 h-14 rounded-xl overflow-hidden bg-white shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform">
                                 {similarTool.logo ? (
@@ -458,7 +459,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                       {relatedTools.map((relatedTool) => {
                         const relDesc = relatedTool.shortDescription || '';
                         return (
-                          <Link key={relatedTool.slug} href={`/tools/${relatedTool.slug}?lang=${currentLang}`}>
+                          <Link key={relatedTool.slug} href={getLangUrl(`/tools/${relatedTool.slug}`)}>
                             <div className="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50/50 transition-all cursor-pointer border border-transparent hover:border-gray-200 group">
                               <div className="w-14 h-14 rounded-xl overflow-hidden bg-white shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform">
                                 {relatedTool.logo ? (
