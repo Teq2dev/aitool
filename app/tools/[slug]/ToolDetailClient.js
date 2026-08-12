@@ -39,6 +39,11 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
   if (currentLang !== 'en' && translationOverride.faqs && translationOverride.faqs.length > 0) {
     displayFaqs = translationOverride.faqs;
   }
+
+  let displayFeatures = tool.features;
+  if (currentLang !== 'en' && translationOverride.features && translationOverride.features.length > 0) {
+    displayFeatures = translationOverride.features;
+  }
   const prosList = getLocalizedProsList(primaryCategory, tool.rating, currentLang);
   const consList = getLocalizedConsList(currentLang);
   const localizedPricing = getLocalizedPricing(tool.pricing, currentLang);
@@ -169,14 +174,14 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
               </Card>
 
               {/* Features */}
-              {tool.features && tool.features.length > 0 && (
+              {displayFeatures && displayFeatures.length > 0 && (
                 <Card className="mb-6 shadow-sm border-none house">
                   <CardHeader>
                     <CardTitle className="text-2xl">{t('keyBenefits')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {tool.features.map((feature, index) => (
+                      {displayFeatures.map((feature, index) => (
                         <div key={index} className="flex items-center p-4 rounded-xl bg-blue-50/50 border border-blue-100/50">
                           <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center mr-4 flex-shrink-0 shadow-sm">
                             <span className="text-sm font-bold">✓</span>
