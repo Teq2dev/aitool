@@ -3,6 +3,21 @@ import { getCategories, getTools } from '@/lib/getTools';
 import CategoryDetailClient from './CategoryDetailClient';
 import { notFound } from 'next/navigation';
 
+// Strip HTML tags and decode basic entities for safe use in meta tags
+function stripHtml(html) {
+  if (!html) return '';
+  return html
+    .replace(/<[^>]+>/g, ' ')          // Remove all HTML tags
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')              // Collapse whitespace
+    .trim();
+}
+
 export async function generateMetadata({ params, searchParams }) {
   const allCategories = await getCategories();
   const category = allCategories.find(c => c.slug === params.slug);
@@ -16,10 +31,16 @@ export async function generateMetadata({ params, searchParams }) {
 
   const translationOverride = category.translations?.[lang] || {};
   const displayName = translationOverride.name || category.name;
-  const displayDescription = translationOverride.longDescription || translationOverride.description || category.longDescription || category.description;
+
+  // Use the clean metaDescription field first; fall back to stripping HTML from longDescription.
+  // This ensures the <meta name="description"> tag always contains plain text.
+  const rawMetaDesc = translationOverride.metaDescription || category.metaDescription || null;
+  const rawLongDesc = translationOverride.longDescription || translationOverride.description || category.longDescription || category.description || '';
+  const description = rawMetaDesc
+    ? stripHtml(rawMetaDesc).substring(0, 160)
+    : stripHtml(rawLongDesc).substring(0, 160);
 
   const title = `Best Free ${displayName} Tools & Software (2026)`;
-  const description = displayDescription ? displayDescription.substring(0, 160) : '';
   const baseUrl = 'https://www.bestaitoolsfree.com';
   const canonicalPath = lang === 'en' ? `/categories/${category.slug}` : `/${lang}/categories/${category.slug}`;
   const url = `${baseUrl}${canonicalPath}`;
