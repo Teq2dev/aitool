@@ -6,6 +6,9 @@ const nextConfig = {
   experimental: {
     // Remove if not using Server Components
     serverComponentsExternalPackages: ['mongodb'],
+    outputFileTracingIncludes: {
+      '/*': ['./v6_field_embeddings_cache.json'],
+    },
   },
   webpack(config, { dev }) {
     if (dev) {
