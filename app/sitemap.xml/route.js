@@ -1,6 +1,23 @@
 import { getCollection } from '@/lib/db';
 import { LANGUAGES } from '@/lib/languages';
 
+const escapeXml = (unsafe) => {
+  if (!unsafe) return '';
+  return unsafe.replace(/[<>&'"]/g, (c) => {
+    switch (c) {
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '&': return '&amp;';
+      case '\'': return '&apos;';
+      case '"': return '&quot;';
+    }
+  });
+};
+
+const formatUrl = (url) => {
+  return escapeXml(encodeURI(url));
+};
+
 export async function GET() {
   const baseUrl = 'https://www.bestaitoolsfree.com';
   
@@ -51,8 +68,7 @@ export async function GET() {
     };
 
     // Build the XML string with xhtml hreflang support for Google International Indexing
-    let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">`;
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">`;
 
     // Add Static Pages for all languages
     staticPages.forEach(page => {
@@ -61,14 +77,14 @@ export async function GET() {
         
         xml += `
   <url>
-    <loc>${fullUrl}</loc>
+    <loc>${formatUrl(fullUrl)}</loc>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${lang.code === 'en' ? page.priority : '0.7'}</priority>`;
         
         // Add hreflang links
         LANGUAGES.forEach(alt => {
           xml += `
-    <xhtml:link rel="alternate" hreflang="${alt.code}" href="${getSubpathUrl(page.url, alt.code)}" />`;
+    <xhtml:link rel="alternate" hreflang="${alt.code}" href="${formatUrl(getSubpathUrl(page.url, alt.code))}" />`;
         });
 
         xml += `
@@ -84,14 +100,14 @@ export async function GET() {
           
           xml += `
   <url>
-    <loc>${fullUrl}</loc>
+    <loc>${formatUrl(fullUrl)}</loc>
     <lastmod>${formatDate(tool.updatedAt || tool.createdAt)}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>${lang.code === 'en' ? '0.8' : '0.65'}</priority>`;
 
           LANGUAGES.forEach(alt => {
             xml += `
-    <xhtml:link rel="alternate" hreflang="${alt.code}" href="${getSubpathUrl(`/tools/${tool.slug}`, alt.code)}" />`;
+    <xhtml:link rel="alternate" hreflang="${alt.code}" href="${formatUrl(getSubpathUrl(`/tools/${tool.slug}`, alt.code))}" />`;
           });
 
           xml += `
@@ -105,7 +121,7 @@ export async function GET() {
       if (blog.slug) {
         xml += `
   <url>
-    <loc>${baseUrl}/blogs/${blog.slug}</loc>
+    <loc>${formatUrl(`${baseUrl}/blogs/${blog.slug}`)}</loc>
     <lastmod>${formatDate(blog.updatedAt || blog.createdAt)}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
@@ -122,7 +138,7 @@ export async function GET() {
           
           xml += `
   <url>
-    <loc>${fullUrl}</loc>
+    <loc>${formatUrl(fullUrl)}</loc>
     <changefreq>daily</changefreq>
     <priority>${lang.code === 'en' ? '0.85' : '0.7'}</priority>
   </url>`;
@@ -130,8 +146,7 @@ export async function GET() {
       }
     });
 
-    xml += `
-</urlset>`;
+    xml += `\n</urlset>`;
 
     return new Response(xml, {
       headers: {
@@ -141,10 +156,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Sitemap generation error:', error);
-    return new Response(`<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>${baseUrl}</loc><priority>1.0</priority></url>
-</urlset>`, {
+    return new Response(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${baseUrl}</loc><priority>1.0</priority></url>\n</urlset>`, {
       headers: { 'Content-Type': 'application/xml' },
     });
   }
