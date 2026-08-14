@@ -20,6 +20,14 @@ import {
 import ToolSemanticClusters from '@/components/seo/ToolSemanticClusters';
 import Breadcrumbs from '@/components/seo/Breadcrumbs';
 
+const sanitizeHtml = (html) => {
+  if (!html) return '';
+  if (typeof window === 'undefined') {
+    return html;
+  }
+  return DOMPurify.sanitize(html);
+};
+
 export default function ToolDetailClient({ initialTool, initialStrongSimilar = [], initialRelatedTools = [], initialLang = 'en', relatedBlogs = [], relatedCats = [], breadcrumbData }) {
   const { data: session } = useSession();
   const user = session?.user;
@@ -165,7 +173,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                 <CardContent>
                   <div 
                     className="prose prose-blue max-w-none text-gray-700 text-lg leading-relaxed whitespace-pre-wrap"
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(displayFullDescription) }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(displayFullDescription) }}
                   />
         <ToolSemanticClusters 
           relatedCats={relatedCats} 
@@ -237,7 +245,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                       <h4 className="text-sm font-bold text-blue-900 mb-2 uppercase tracking-wider">Detailed Pricing Info</h4>
                       <div 
                         className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap"
-                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(displayPricingDetails) }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(displayPricingDetails) }}
                       />
                     </div>
                   )}
@@ -304,7 +312,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                           <h3 className="font-bold text-gray-900 mb-2 text-base">{faq.question}</h3>
                           <div 
                             className="text-gray-700 text-sm leading-relaxed prose prose-sm max-w-none"
-                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(faq.answer) }}
+                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(faq.answer) }}
                           />
                         </div>
                       ))

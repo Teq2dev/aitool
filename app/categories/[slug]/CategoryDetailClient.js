@@ -7,6 +7,14 @@ import DOMPurify from 'isomorphic-dompurify';
 import CategorySemanticClusters from '@/components/seo/CategorySemanticClusters';
 import Breadcrumbs from '@/components/seo/Breadcrumbs';
 
+const sanitizeHtml = (html) => {
+  if (!html) return '';
+  if (typeof window === 'undefined') {
+    return html;
+  }
+  return DOMPurify.sanitize(html);
+};
+
 export default function CategoryDetailClient({ category, popularTools, freeTools, newTools, allTools, relatedCats = [], relatedBlogs = [], breadcrumbData }) {
   const { t, currentLang, getLangUrl } = useLanguage();
   
@@ -39,7 +47,7 @@ export default function CategoryDetailClient({ category, popularTools, freeTools
           )}
           <div 
             className="prose prose-blue max-w-4xl text-gray-600 text-lg leading-relaxed whitespace-pre-wrap"
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(displayDescription) }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(displayDescription) }}
           />
         </div>
       </div>
@@ -56,7 +64,7 @@ export default function CategoryDetailClient({ category, popularTools, freeTools
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">How to Choose the Right {displayName} Tool</h2>
                 <div 
                   className="prose prose-blue max-w-none text-gray-600 bg-white p-8 rounded-2xl border border-gray-200 shadow-sm whitespace-pre-wrap"
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(displayBuyingGuide) }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(displayBuyingGuide) }}
                 />
               </section>
             )}
@@ -99,7 +107,7 @@ export default function CategoryDetailClient({ category, popularTools, freeTools
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">{faq.question}</h3>
                       <div 
                         className="text-gray-600 leading-relaxed whitespace-pre-wrap prose prose-blue"
-                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(faq.answer) }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(faq.answer) }}
                       />
                     </div>
                   ))}

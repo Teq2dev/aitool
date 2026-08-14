@@ -6,8 +6,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Eye, Calendar, ArrowLeft, Share2 } from 'lucide-react';
 import Link from 'next/link';
-import { toast } from 'sonner';
 import DOMPurify from 'isomorphic-dompurify';
+import { toast } from 'sonner';
+
+const sanitizeHtml = (html) => {
+  if (!html) return '';
+  if (typeof window === 'undefined') {
+    return html;
+  }
+  return DOMPurify.sanitize(html);
+};
 
 export default function BlogDetailClient({ initialBlog }) {
   const [blog] = useState(initialBlog);
@@ -156,7 +164,7 @@ export default function BlogDetailClient({ initialBlog }) {
                 <div className="prose prose-lg prose-blue max-w-none">
                   <div 
                     className="whitespace-pre-wrap text-gray-800 text-lg leading-relaxed space-y-4"
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog.content) }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(blog.content) }}
                   />
                 </div>
               </CardContent>
