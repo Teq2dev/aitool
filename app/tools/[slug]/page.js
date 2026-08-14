@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { getToolBySlug, getTools } from '@/lib/getTools';
 import { getSimilarTools } from '@/lib/similarTools';
-import { getRelatedBlogs } from '@/lib/internalLinks';
+import { getRelatedBlogs, getRelatedCategories } from '@/lib/internalLinks';
 import ToolDetailClient from './ToolDetailClient';
 import { notFound } from 'next/navigation';
 
@@ -89,6 +89,7 @@ export default async function ToolPage({ params, searchParams }) {
   // Fetch related tools on the server for faster loading and better SEO
   const { strongSimilar, relatedTools } = await getSimilarTools(tool.slug, 5, 3);
   const relatedBlogs = await getRelatedBlogs(tool.slug);
+  const relatedCats = await getRelatedCategories(tool.categories?.[0] || tool.slug);
   
   const primaryCategory = tool.categories?.[0] || 'general';
   const baseUrl = 'https://www.bestaitoolsfree.com';
@@ -211,6 +212,7 @@ export default async function ToolPage({ params, searchParams }) {
           initialRelatedTools={relatedTools} 
           initialLang={lang}
           relatedBlogs={relatedBlogs}
+          relatedCats={relatedCats}
         />
       </Suspense>
     </>
