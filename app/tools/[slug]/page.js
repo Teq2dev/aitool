@@ -8,13 +8,6 @@ import { notFound } from 'next/navigation';
 
 import { getLocalizedDescription } from '@/lib/languages';
 
-// Cache similar tools result per slug to avoid repeated DB queries on Vercel
-const getCachedSimilarTools = unstable_cache(
-  (slug) => getSimilarTools(slug, 5, 3),
-  ['getSimilarTools'],
-  { revalidate: 300, tags: ['tools'] }
-);
-
 export async function generateMetadata({ params, searchParams }) {
   const tool = await getToolBySlug(params.slug);
   const lang = searchParams?.lang || 'en';
@@ -95,8 +88,14 @@ export default async function ToolPage({ params, searchParams }) {
   }
 
   // Fetch all related data concurrently for faster loading and better SEO
+  // unstable_cache is keyed per slug to avoid cross-tool cache pollution
+  const getCachedSimilar = unstable_cache(
+    () => getSimilarTools(tool.slug, 5, 3),
+    [`getSimilarTools-${tool.slug}`],
+    { revalidate: 300, tags: ['tools'] }
+  );
   const [{ strongSimilar, relatedTools }, relatedBlogs, relatedCats] = await Promise.all([
-    getCachedSimilarTools(tool.slug),
+    getCachedSimilar(),
     getRelatedBlogs(tool.slug),
     getRelatedCategories(tool.categories?.[0] || tool.slug),
   ]);
