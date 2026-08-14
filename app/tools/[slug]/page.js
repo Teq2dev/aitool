@@ -1,4 +1,4 @@
-
+import { Suspense } from 'react';
 import { unstable_cache } from 'next/cache';
 import { getToolBySlug, getTools } from '@/lib/getTools';
 import { getSimilarTools } from '@/lib/similarTools';
@@ -231,16 +231,22 @@ export default async function ToolPage({ params, searchParams }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdGraph) }}
       />
-      <ToolDetailClient 
-        initialTool={tool} 
-        initialStrongSimilar={strongSimilar}
-        initialRelatedTools={relatedTools} 
-        initialLang={lang}
-        relatedBlogs={relatedBlogs}
-        relatedCats={relatedCats}
-        breadcrumbs={breadcrumbs}
-        semanticClusters={semanticClusters}
-      />
+      <Suspense fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      }>
+        <ToolDetailClient 
+          initialTool={tool} 
+          initialStrongSimilar={strongSimilar}
+          initialRelatedTools={relatedTools} 
+          initialLang={lang}
+          relatedBlogs={relatedBlogs}
+          relatedCats={relatedCats}
+          breadcrumbs={breadcrumbs}
+          semanticClusters={semanticClusters}
+        />
+      </Suspense>
     </>
   );
 }
