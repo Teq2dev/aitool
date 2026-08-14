@@ -4,8 +4,6 @@ import { getRelatedCategories, getRelatedBlogs } from '@/lib/internalLinks';
 import CategoryDetailClient from './CategoryDetailClient';
 import { notFound } from 'next/navigation';
 import { TRANSLATIONS } from '@/lib/languages';
-import CategorySemanticClusters from '@/components/seo/CategorySemanticClusters';
-import Breadcrumbs from '@/components/seo/Breadcrumbs';
 
 // Strip HTML tags and decode basic entities for safe use in meta tags
 function stripHtml(html) {
@@ -175,36 +173,22 @@ export default async function CategoryPage({ params, searchParams }) {
     { label: category.name }
   ];
 
-  const breadcrumbs = <Breadcrumbs data={breadcrumbData} />;
-  const semanticClusters = <CategorySemanticClusters 
-    relatedCats={relatedCats} 
-    relatedBlogs={relatedBlogs}
-    effectiveLang={lang}
-  />;
-
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdGraph) }}
       />
-      <Suspense fallback={
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      }>
-        <CategoryDetailClient 
-          category={category} 
-          popularTools={popularTools}
-          freeTools={freeTools}
-          newTools={newTools}
-          allTools={tools}
-          relatedCats={relatedCats}
-          relatedBlogs={relatedBlogs}
-          breadcrumbs={breadcrumbs}
-          semanticClusters={semanticClusters}
-        />
-      </Suspense>
+      <CategoryDetailClient 
+        category={category} 
+        popularTools={popularTools}
+        freeTools={freeTools}
+        newTools={newTools}
+        allTools={tools}
+        relatedCats={relatedCats}
+        relatedBlogs={relatedBlogs}
+        breadcrumbData={breadcrumbData}
+      />
     </>
   );
 }

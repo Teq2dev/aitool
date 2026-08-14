@@ -17,8 +17,10 @@ import {
   getLocalizedConsList, 
   getLocalizedDescription 
 } from '@/lib/languages';
+import ToolSemanticClusters from '@/components/seo/ToolSemanticClusters';
+import Breadcrumbs from '@/components/seo/Breadcrumbs';
 
-export default function ToolDetailClient({ initialTool, initialStrongSimilar = [], initialRelatedTools = [], initialLang = 'en', relatedBlogs = [], relatedCats = [], breadcrumbs, semanticClusters }) {
+export default function ToolDetailClient({ initialTool, initialStrongSimilar = [], initialRelatedTools = [], initialLang = 'en', relatedBlogs = [], relatedCats = [], breadcrumbData }) {
   const { data: session } = useSession();
   const user = session?.user;
   const [tool] = useState(initialTool);
@@ -100,7 +102,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
       />
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4">
-          {breadcrumbs}
+          <Breadcrumbs data={breadcrumbData} />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
@@ -165,7 +167,13 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                     className="prose prose-blue max-w-none text-gray-700 text-lg leading-relaxed whitespace-pre-wrap"
                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(displayFullDescription) }}
                   />
-        {semanticClusters}
+        <ToolSemanticClusters 
+          relatedCats={relatedCats} 
+          relatedBlogs={relatedBlogs}
+          strongSimilar={strongSimilar}
+          relatedTools={relatedTools}
+          effectiveLang={effectiveLang}
+        />
 
 </CardContent>
               </Card>

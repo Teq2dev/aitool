@@ -4,8 +4,10 @@ import { useLanguage } from '@/context/LanguageContext';
 import ToolCard from '@/components/ToolCard';
 import Link from 'next/link';
 import DOMPurify from 'isomorphic-dompurify';
+import CategorySemanticClusters from '@/components/seo/CategorySemanticClusters';
+import Breadcrumbs from '@/components/seo/Breadcrumbs';
 
-export default function CategoryDetailClient({ category, popularTools, freeTools, newTools, allTools, relatedCats = [], relatedBlogs = [], breadcrumbs, semanticClusters }) {
+export default function CategoryDetailClient({ category, popularTools, freeTools, newTools, allTools, relatedCats = [], relatedBlogs = [], breadcrumbData }) {
   const { t, currentLang, getLangUrl } = useLanguage();
   
   const translationOverride = category.translations?.[currentLang] || {};
@@ -23,8 +25,8 @@ export default function CategoryDetailClient({ category, popularTools, freeTools
       {/* Hero Section */}
       <div className="bg-white border-b border-gray-200 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {breadcrumbs}
-          <div className="flex items-center space-x-4 mb-6">
+          <Breadcrumbs data={breadcrumbData} />
+          <div className="flex items-center space-x-4 mb-6 mt-4">
             <span className="text-5xl">{category.icon}</span>
             <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
               {displayName} Tools
@@ -105,7 +107,11 @@ export default function CategoryDetailClient({ category, popularTools, freeTools
               </section>
             )}
 
-            {semanticClusters}
+            <CategorySemanticClusters 
+              relatedCats={relatedCats} 
+              relatedBlogs={relatedBlogs}
+              effectiveLang={currentLang}
+            />
 
           </div>
 
