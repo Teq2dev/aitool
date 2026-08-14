@@ -227,7 +227,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
           </div>
         )}
 
-        {strongSimilar && strongSimilar.length > 0 && (
+        {(strongSimilar.length > 0 || relatedTools.length > 0) && (
           <div>
             <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
               <span className="bg-purple-100 text-purple-700 p-1.5 rounded-lg mr-2">
