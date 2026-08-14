@@ -18,29 +18,44 @@ import {
 import { useLanguage } from '@/context/LanguageContext';
 
 // ─── Repeatable list input ────────────────────────────────────────────────────
-function RepeatableList({ items, onAdd, onRemove, placeholder, maxLength = 120, label }) {
+function RepeatableList({ items = [], onAdd, onRemove, placeholder, maxLength = 120, label }) {
   const [input, setInput] = useState('');
-  const handleAdd = () => {
+  
+  const handleAdd = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
     const val = input.trim();
     if (!val || items.includes(val)) return;
     onAdd(val);
     setInput('');
   };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAdd(e);
+    }
+  };
+
   return (
     <div>
       <div className="flex gap-2">
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAdd(); } }}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
           maxLength={maxLength}
           className="flex-1"
           aria-label={label}
         />
-        <Button type="button" variant="outline" size="icon" onClick={handleAdd} aria-label={`Add ${label}`}>
-          <Plus className="w-4 h-4" />
-        </Button>
+        <button
+          type="button"
+          onClick={handleAdd}
+          className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-label={`Add ${label}`}
+        >
+          <Plus className="w-4 h-4 text-gray-600" />
+        </button>
       </div>
       {items.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-3">
@@ -52,8 +67,8 @@ function RepeatableList({ items, onAdd, onRemove, placeholder, maxLength = 120, 
               {item}
               <button
                 type="button"
-                onClick={() => onRemove(i)}
-                className="text-blue-400 hover:text-blue-700 transition-colors"
+                onClick={(e) => { e.preventDefault(); onRemove(i); }}
+                className="text-blue-400 hover:text-blue-700 transition-colors focus:outline-none"
                 aria-label={`Remove ${item}`}
               >
                 <X className="w-3.5 h-3.5" />
@@ -206,9 +221,9 @@ export default function SubmitToolPage() {
   const set = (key) => (value) => setFormData((p) => ({ ...p, [key]: value }));
   const setE = (key) => (e) => setFormData((p) => ({ ...p, [key]: e.target.value }));
 
-  const addToList = (key) => (val) => setFormData((p) => ({ ...p, [key]: [...p[key], val] }));
+  const addToList = (key) => (val) => setFormData((p) => ({ ...p, [key]: [...(p[key] || []), val] }));
   const removeFromList = (key) => (idx) =>
-    setFormData((p) => ({ ...p, [key]: p[key].filter((_, i) => i !== idx) }));
+    setFormData((p) => ({ ...p, [key]: (p[key] || []).filter((_, i) => i !== idx) }));
 
   const toggleCategory = (slug) => {
     setFormData((p) => {
