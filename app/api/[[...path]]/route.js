@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { getCollection } from '@/lib/db';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
@@ -719,6 +719,8 @@ export async function POST(request, { params }) {
       
       try {
         await toolsCollection.insertOne(newTool);
+        revalidateTag('tools');
+        revalidateTag('categories');
         return NextResponse.json({ success: true, tool: newTool });
       } catch (dbError) {
         console.warn('!! DEMO MODE: Database insertion failed, but returning success for testing flow !!');
@@ -1052,6 +1054,8 @@ export async function PUT(request) {
       
       revalidatePath('/');
       revalidatePath('/tools');
+      revalidateTag('tools');
+      revalidateTag('categories');
       return NextResponse.json({ success: true });
     }
     
@@ -1080,6 +1084,8 @@ export async function PUT(request) {
       
       revalidatePath('/');
       revalidatePath('/tools');
+      revalidateTag('tools');
+      revalidateTag('categories');
       return NextResponse.json({ success: true });
     }
     
@@ -1131,6 +1137,8 @@ export async function PUT(request) {
       
       revalidatePath('/');
       revalidatePath('/tools');
+      revalidateTag('tools');
+      revalidateTag('categories');
       return NextResponse.json({ success: true });
     }
     
@@ -1173,6 +1181,8 @@ export async function PUT(request) {
       
       revalidatePath('/');
       revalidatePath('/tools');
+      revalidateTag('tools');
+      revalidateTag('categories');
       return NextResponse.json({ success: true });
     }
     
@@ -1215,6 +1225,8 @@ export async function PUT(request) {
       
       revalidatePath('/');
       revalidatePath('/tools');
+      revalidateTag('tools');
+      revalidateTag('categories');
       return NextResponse.json({ success: true });
     }
     
@@ -1415,6 +1427,8 @@ export async function DELETE(request, { params }) {
       
       await toolsCollection.deleteOne({ _id: id });
       
+      revalidateTag('tools');
+      revalidateTag('categories');
       return NextResponse.json({ success: true });
     }
     
@@ -1456,6 +1470,9 @@ export async function DELETE(request, { params }) {
       
       // Delete all tools from this bulk upload
       const result = await toolsCollection.deleteMany({ bulkUploadId: logId });
+      
+      revalidateTag('tools');
+      revalidateTag('categories');
       
       // Update the log to mark as undone
       await bulkLogsCollection.updateOne(
