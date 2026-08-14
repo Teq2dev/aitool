@@ -85,12 +85,12 @@ const nextConfig = {
       redirectsList.push({
         source: `/tools/${tool.old}`,
         destination: `/tools/${tool.new}`,
-        permanent: true,
+        statusCode: 301,
       });
       redirectsList.push({
         source: `/:lang(es|fr|de|pt|ar|ru|ja|zh|it|nl)/tools/${tool.old}`,
         destination: `/:lang/tools/${tool.new}`,
-        permanent: true,
+        statusCode: 301,
       });
     }
     
