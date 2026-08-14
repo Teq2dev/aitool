@@ -6,7 +6,9 @@ import { getRelatedBlogs, getRelatedCategories } from '@/lib/internalLinks';
 import ToolDetailClient from './ToolDetailClient';
 import { notFound } from 'next/navigation';
 
-import { getLocalizedDescription } from '@/lib/languages';
+import { getLocalizedDescription, TRANSLATIONS } from '@/lib/languages';
+import ToolSemanticClusters from '@/components/seo/ToolSemanticClusters';
+import Breadcrumbs from '@/components/seo/Breadcrumbs';
 
 export async function generateMetadata({ params, searchParams }) {
   const tool = await getToolBySlug(params.slug);
@@ -204,6 +206,25 @@ export default async function ToolPage({ params, searchParams }) {
     ]
   };
 
+  const getLangUrl = (path) => lang === 'en' ? path : `/${lang}${path}`;
+  const t = (key) => TRANSLATIONS[lang]?.[key] || TRANSLATIONS['en']?.[key] || key;
+
+  const breadcrumbData = [
+    { label: t('home'), href: getLangUrl('/') },
+    { label: t('tools'), href: getLangUrl('/tools') },
+    { label: primaryCategory.replace(/-/g, ' '), href: getLangUrl(`/tools?category=${encodeURIComponent(primaryCategory)}`), capitalize: true },
+    { label: tool.name }
+  ];
+
+  const breadcrumbs = <Breadcrumbs data={breadcrumbData} />;
+  const semanticClusters = <ToolSemanticClusters 
+    relatedCats={relatedCats} 
+    relatedBlogs={relatedBlogs}
+    strongSimilar={strongSimilar}
+    relatedTools={relatedTools}
+    effectiveLang={lang}
+  />;
+
   return (
     <>
       <script
@@ -222,6 +243,8 @@ export default async function ToolPage({ params, searchParams }) {
           initialLang={lang}
           relatedBlogs={relatedBlogs}
           relatedCats={relatedCats}
+          breadcrumbs={breadcrumbs}
+          semanticClusters={semanticClusters}
         />
       </Suspense>
     </>

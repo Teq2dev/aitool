@@ -3,6 +3,9 @@ import { getCategories, getTools } from '@/lib/getTools';
 import { getRelatedCategories, getRelatedBlogs } from '@/lib/internalLinks';
 import CategoryDetailClient from './CategoryDetailClient';
 import { notFound } from 'next/navigation';
+import { TRANSLATIONS } from '@/lib/languages';
+import CategorySemanticClusters from '@/components/seo/CategorySemanticClusters';
+import Breadcrumbs from '@/components/seo/Breadcrumbs';
 
 // Strip HTML tags and decode basic entities for safe use in meta tags
 function stripHtml(html) {
@@ -85,7 +88,7 @@ export async function generateMetadata({ params, searchParams }) {
   };
 }
 
-export default async function CategoryPage({ params }) {
+export default async function CategoryPage({ params, searchParams }) {
   const allCategories = await getCategories();
   const category = allCategories.find(c => c.slug === params.slug);
 
@@ -162,6 +165,23 @@ export default async function CategoryPage({ params }) {
     });
   }
 
+  const lang = searchParams?.lang || 'en';
+  const getLangUrl = (path) => lang === 'en' ? path : `/${lang}${path}`;
+  const t = (key) => TRANSLATIONS[lang]?.[key] || TRANSLATIONS['en']?.[key] || key;
+
+  const breadcrumbData = [
+    { label: t('home'), href: getLangUrl('/') },
+    { label: t('categories'), href: getLangUrl('/categories') },
+    { label: category.name }
+  ];
+
+  const breadcrumbs = <Breadcrumbs data={breadcrumbData} />;
+  const semanticClusters = <CategorySemanticClusters 
+    relatedCats={relatedCats} 
+    relatedBlogs={relatedBlogs}
+    effectiveLang={lang}
+  />;
+
   return (
     <>
       <script
@@ -181,6 +201,8 @@ export default async function CategoryPage({ params }) {
           allTools={tools}
           relatedCats={relatedCats}
           relatedBlogs={relatedBlogs}
+          breadcrumbs={breadcrumbs}
+          semanticClusters={semanticClusters}
         />
       </Suspense>
     </>
