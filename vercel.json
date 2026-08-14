@@ -3,5 +3,11 @@
   "devCommand": "yarn dev",
   "installCommand": "yarn install",
   "framework": "nextjs",
-  "regions": ["iad1"]
+  "regions": [
+    "iad1"
+  ],
+  "env": {
+    "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": "1",
+    "PUPPETEER_SKIP_DOWNLOAD": "true"
+  }
 }
