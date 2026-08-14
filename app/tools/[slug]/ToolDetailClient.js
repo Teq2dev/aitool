@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Star, ExternalLink, ArrowLeft, Share2, Edit2, Trash2, X, Check, ThumbsUp, ThumbsDown, HelpCircle, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import DOMPurify from 'isomorphic-dompurify';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/context/LanguageContext';
@@ -171,9 +172,10 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                   <CardTitle className="text-2xl">What is {tool.name}?</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="prose prose-blue max-w-none">
-                    <p className="text-gray-700 text-lg leading-relaxed whitespace-pre-wrap">{displayFullDescription}</p>
-                  </div>
+                  <div 
+                    className="prose prose-blue max-w-none text-gray-700 text-lg leading-relaxed whitespace-pre-wrap"
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(displayFullDescription) }}
+                  />
                 
       {/* Internal Links: Semantic Clusters */}
       <div className="mt-12 space-y-8 border-t border-gray-100 pt-8">
@@ -297,9 +299,10 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                   {displayPricingDetails && (
                     <div className="p-5 bg-blue-50/50 rounded-xl border border-blue-100/50">
                       <h4 className="text-sm font-bold text-blue-900 mb-2 uppercase tracking-wider">Detailed Pricing Info</h4>
-                      <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
-                        {displayPricingDetails}
-                      </div>
+                      <div 
+                        className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap"
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(displayPricingDetails) }}
+                      />
                     </div>
                   )}
                 </CardContent>
@@ -363,7 +366,10 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                       displayFaqs.map((faq, index) => (
                         <div key={index} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
                           <h3 className="font-bold text-gray-900 mb-2 text-base">{faq.question}</h3>
-                          <p className="text-gray-700 text-sm leading-relaxed">{faq.answer}</p>
+                          <div 
+                            className="text-gray-700 text-sm leading-relaxed prose prose-sm max-w-none"
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(faq.answer) }}
+                          />
                         </div>
                       ))
                     ) : (

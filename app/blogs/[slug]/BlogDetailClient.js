@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Clock, Eye, Calendar, ArrowLeft, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import DOMPurify from 'isomorphic-dompurify';
 
 export default function BlogDetailClient({ initialBlog }) {
   const [blog] = useState(initialBlog);
@@ -153,9 +154,10 @@ export default function BlogDetailClient({ initialBlog }) {
             <Card className="shadow-lg border-none rounded-3xl overflow-hidden">
               <CardContent className="p-8 md:p-12">
                 <div className="prose prose-lg prose-blue max-w-none">
-                  <div className="whitespace-pre-wrap text-gray-800 text-lg leading-relaxed space-y-4">
-                    {blog.content}
-                  </div>
+                  <div 
+                    className="whitespace-pre-wrap text-gray-800 text-lg leading-relaxed space-y-4"
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog.content) }}
+                  />
                 </div>
               </CardContent>
             </Card>
