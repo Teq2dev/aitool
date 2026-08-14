@@ -116,20 +116,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
             {/* Main Content */}
             <div className="lg:col-span-2">
               
-      {/* Internal Links: Breadcrumbs */}
-      <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-4 ml-6 mt-6">
-        <Link href={`/${effectiveLang === 'en' ? '' : effectiveLang}`} className="hover:text-blue-600">Home</Link>
-        <ChevronRight className="w-4 h-4" />
-        {tool.categories?.[0] ? (
-          <>
-            <Link href={`/${effectiveLang === 'en' ? '' : effectiveLang + '/'}categories/${tool.categories[0]}`} className="hover:text-blue-600">
-              {tool.categories[0].replace(/-/g, ' ')}
-            </Link>
-            <ChevronRight className="w-4 h-4" />
-          </>
-        ) : null}
-        <span className="text-gray-900 font-medium">{tool.name}</span>
-      </nav>
+
 
 <Card className="mb-6 overflow-hidden border-none shadow-sm">
                 <CardHeader className="bg-white pb-8">

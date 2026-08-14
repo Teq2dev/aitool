@@ -77,6 +77,7 @@ const nextConfig = {
       { old: 'tensorart', new: 'tensor-art' },
       { old: 'surfer-seo', new: 'surferseo' },
       { old: 'tugan-ai', new: 'tuganai' },
+      { old: 'jasper', new: 'jasper-ai' },
     ];
     
     const redirectsList = [];
