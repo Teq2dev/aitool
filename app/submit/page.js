@@ -18,15 +18,15 @@ import {
 import { useLanguage } from '@/context/LanguageContext';
 
 // ─── Repeatable list input ────────────────────────────────────────────────────
-function RepeatableList({ items = [], onAdd, onRemove, placeholder, maxLength = 120, label }) {
-  const [input, setInput] = useState('');
+function RepeatableList({ items = [], onUpdate, onAdd, onRemove, placeholder, maxLength = 120, label }) {
+  const [currentInput, setCurrentInput] = useState('');
   
   const handleAdd = (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    const val = input.trim();
+    const val = currentInput.trim();
     if (!val || items.includes(val)) return;
     onAdd(val);
-    setInput('');
+    setCurrentInput('');
   };
 
   const handleKeyDown = (e) => {
@@ -37,16 +37,35 @@ function RepeatableList({ items = [], onAdd, onRemove, placeholder, maxLength = 
   };
 
   return (
-    <div>
+    <div className="space-y-2">
+      {items.map((item, i) => (
+        <div key={i} className="flex gap-2">
+          <Input
+            value={item}
+            onChange={(e) => onUpdate && onUpdate(i, e.target.value)}
+            className="flex-1"
+            aria-label={`${label} ${i + 1}`}
+          />
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); onRemove(i); }}
+            className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label={`Remove ${label}`}
+          >
+            <X className="w-4 h-4 text-red-500" />
+          </button>
+        </div>
+      ))}
+      
       <div className="flex gap-2">
         <Input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
+          value={currentInput}
+          onChange={(e) => setCurrentInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           maxLength={maxLength}
           className="flex-1"
-          aria-label={label}
+          aria-label={`New ${label}`}
         />
         <button
           type="button"
@@ -57,26 +76,6 @@ function RepeatableList({ items = [], onAdd, onRemove, placeholder, maxLength = 
           <Plus className="w-4 h-4 text-gray-600" />
         </button>
       </div>
-      {items.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-3">
-          {items.map((item, i) => (
-            <span
-              key={i}
-              className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-800 text-sm px-3 py-1 rounded-full border border-blue-100"
-            >
-              {item}
-              <button
-                type="button"
-                onClick={(e) => { e.preventDefault(); onRemove(i); }}
-                className="text-blue-400 hover:text-blue-700 transition-colors focus:outline-none"
-                aria-label={`Remove ${item}`}
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
@@ -224,6 +223,12 @@ export default function SubmitToolPage() {
   const addToList = (key) => (val) => setFormData((p) => ({ ...p, [key]: [...(p[key] || []), val] }));
   const removeFromList = (key) => (idx) =>
     setFormData((p) => ({ ...p, [key]: (p[key] || []).filter((_, i) => i !== idx) }));
+  const updateListItem = (key) => (idx, val) =>
+    setFormData((p) => {
+      const arr = [...(p[key] || [])];
+      arr[idx] = val;
+      return { ...p, [key]: arr };
+    });
 
   const toggleCategory = (slug) => {
     setFormData((p) => {
@@ -500,6 +505,7 @@ export default function SubmitToolPage() {
               <CardContent>
                 <RepeatableList
                   items={formData.features}
+                  onUpdate={updateListItem('features')}
                   onAdd={addToList('features')}
                   onRemove={removeFromList('features')}
                   placeholder="e.g. Generate blog posts in seconds"
@@ -609,6 +615,7 @@ export default function SubmitToolPage() {
                   </div>
                   <RepeatableList
                     items={formData.pros}
+                    onUpdate={updateListItem('pros')}
                     onAdd={addToList('pros')}
                     onRemove={removeFromList('pros')}
                     placeholder="e.g. Very easy to use"
@@ -624,6 +631,7 @@ export default function SubmitToolPage() {
                   </div>
                   <RepeatableList
                     items={formData.cons}
+                    onUpdate={updateListItem('cons')}
                     onAdd={addToList('cons')}
                     onRemove={removeFromList('cons')}
                     placeholder="e.g. Limited free tier"
@@ -679,6 +687,7 @@ export default function SubmitToolPage() {
                   </div>
                   <RepeatableList
                     items={formData.tags}
+                    onUpdate={updateListItem('tags')}
                     onAdd={addToList('tags')}
                     onRemove={removeFromList('tags')}
                     placeholder="e.g. writing, productivity, no-code"
