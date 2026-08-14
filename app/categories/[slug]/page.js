@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+
 import { getCategories, getTools } from '@/lib/getTools';
 import { getRelatedCategories, getRelatedBlogs } from '@/lib/internalLinks';
 import CategoryDetailClient from './CategoryDetailClient';
@@ -188,23 +188,17 @@ export default async function CategoryPage({ params, searchParams }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdGraph) }}
       />
-      <Suspense fallback={
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      }>
-        <CategoryDetailClient 
-          category={category} 
-          popularTools={popularTools}
-          freeTools={freeTools}
-          newTools={newTools}
-          allTools={tools}
-          relatedCats={relatedCats}
-          relatedBlogs={relatedBlogs}
-          breadcrumbs={breadcrumbs}
-          semanticClusters={semanticClusters}
-        />
-      </Suspense>
+      <CategoryDetailClient 
+        category={category} 
+        popularTools={popularTools}
+        freeTools={freeTools}
+        newTools={newTools}
+        allTools={tools}
+        relatedCats={relatedCats}
+        relatedBlogs={relatedBlogs}
+        breadcrumbs={breadcrumbs}
+        semanticClusters={semanticClusters}
+      />
     </>
   );
 }
