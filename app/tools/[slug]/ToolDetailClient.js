@@ -17,7 +17,7 @@ import {
   getLocalizedDescription 
 } from '@/lib/languages';
 
-export default function ToolDetailClient({ initialTool, initialStrongSimilar = [], initialRelatedTools = [], initialLang = 'en' }) {
+export default function ToolDetailClient({ initialTool, initialStrongSimilar = [], initialRelatedTools = [], initialLang = 'en', relatedBlogs = [] }) {
   const { data: session } = useSession();
   const user = session?.user;
   const [tool] = useState(initialTool);

@@ -62,7 +62,7 @@ export default async function HomePage() {
       <HomeClient 
         initialFeatured={featured}
         initialTrending={trending}
-        initialCategories={categories.slice(0, 12)}
+        initialCategories={categories}
         initialLatest={latestData.tools || []}
       />
     </>

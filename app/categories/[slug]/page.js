@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { getCategories, getTools } from '@/lib/getTools';
+import { getRelatedCategories, getRelatedBlogs } from '@/lib/internalLinks';
 import CategoryDetailClient from './CategoryDetailClient';
 import { notFound } from 'next/navigation';
 
@@ -101,6 +102,7 @@ export default async function CategoryPage({ params }) {
   });
   
   const tools = categoryToolsData.tools || [];
+  const [relatedCats, relatedBlogs] = await Promise.all([getRelatedCategories(category.slug), getRelatedBlogs(category.slug)]);
   
   // Segment them
   const popularTools = [...tools].sort((a, b) => (b.votes || 0) - (a.votes || 0)).slice(0, 6);
@@ -177,6 +179,8 @@ export default async function CategoryPage({ params }) {
           freeTools={freeTools}
           newTools={newTools}
           allTools={tools}
+          relatedCats={relatedCats}
+          relatedBlogs={relatedBlogs}
         />
       </Suspense>
     </>
