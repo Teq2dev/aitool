@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { unstable_cache } from 'next/cache';
 import { getToolBySlug, getTools } from '@/lib/getTools';
 import { getSimilarTools } from '@/lib/similarTools';
 import { getRelatedBlogs, getRelatedCategories } from '@/lib/internalLinks';
@@ -6,6 +7,13 @@ import ToolDetailClient from './ToolDetailClient';
 import { notFound } from 'next/navigation';
 
 import { getLocalizedDescription } from '@/lib/languages';
+
+// Cache similar tools result per slug to avoid repeated DB queries on Vercel
+const getCachedSimilarTools = unstable_cache(
+  (slug) => getSimilarTools(slug, 5, 3),
+  ['getSimilarTools'],
+  { revalidate: 300, tags: ['tools'] }
+);
 
 export async function generateMetadata({ params, searchParams }) {
   const tool = await getToolBySlug(params.slug);
@@ -86,10 +94,12 @@ export default async function ToolPage({ params, searchParams }) {
     return notFound();
   }
 
-  // Fetch related tools on the server for faster loading and better SEO
-  const { strongSimilar, relatedTools } = await getSimilarTools(tool.slug, 5, 3);
-  const relatedBlogs = await getRelatedBlogs(tool.slug);
-  const relatedCats = await getRelatedCategories(tool.categories?.[0] || tool.slug);
+  // Fetch all related data concurrently for faster loading and better SEO
+  const [{ strongSimilar, relatedTools }, relatedBlogs, relatedCats] = await Promise.all([
+    getCachedSimilarTools(tool.slug),
+    getRelatedBlogs(tool.slug),
+    getRelatedCategories(tool.categories?.[0] || tool.slug),
+  ]);
   
   const primaryCategory = tool.categories?.[0] || 'general';
   const baseUrl = 'https://www.bestaitoolsfree.com';
