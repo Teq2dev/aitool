@@ -18,67 +18,7 @@ import {
 import { useLanguage } from '@/context/LanguageContext';
 
 // ─── Repeatable list input ────────────────────────────────────────────────────
-function RepeatableList({ items = [], onUpdate, onAdd, onRemove, placeholder, maxLength = 120, label }) {
-  const [currentInput, setCurrentInput] = useState('');
-  
-  const handleAdd = (e) => {
-    if (e && e.preventDefault) e.preventDefault();
-    const val = currentInput.trim();
-    if (!val || items.includes(val)) return;
-    onAdd(val);
-    setCurrentInput('');
-  };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAdd(e);
-    }
-  };
-
-  return (
-    <div className="space-y-2">
-      {items.map((item, i) => (
-        <div key={i} className="flex gap-2">
-          <Input
-            value={item}
-            onChange={(e) => onUpdate && onUpdate(i, e.target.value)}
-            className="flex-1"
-            aria-label={`${label} ${i + 1}`}
-          />
-          <button
-            type="button"
-            onClick={(e) => { e.preventDefault(); onRemove(i); }}
-            className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-            aria-label={`Remove ${label}`}
-          >
-            <X className="w-4 h-4 text-red-500" />
-          </button>
-        </div>
-      ))}
-      
-      <div className="flex gap-2">
-        <Input
-          value={currentInput}
-          onChange={(e) => setCurrentInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          maxLength={maxLength}
-          className="flex-1"
-          aria-label={`New ${label}`}
-        />
-        <button
-          type="button"
-          onClick={handleAdd}
-          className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-          aria-label={`Add ${label}`}
-        >
-          <Plus className="w-4 h-4 text-gray-600" />
-        </button>
-      </div>
-    </div>
-  );
-}
 
 // ─── Toggle pill (Yes / No) ───────────────────────────────────────────────────
 function YesNoPill({ value, onChange }) {
@@ -331,11 +271,7 @@ export default function SubmitToolPage() {
   // ── Form ────────────────────────────────────────────────────────────────────
   return (
     <>
-      <head>
-        <title>Submit Your AI Tool - Best AI Tools Free</title>
-        <meta name="description" content="Share your AI tool with thousands of users. Submit your tool to the Best AI Tools Free directory." />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }} />
-      </head>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }} />
 
       <div className="min-h-screen bg-gray-50 py-10" id="form-top">
         <div className="container mx-auto px-4 max-w-3xl">
@@ -503,14 +439,34 @@ export default function SubmitToolPage() {
                 <CardDescription className="mt-1">List what users will gain from this tool. Press Enter or + to add each item.</CardDescription>
               </CardHeader>
               <CardContent>
-                <RepeatableList
-                  items={formData.features}
-                  onUpdate={updateListItem('features')}
-                  onAdd={addToList('features')}
-                  onRemove={removeFromList('features')}
-                  placeholder="e.g. Generate blog posts in seconds"
-                  label="feature"
-                />
+                <div className="space-y-2">
+                  {formData.features.map((item, i) => (
+                    <div key={i} className="flex gap-2">
+                      <Input
+                        value={item}
+                        onChange={(e) => updateListItem('features')(i, e.target.value)}
+                        className="flex-1"
+                        aria-label={`feature ${i + 1}`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeFromList('features')(i)}
+                        className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        aria-label={`Remove feature`}
+                      >
+                        <X className="w-4 h-4 text-red-500" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); setFormData(p => ({ ...p, features: [...(p.features || []), ""] })); }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200"
+                    aria-label="Add feature"
+                  >
+                    <Plus className="w-4 h-4" /> Add Feature
+                  </button>
+                </div>
               </CardContent>
             </Card>
 
@@ -613,14 +569,34 @@ export default function SubmitToolPage() {
                     <ThumbsUp className="w-4 h-4 text-green-600" />
                     <Label>Pros</Label>
                   </div>
-                  <RepeatableList
-                    items={formData.pros}
-                    onUpdate={updateListItem('pros')}
-                    onAdd={addToList('pros')}
-                    onRemove={removeFromList('pros')}
-                    placeholder="e.g. Very easy to use"
-                    label="pro"
-                  />
+                  <div className="space-y-2">
+                    {formData.pros.map((item, i) => (
+                      <div key={i} className="flex gap-2">
+                        <Input
+                          value={item}
+                          onChange={(e) => updateListItem('pros')(i, e.target.value)}
+                          className="flex-1"
+                          aria-label={`pro ${i + 1}`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeFromList('pros')(i)}
+                          className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          aria-label={`Remove pro`}
+                        >
+                          <X className="w-4 h-4 text-red-500" />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={(e) => { console.log('Pros Add button clicked!'); e.preventDefault(); setFormData(p => { console.log('Previous pros:', p.pros); return { ...p, pros: [...(p.pros || []), ""] }; }); }}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200"
+                      aria-label="Add pro"
+                    >
+                      <Plus className="w-4 h-4" /> Add Pro
+                    </button>
+                  </div>
                 </div>
 
                 {/* Cons */}
@@ -629,14 +605,34 @@ export default function SubmitToolPage() {
                     <ThumbsDown className="w-4 h-4 text-red-500" />
                     <Label>Cons</Label>
                   </div>
-                  <RepeatableList
-                    items={formData.cons}
-                    onUpdate={updateListItem('cons')}
-                    onAdd={addToList('cons')}
-                    onRemove={removeFromList('cons')}
-                    placeholder="e.g. Limited free tier"
-                    label="con"
-                  />
+                  <div className="space-y-2">
+                    {formData.cons.map((item, i) => (
+                      <div key={i} className="flex gap-2">
+                        <Input
+                          value={item}
+                          onChange={(e) => updateListItem('cons')(i, e.target.value)}
+                          className="flex-1"
+                          aria-label={`con ${i + 1}`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeFromList('cons')(i)}
+                          className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          aria-label={`Remove con`}
+                        >
+                          <X className="w-4 h-4 text-red-500" />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); setFormData(p => ({ ...p, cons: [...(p.cons || []), ""] }))} }
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200"
+                      aria-label="Add con"
+                    >
+                      <Plus className="w-4 h-4" /> Add Con
+                    </button>
+                  </div>
                 </div>
 
               </CardContent>
@@ -685,15 +681,35 @@ export default function SubmitToolPage() {
                     <Tag className="w-4 h-4 text-gray-500" />
                     <Label>Tags <span className="text-gray-400 font-normal">(optional)</span></Label>
                   </div>
-                  <RepeatableList
-                    items={formData.tags}
-                    onUpdate={updateListItem('tags')}
-                    onAdd={addToList('tags')}
-                    onRemove={removeFromList('tags')}
-                    placeholder="e.g. writing, productivity, no-code"
-                    label="tag"
-                    maxLength={40}
-                  />
+                  <div className="space-y-2">
+                    {formData.tags.map((item, i) => (
+                      <div key={i} className="flex gap-2">
+                        <Input
+                          value={item}
+                          onChange={(e) => updateListItem('tags')(i, e.target.value)}
+                          className="flex-1"
+                          maxLength={40}
+                          aria-label={`tag ${i + 1}`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeFromList('tags')(i)}
+                          className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          aria-label={`Remove tag`}
+                        >
+                          <X className="w-4 h-4 text-red-500" />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); setFormData(p => ({ ...p, tags: [...(p.tags || []), ""] }))} }
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200"
+                      aria-label="Add tag"
+                    >
+                      <Plus className="w-4 h-4" /> Add Tag
+                    </button>
+                  </div>
                 </div>
 
               </CardContent>
