@@ -12,6 +12,10 @@ const nextConfig = {
     },
   },
   webpack(config, { dev }) {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      dompurify: require.resolve('dompurify'),
+    };
     if (dev) {
       // Reduce CPU/memory from file watching
       config.watchOptions = {
