@@ -3,7 +3,7 @@
 import { useLanguage } from '@/context/LanguageContext';
 import ToolCard from '@/components/ToolCard';
 import Link from 'next/link';
-import DOMPurify from 'isomorphic-dompurify';
+import DOMPurify from 'dompurify';
 import CategorySemanticClusters from '@/components/seo/CategorySemanticClusters';
 import Breadcrumbs from '@/components/seo/Breadcrumbs';
 

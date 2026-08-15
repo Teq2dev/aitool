@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Eye, Calendar, ArrowLeft, Share2 } from 'lucide-react';
 import Link from 'next/link';
-import DOMPurify from 'isomorphic-dompurify';
+import DOMPurify from 'dompurify';
 import { toast } from 'sonner';
 
 const sanitizeHtml = (html) => {

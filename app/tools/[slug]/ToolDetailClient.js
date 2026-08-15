@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Star, ExternalLink, ArrowLeft, Share2, Edit2, Trash2, X, Check, ThumbsUp, ThumbsDown, HelpCircle, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import DOMPurify from 'isomorphic-dompurify';
+import DOMPurify from 'dompurify';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/context/LanguageContext';

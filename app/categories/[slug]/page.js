@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { getCategories, getTools } from '@/lib/getTools';
 import { getRelatedCategories, getRelatedBlogs } from '@/lib/internalLinks';
+import { serializeData } from '@/lib/utils';
 import CategoryDetailClient from './CategoryDetailClient';
 import { notFound } from 'next/navigation';
 import { TRANSLATIONS } from '@/lib/languages';
@@ -180,7 +181,7 @@ export default async function CategoryPage({ params, searchParams }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdGraph) }}
       />
       <CategoryDetailClient 
-        category={category} 
+        category={serializeData(category)} 
         popularTools={popularTools}
         freeTools={freeTools}
         newTools={newTools}
