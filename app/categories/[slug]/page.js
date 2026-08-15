@@ -106,9 +106,9 @@ export default async function CategoryPage({ params, searchParams }) {
   
   // Trim tools to only the fields rendered by the category page and ToolCard
   const tools = (categoryToolsData.tools || []).map(t => ({
-    _id: t._id,
-    name: t.name,
-    slug: t.slug,
+    _id: t._id ? String(t._id) : '',
+    name: t.name || '',
+    slug: t.slug || '',
     shortDescription: t.shortDescription || '',
     logo: t.logo || '',
     pricing: t.pricing || 'Free',
@@ -117,13 +117,8 @@ export default async function CategoryPage({ params, searchParams }) {
     website: t.website || '',
     featured: Boolean(t.featured),
     trending: Boolean(t.trending),
-    categories: t.categories || [],
-    createdAt: t.createdAt,
-    translations: t.translations ? {
-      [lang]: {
-        shortDescription: t.translations[lang]?.shortDescription || ''
-      }
-    } : undefined
+    categories: Array.isArray(t.categories) ? t.categories : [],
+    createdAt: t.createdAt ? new Date(t.createdAt).toISOString() : new Date().toISOString()
   }));
 
   const [relatedCats, relatedBlogs] = await Promise.all([getRelatedCategories(category.slug), getRelatedBlogs(category.slug)]);
