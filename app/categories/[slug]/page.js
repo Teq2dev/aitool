@@ -103,7 +103,28 @@ export default async function CategoryPage({ params, searchParams }) {
     limit: 50 
   });
   
-  const tools = categoryToolsData.tools || [];
+  // Trim tools to only the fields rendered by the category page and ToolCard
+  const tools = (categoryToolsData.tools || []).map(t => ({
+    _id: t._id,
+    name: t.name,
+    slug: t.slug,
+    shortDescription: t.shortDescription || '',
+    logo: t.logo || '',
+    pricing: t.pricing || 'Free',
+    rating: t.rating || 0,
+    votes: t.votes || 0,
+    website: t.website || '',
+    featured: Boolean(t.featured),
+    trending: Boolean(t.trending),
+    categories: t.categories || [],
+    createdAt: t.createdAt,
+    translations: t.translations ? {
+      [lang]: {
+        shortDescription: t.translations[lang]?.shortDescription || ''
+      }
+    } : undefined
+  }));
+
   const [relatedCats, relatedBlogs] = await Promise.all([getRelatedCategories(category.slug), getRelatedBlogs(category.slug)]);
   
   // Segment them
