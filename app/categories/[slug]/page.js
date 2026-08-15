@@ -88,6 +88,7 @@ export async function generateMetadata({ params, searchParams }) {
 }
 
 export default async function CategoryPage({ params, searchParams }) {
+  const lang = searchParams?.lang || 'en';
   const allCategories = await getCategories();
   const category = allCategories.find(c => c.slug === params.slug);
 
