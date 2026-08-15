@@ -88,7 +88,6 @@ export async function generateMetadata({ params, searchParams }) {
 }
 
 export default async function CategoryPage({ params, searchParams }) {
-  const lang = searchParams?.lang || 'en';
   const allCategories = await getCategories();
   const category = allCategories.find(c => c.slug === params.slug);
 
@@ -104,23 +103,7 @@ export default async function CategoryPage({ params, searchParams }) {
     limit: 50 
   });
   
-  // Trim tools to only the fields rendered by the category page and ToolCard
-  const tools = (categoryToolsData.tools || []).map(t => ({
-    _id: t._id ? String(t._id) : '',
-    name: t.name || '',
-    slug: t.slug || '',
-    shortDescription: t.shortDescription || '',
-    logo: t.logo || '',
-    pricing: t.pricing || 'Free',
-    rating: t.rating || 0,
-    votes: t.votes || 0,
-    website: t.website || '',
-    featured: Boolean(t.featured),
-    trending: Boolean(t.trending),
-    categories: Array.isArray(t.categories) ? t.categories : [],
-    createdAt: t.createdAt ? new Date(t.createdAt).toISOString() : new Date().toISOString()
-  }));
-
+  const tools = categoryToolsData.tools || [];
   const [relatedCats, relatedBlogs] = await Promise.all([getRelatedCategories(category.slug), getRelatedBlogs(category.slug)]);
   
   // Segment them
@@ -181,6 +164,7 @@ export default async function CategoryPage({ params, searchParams }) {
     });
   }
 
+  const lang = searchParams?.lang || 'en';
   const getLangUrl = (path) => lang === 'en' ? path : `/${lang}${path}`;
   const t = (key) => TRANSLATIONS[lang]?.[key] || TRANSLATIONS['en']?.[key] || key;
 
@@ -201,7 +185,6 @@ export default async function CategoryPage({ params, searchParams }) {
         popularTools={popularTools}
         freeTools={freeTools}
         newTools={newTools}
-        allTools={tools}
         relatedCats={relatedCats}
         relatedBlogs={relatedBlogs}
         breadcrumbData={breadcrumbData}
