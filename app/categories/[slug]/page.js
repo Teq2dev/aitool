@@ -181,7 +181,6 @@ export default async function CategoryPage({ params, searchParams }) {
     });
   }
 
-  const lang = searchParams?.lang || 'en';
   const getLangUrl = (path) => lang === 'en' ? path : `/${lang}${path}`;
   const t = (key) => TRANSLATIONS[lang]?.[key] || TRANSLATIONS['en']?.[key] || key;
 
