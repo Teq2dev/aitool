@@ -135,16 +135,16 @@ export default async function RootLayout({ children }) {
             />
           ))}
 
-          {/* Cookiebot - must be as high as possible */}
+          {/* Cookiebot Consent Management */}
           <Script 
             id="Cookiebot" 
             src="https://consent.cookiebot.com/uc.js" 
             data-cbid="96f298ad-1d34-44ed-9f9b-820cd59d73be" 
-            strategy="beforeInteractive"
+            strategy="afterInteractive"
           />
           
           {/* Google Tag Manager */}
-          <Script id="gtm-head" strategy="afterInteractive">
+          <Script id="gtm-head" strategy="lazyOnload">
             {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
             j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
@@ -153,8 +153,8 @@ export default async function RootLayout({ children }) {
           </Script>
           
           {/* Google Analytics */}
-          <Script src="https://www.googletagmanager.com/gtag/js?id=G-4LG9W041CP" strategy="afterInteractive" />
-          <Script id="google-analytics" strategy="afterInteractive">
+          <Script src="https://www.googletagmanager.com/gtag/js?id=G-4LG9W041CP" strategy="lazyOnload" />
+          <Script id="google-analytics" strategy="lazyOnload">
             {`window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
