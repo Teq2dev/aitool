@@ -1,0 +1,1256 @@
+{
+  "en": {
+    "about": {
+      "metaTitle": "About Us | Best AI Tools Free",
+      "metaDescription": "Learn more about Best AI Tools Free, our mission to curate the best free and freemium artificial intelligence tools, and how we help users discover AI software.",
+      "h1": "About Best AI Tools Free",
+      "lead": "Welcome to Best AI Tools Free — the comprehensive, community-driven directory of verified Artificial Intelligence tools, software, and web applications.",
+      "missionTitle": "Our Mission",
+      "missionP1": "The AI landscape is expanding at an unprecedented speed. Our mission is to make artificial intelligence accessible, transparent, and practical for everyone — from developers and designers to students, marketers, and founders.",
+      "missionP2": "We curate, review, categorize, and benchmark thousands of AI tools, highlighting genuine free tiers, freemium options, and open-source models so you can find the perfect software without unnecessary friction.",
+      "offerTitle": "What We Offer",
+      "card1Title": "Comprehensive Directory",
+      "card1Desc": "Over 900+ vetted tools across 50+ specialized categories including writing, video editing, voice cloning, and coding assistants.",
+      "card2Title": "Transparent Pricing",
+      "card2Desc": "Clear breakdown of free trials, freemium limitations, monthly pricing, and commercial use licenses.",
+      "card3Title": "Global Multi-Language Access",
+      "card3Desc": "Full localization support across 12 languages to assist global innovators and creators.",
+      "card4Title": "Founder Submissions",
+      "card4Desc": "A direct launchpad for indie creators and founders to showcase their AI tools to thousands of daily users.",
+      "ctaTitle": "Have an AI product to share?",
+      "ctaDesc": "Submit your tool for review and get featured in our directory.",
+      "ctaBtn": "Submit Your Tool"
+    },
+    "privacy": {
+      "metaTitle": "Privacy Policy | Best AI Tools Free",
+      "metaDescription": "Read the Privacy & Cookie Policy for Best AI Tools Free. Learn how we collect, protect, and handle data in compliance with global standards.",
+      "h1": "Privacy & Cookie Policy",
+      "lastUpdated": "Last updated: August 2026",
+      "sec1Title": "1. Overview",
+      "sec1P": "Best AI Tools Free (\"we\", \"our\", or \"us\") is dedicated to protecting your personal privacy. This Privacy Policy explains what information we collect when you visit our website (https://www.bestaitoolsfree.com), how we use it, and the choices you have regarding your personal data.",
+      "sec2Title": "2. Information We Collect",
+      "sec2L1": "Usage Data: We collect non-personally identifiable information such as browser type, operating system, referring URLs, pages viewed, and timestamps via Google Analytics to optimize performance.",
+      "sec2L2": "Account & Submission Information: If you sign in via OAuth (e.g. Google/Clerk) or submit a tool or blog post, we collect your email address, name, and submitted website details.",
+      "sec2L3": "Cookies & Local Storage: We use cookies to remember language preferences, theme states, and manage consent preferences through Cookiebot.",
+      "sec3Title": "3. How We Use Information",
+      "sec3Lead": "We use the collected information solely to:",
+      "sec3L1": "Operate, maintain, and enhance the directory and search functionality.",
+      "sec3L2": "Verify, review, and publish user-submitted AI tools and articles.",
+      "sec3L3": "Analyze aggregate user trends to improve directory navigation and speed.",
+      "sec3L4": "Comply with applicable legal obligations and prevent spam or malicious activity.",
+      "sec4Title": "4. Third-Party Links & Tools",
+      "sec4P": "Our website links to third-party AI tools and software. We are not responsible for the privacy practices or content of third-party websites. We encourage you to read the privacy statements of any external service you visit.",
+      "sec5Title": "5. GDPR & User Rights",
+      "sec5P": "Depending on your location, you have the right to request access to, correction of, or deletion of your personal information held by us. You may also modify your cookie consent at any time via the Cookiebot settings icon.",
+      "sec6Title": "6. Contact Us",
+      "sec6P": "If you have questions regarding this Privacy Policy or your data, please reach out via our contact page or email us at contact@bestaitoolsfree.com."
+    },
+    "terms": {
+      "metaTitle": "Terms of Service | Best AI Tools Free",
+      "metaDescription": "Review the Terms of Service for using Best AI Tools Free, including rules for tool submissions, content usage, and directory disclaimers.",
+      "h1": "Terms of Service",
+      "effectiveDate": "Effective Date: August 2026",
+      "sec1Title": "1. Acceptance of Terms",
+      "sec1P": "By accessing or using Best AI Tools Free (https://www.bestaitoolsfree.com), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.",
+      "sec2Title": "2. Directory & Informational Purposes Only",
+      "sec2P1": "Best AI Tools Free serves as an index and discovery platform for artificial intelligence tools and services created by third parties. We do not own, develop, or operate the third-party tools listed in our directory unless explicitly stated.",
+      "sec2P2": "Pricing, feature availability, and terms for third-party tools are subject to change by their respective owners at any time. We make every reasonable effort to keep listings accurate, but we do not guarantee real-time synchronization with external services.",
+      "sec3Title": "3. Tool Submissions & User Content",
+      "sec3P1": "Users and product owners who submit tools, logos, descriptions, or reviews represent that they possess all necessary rights to publish such material. By submitting, you grant us a non-exclusive license to display, index, and promote the listing across our platform and search engines.",
+      "sec3P2": "We reserve the right to review, edit, reject, or remove any submission that violates intellectual property laws, contains deceptive claims, or does not meet our editorial quality standards.",
+      "sec4Title": "4. Intellectual Property",
+      "sec4P": "All trademarks, logos, and brand names appearing on this website belong to their respective holders. The Best AI Tools Free website design, code, logos, and curated taxonomy are protected by copyright.",
+      "sec5Title": "5. Disclaimer of Warranties & Limitation of Liability",
+      "sec5P": "The service is provided on an \"as is\" and \"as available\" basis without warranties of any kind. Best AI Tools Free will not be liable for any direct, indirect, incidental, or consequential damages resulting from your use of any software or service discovered through our directory.",
+      "sec6Title": "6. Contact Information",
+      "sec6P": "For questions regarding these Terms, please contact us at contact@bestaitoolsfree.com."
+    },
+    "contact": {
+      "metaTitle": "Contact Us | Best AI Tools Free",
+      "metaDescription": "Get in touch with the Best AI Tools Free team. Inquire about tool submissions, advertising, partnerships, or directory feedback.",
+      "h1": "Contact Us",
+      "lead": "We'd love to hear from you. Whether you want to feature an AI tool, report outdated information, or explore a partnership, get in touch with our team.",
+      "card1Title": "Direct Email Support",
+      "card1Desc": "For general questions, sponsorship inquiries, bug reports, and data privacy requests:",
+      "card2Title": "Tool Submissions",
+      "card2Desc": "Are you an AI developer or product founder? Submit your tool directly through our portal for editorial review:",
+      "card2Btn": "Go to Submit Portal",
+      "faqHeader": "Frequently Asked Support Topics",
+      "q1": "How long does it take to review a submitted tool?",
+      "a1": "Tool submissions are typically reviewed by our editorial team within 24 to 48 hours.",
+      "q2": "How do I update an existing tool listing?",
+      "a2": "Email us at contact@bestaitoolsfree.com with the tool name, URL, and updated details from the verified owner email."
+    },
+    "faq": {
+      "metaTitle": "Frequently Asked Questions (FAQ) | Best AI Tools Free",
+      "metaDescription": "Find answers to common questions about Best AI Tools Free, finding free artificial intelligence software, submitting tools, and pricing models.",
+      "h1": "Frequently Asked Questions",
+      "lead": "Find quick answers to common questions about our directory, tool submissions, and AI software classifications.",
+      "ctaTitle": "Still have questions?",
+      "ctaDesc": "Contact our support team anytime.",
+      "ctaBtn": "Get in Touch",
+      "items": [
+        {
+          "question": "What is Best AI Tools Free?",
+          "answer": "Best AI Tools Free is a curated directory and search platform designed to help users discover, compare, and master the best free and freemium artificial intelligence software across 50+ specialized categories."
+        },
+        {
+          "question": "Are all the AI tools on this website completely free?",
+          "answer": "We index a wide variety of tools, with a strong focus on tools offering 100% free plans, open-source models, or generous free trial credits. Each tool card clearly displays its pricing tier: Free, Freemium, or Paid."
+        },
+        {
+          "question": "How do I submit my AI tool to the directory?",
+          "answer": "You can submit your tool anytime via our Submit Tool page (/submit). Our editorial team reviews every application for authenticity, security, and utility."
+        },
+        {
+          "question": "How often is the directory updated?",
+          "answer": "Our database is updated daily with fresh AI tool arrivals, updated pricing tiers, and new editorial reviews."
+        },
+        {
+          "question": "Can I bookmark or vote for my favorite AI tools?",
+          "answer": "Yes! You can upvote tools and browse community ratings to help fellow creators and developers find the best software."
+        }
+      ]
+    }
+  },
+  "es": {
+    "about": {
+      "metaTitle": "Sobre Nosotros | Best AI Tools Free",
+      "metaDescription": "Conozca más sobre Best AI Tools Free, nuestra misión de seleccionar las mejores herramientas de inteligencia artificial gratuitas y freemium, y cómo ayudamos a los usuarios a descubrir software de IA.",
+      "h1": "Sobre Best AI Tools Free",
+      "lead": "Bienvenido a Best AI Tools Free: el directorio integral e impulsado por la comunidad de herramientas, software y aplicaciones web de inteligencia artificial verificadas.",
+      "missionTitle": "Nuestra Misión",
+      "missionP1": "El panorama de la IA se está expandiendo a una velocidad sin precedentes. Nuestra misión es hacer que la inteligencia artificial sea accesible, transparente y práctica para todos, desde desarrolladores y diseñadores hasta estudiantes, especialistas en marketing y fundadores.",
+      "missionP2": "Seleccionamos, revisamos, categorizamos y comparamos miles de herramientas de IA, destacando niveles gratuitos genuinos, opciones freemium y modelos de código abierto para que pueda encontrar el software perfecto sin fricciones innecesarias.",
+      "offerTitle": "Qué Ofrecemos",
+      "card1Title": "Directorio Integral",
+      "card1Desc": "Más de 900 herramientas evaluadas en más de 50 categorías especializadas, que incluyen redacción, edición de video, clonación de voz y asistentes de codificación.",
+      "card2Title": "Precios Transparentes",
+      "card2Desc": "Desglose claro de pruebas gratuitas, limitaciones freemium, precios mensuales y licencias de uso comercial.",
+      "card3Title": "Acceso Global Multilingüe",
+      "card3Desc": "Soporte completo de localización en 12 idiomas para ayudar a innovadores y creadores globales.",
+      "card4Title": "Envíos de Fundadores",
+      "card4Desc": "Una plataforma de lanzamiento directa para creadores independientes y fundadores para mostrar sus herramientas de IA a miles de usuarios diarios.",
+      "ctaTitle": "¿Tiene un producto de IA para compartir?",
+      "ctaDesc": "Envíe su herramienta para revisión y aparezca en nuestro directorio.",
+      "ctaBtn": "Envíe su Herramienta"
+    },
+    "privacy": {
+      "metaTitle": "Política de Privacidad | Best AI Tools Free",
+      "metaDescription": "Lea la Política de Privacidad y Cookies de Best AI Tools Free. Conozca cómo recopilamos, protegemos y manejamos los datos de acuerdo con los estándares globales.",
+      "h1": "Política de Privacidad y Cookies",
+      "lastUpdated": "Última actualización: agosto de 2026",
+      "sec1Title": "1. Resumen",
+      "sec1P": "Best AI Tools Free (\"nosotros\", \"nuestro\" o \"nos\") está dedicado a proteger su privacidad personal. Esta Política de Privacidad explica qué información recopilamos cuando visita nuestro sitio web (https://www.bestaitoolsfree.com), cómo la usamos y las opciones que tiene con respecto a sus datos personales.",
+      "sec2Title": "2. Información que Recopilamos",
+      "sec2L1": "Datos de uso: Recopilamos información no personalmente identificable, como tipo de navegador, sistema operativo, URL de referencia, páginas vistas y marcas de tiempo a través de Google Analytics para optimizar el rendimiento.",
+      "sec2L2": "Información de cuenta y envío: Si inicia sesión a través de OAuth (por ejemplo, Google/Clerk) o envía una herramienta o publicación de blog, recopilamos su dirección de correo electrónico, nombre y detalles del sitio web enviado.",
+      "sec2L3": "Cookies y almacenamiento local: Usamos cookies para recordar preferencias de idioma, estados de tema y gestionar las preferencias de consentimiento a través de Cookiebot.",
+      "sec3Title": "3. Cómo Usamos la Información",
+      "sec3Lead": "Usamos la información recopilada únicamente para:",
+      "sec3L1": "Operar, mantener y mejorar el directorio y la funcionalidad de búsqueda.",
+      "sec3L2": "Verificar, revisar y publicar herramientas de IA y artículos enviados por usuarios.",
+      "sec3L3": "Analizar tendencias agregadas de usuarios para mejorar la navegación y la velocidad del directorio.",
+      "sec3L4": "Cumplir con las obligaciones legales aplicables y prevenir spam o actividad maliciosa.",
+      "sec4Title": "4. Enlaces y Herramientas de Terceros",
+      "sec4P": "Nuestro sitio web enlaza a herramientas y software de IA de terceros. No somos responsables de las prácticas de privacidad o el contenido de sitios web de terceros. Le recomendamos leer las declaraciones de privacidad de cualquier servicio externo que visite.",
+      "sec5Title": "5. RGPD y Derechos del Usuario",
+      "sec5P": "Dependiendo de su ubicación, tiene derecho a solicitar acceso, corrección o eliminación de su información personal que tenemos. También puede modificar su consentimiento de cookies en cualquier momento a través del ícono de configuración de Cookiebot.",
+      "sec6Title": "6. Contáctenos",
+      "sec6P": "Si tiene preguntas sobre esta Política de Privacidad o sus datos, comuníquese a través de nuestra página de contacto o envíenos un correo electrónico a contact@bestaitoolsfree.com."
+    },
+    "terms": {
+      "metaTitle": "Términos de Servicio | Best AI Tools Free",
+      "metaDescription": "Revise los Términos de Servicio para usar Best AI Tools Free, incluidas las reglas para envíos de herramientas, uso de contenido y descargos del directorio.",
+      "h1": "Términos de Servicio",
+      "effectiveDate": "Fecha de vigencia: agosto de 2026",
+      "sec1Title": "1. Aceptación de los Términos",
+      "sec1P": "Al acceder o usar Best AI Tools Free (https://www.bestaitoolsfree.com), usted acepta estar sujeto a estos Términos de Servicio. Si no está de acuerdo con estos términos, no use nuestro servicio.",
+      "sec2Title": "2. Solo con Fines Informativos y de Directorio",
+      "sec2P1": "Best AI Tools Free sirve como un índice y plataforma de descubrimiento para herramientas y servicios de inteligencia artificial creados por terceros. No somos propietarios, desarrollamos ni operamos las herramientas de terceros enumeradas en nuestro directorio, a menos que se indique explícitamente.",
+      "sec2P2": "Los precios, la disponibilidad de funciones y los términos de las herramientas de terceros están sujetos a cambios por parte de sus respectivos propietarios en cualquier momento. Hacemos todo lo razonable para mantener las listas precisas, pero no garantizamos la sincronización en tiempo real con servicios externos.",
+      "sec3Title": "3. Envíos de Herramientas y Contenido del Usuario",
+      "sec3P1": "Los usuarios y propietarios de productos que envían herramientas, logotipos, descripciones o reseñas declaran que poseen todos los derechos necesarios para publicar dicho material. Al enviar, nos otorgan una licencia no exclusiva para mostrar, indexar y promocionar la lista en nuestra plataforma y motores de búsqueda.",
+      "sec3P2": "Nos reservamos el derecho de revisar, editar, rechazar o eliminar cualquier envío que viole las leyes de propiedad intelectual, contenga afirmaciones engañosas o no cumpla con nuestros estándares de calidad editorial.",
+      "sec4Title": "4. Propiedad Intelectual",
+      "sec4P": "Todas las marcas comerciales, logotipos y nombres de marcas que aparecen en este sitio web pertenecen a sus respectivos titulares. El diseño del sitio web, el código, los logotipos y la taxonomía seleccionada de Best AI Tools Free están protegidos por derechos de autor.",
+      "sec5Title": "5. Descargo de Garantías y Limitación de Responsabilidad",
+      "sec5P": "El servicio se proporciona \"tal cual\" y \"según disponibilidad\" sin garantías de ningún tipo. Best AI Tools Free no será responsable de ningún daño directo, indirecto, incidental o consecuente que resulte del uso de cualquier software o servicio descubierto a través de nuestro directorio.",
+      "sec6Title": "6. Información de Contacto",
+      "sec6P": "Para preguntas sobre estos Términos, contáctenos en contact@bestaitoolsfree.com."
+    },
+    "contact": {
+      "metaTitle": "Contáctenos | Best AI Tools Free",
+      "metaDescription": "Póngase en contacto con el equipo de Best AI Tools Free. Consulte sobre envíos de herramientas, publicidad, asociaciones o comentarios sobre el directorio.",
+      "h1": "Contáctenos",
+      "lead": "Nos encantaría saber de usted. Ya sea que desee presentar una herramienta de IA, informar información desactualizada o explorar una asociación, comuníquese con nuestro equipo.",
+      "card1Title": "Soporte por Correo Electrónico Directo",
+      "card1Desc": "Para preguntas generales, consultas de patrocinio, informes de errores y solicitudes de privacidad de datos:",
+      "card2Title": "Envíos de Herramientas",
+      "card2Desc": "¿Es usted un desarrollador de IA o fundador de un producto? Envíe su herramienta directamente a través de nuestro portal para revisión editorial:",
+      "card2Btn": "Ir al Portal de Envío",
+      "faqHeader": "Temas de Soporte Frecuentes",
+      "q1": "¿Cuánto tiempo se tarda en revisar una herramienta enviada?",
+      "a1": "Los envíos de herramientas generalmente son revisados por nuestro equipo editorial dentro de las 24 a 48 horas.",
+      "q2": "¿Cómo actualizo una lista de herramientas existente?",
+      "a2": "Envíenos un correo electrónico a contact@bestaitoolsfree.com con el nombre de la herramienta, la URL y los detalles actualizados desde el correo electrónico del propietario verificado."
+    },
+    "faq": {
+      "metaTitle": "Preguntas Frecuentes (FAQ) | Best AI Tools Free",
+      "metaDescription": "Encuentre respuestas a preguntas comunes sobre Best AI Tools Free, cómo encontrar software de inteligencia artificial gratuito, enviar herramientas y modelos de precios.",
+      "h1": "Preguntas Frecuentes",
+      "lead": "Encuentre respuestas rápidas a preguntas comunes sobre nuestro directorio, envíos de herramientas y clasificaciones de software de IA.",
+      "ctaTitle": "¿Aún tiene preguntas?",
+      "ctaDesc": "Comuníquese con nuestro equipo de soporte en cualquier momento.",
+      "ctaBtn": "Póngase en Contacto",
+      "items": [
+        {
+          "question": "¿Qué es Best AI Tools Free?",
+          "answer": "Best AI Tools Free es un directorio seleccionado y una plataforma de búsqueda diseñada para ayudar a los usuarios a descubrir, comparar y dominar el mejor software de inteligencia artificial gratuito y freemium en más de 50 categorías especializadas."
+        },
+        {
+          "question": "¿Todas las herramientas de IA en este sitio web son completamente gratuitas?",
+          "answer": "Indexamos una amplia variedad de herramientas, con un fuerte enfoque en herramientas que ofrecen planes 100% gratuitos, modelos de código abierto o generosos créditos de prueba gratuita. Cada tarjeta de herramienta muestra claramente su nivel de precios: Gratis, Freemium o de Pago."
+        },
+        {
+          "question": "¿Cómo envío mi herramienta de IA al directorio?",
+          "answer": "Puede enviar su herramienta en cualquier momento a través de nuestra página Enviar Herramienta (/submit). Nuestro equipo editorial revisa cada solicitud para verificar autenticidad, seguridad y utilidad."
+        },
+        {
+          "question": "¿Con qué frecuencia se actualiza el directorio?",
+          "answer": "Nuestra base de datos se actualiza diariamente con nuevas herramientas de IA, niveles de precios actualizados y nuevas revisiones editoriales."
+        },
+        {
+          "question": "¿Puedo marcar o votar por mis herramientas de IA favoritas?",
+          "answer": "¡Sí! Puede votar a favor de las herramientas y navegar por las calificaciones de la comunidad para ayudar a otros creadores y desarrolladores a encontrar el mejor software."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "about": {
+      "metaTitle": "À propos de nous | Best AI Tools Free",
+      "metaDescription": "Découvrez Best AI Tools Free, notre mission de sélectionner les meilleurs outils d'intelligence artificielle gratuits et freemium, et comment nous aidons les utilisateurs à trouver des logiciels d'IA.",
+      "h1": "À propos de Best AI Tools Free",
+      "lead": "Bienvenue sur Best AI Tools Free — l'annuaire complet et communautaire d'outils d'intelligence artificielle, de logiciels et d'applications web vérifiés.",
+      "missionTitle": "Notre mission",
+      "missionP1": "Le paysage de l'IA se développe à une vitesse sans précédent. Notre mission est de rendre l'intelligence artificielle accessible, transparente et pratique pour tous — des développeurs et designers aux étudiants, spécialistes du marketing et fondateurs.",
+      "missionP2": "Nous sélectionnons, examinons, catégorisons et évaluons des milliers d'outils d'IA, en mettant en avant les véritables offres gratuites, les options freemium et les modèles open source afin que vous puissiez trouver le logiciel parfait sans friction inutile.",
+      "offerTitle": "Ce que nous offrons",
+      "card1Title": "Annuaire complet",
+      "card1Desc": "Plus de 900 outils vérifiés dans plus de 50 catégories spécialisées, notamment la rédaction, le montage vidéo, le clonage vocal et les assistants de codage.",
+      "card2Title": "Tarification transparente",
+      "card2Desc": "Ventilation claire des essais gratuits, des limitations freemium, des prix mensuels et des licences d'utilisation commerciale.",
+      "card3Title": "Accès mondial multilingue",
+      "card3Desc": "Prise en charge complète de la localisation dans 12 langues pour aider les innovateurs et créateurs du monde entier.",
+      "card4Title": "Soumissions de fondateurs",
+      "card4Desc": "Un tremplin direct pour les créateurs indépendants et les fondateurs afin de présenter leurs outils d'IA à des milliers d'utilisateurs quotidiens.",
+      "ctaTitle": "Vous avez un produit d'IA à partager ?",
+      "ctaDesc": "Soumettez votre outil pour examen et faites-le figurer dans notre annuaire.",
+      "ctaBtn": "Soumettre votre outil"
+    },
+    "privacy": {
+      "metaTitle": "Politique de confidentialité | Best AI Tools Free",
+      "metaDescription": "Lisez la politique de confidentialité et de cookies de Best AI Tools Free. Découvrez comment nous collectons, protégeons et traitons les données conformément aux normes mondiales.",
+      "h1": "Politique de confidentialité et de cookies",
+      "lastUpdated": "Dernière mise à jour : août 2026",
+      "sec1Title": "1. Aperçu",
+      "sec1P": "Best AI Tools Free (« nous », « notre » ou « nos ») s'engage à protéger votre vie privée. Cette politique de confidentialité explique quelles informations nous collectons lorsque vous visitez notre site Web (https://www.bestaitoolsfree.com), comment nous les utilisons et les choix dont vous disposez concernant vos données personnelles.",
+      "sec2Title": "2. Informations que nous collectons",
+      "sec2L1": "Données d'utilisation : Nous collectons des informations non personnellement identifiables telles que le type de navigateur, le système d'exploitation, les URL de référence, les pages consultées et les horodatages via Google Analytics pour optimiser les performances.",
+      "sec2L2": "Informations de compte et de soumission : Si vous vous connectez via OAuth (par exemple Google/Clerk) ou soumettez un outil ou un article de blog, nous collectons votre adresse e-mail, votre nom et les détails du site Web soumis.",
+      "sec2L3": "Cookies et stockage local : Nous utilisons des cookies pour mémoriser les préférences linguistiques, les états de thème et gérer les préférences de consentement via Cookiebot.",
+      "sec3Title": "3. Comment nous utilisons les informations",
+      "sec3Lead": "Nous utilisons les informations collectées uniquement pour :",
+      "sec3L1": "Exploiter, maintenir et améliorer l'annuaire et la fonctionnalité de recherche.",
+      "sec3L2": "Vérifier, examiner et publier les outils d'IA et les articles soumis par les utilisateurs.",
+      "sec3L3": "Analyser les tendances agrégées des utilisateurs pour améliorer la navigation et la vitesse de l'annuaire.",
+      "sec3L4": "Se conformer aux obligations légales applicables et prévenir le spam ou les activités malveillantes.",
+      "sec4Title": "4. Liens et outils tiers",
+      "sec4P": "Notre site Web contient des liens vers des outils et logiciels d'IA tiers. Nous ne sommes pas responsables des pratiques de confidentialité ou du contenu des sites Web tiers. Nous vous encourageons à lire les déclarations de confidentialité de tout service externe que vous visitez.",
+      "sec5Title": "5. RGPD et droits des utilisateurs",
+      "sec5P": "Selon votre lieu de résidence, vous avez le droit de demander l'accès à vos informations personnelles détenues par nous, leur correction ou leur suppression. Vous pouvez également modifier votre consentement aux cookies à tout moment via l'icône des paramètres de Cookiebot.",
+      "sec6Title": "6. Contactez-nous",
+      "sec6P": "Si vous avez des questions concernant cette politique de confidentialité ou vos données, veuillez nous contacter via notre page de contact ou par e-mail à contact@bestaitoolsfree.com."
+    },
+    "terms": {
+      "metaTitle": "Conditions d'utilisation | Best AI Tools Free",
+      "metaDescription": "Consultez les conditions d'utilisation de Best AI Tools Free, y compris les règles de soumission d'outils, d'utilisation du contenu et les avertissements de l'annuaire.",
+      "h1": "Conditions d'utilisation",
+      "effectiveDate": "Date d'entrée en vigueur : août 2026",
+      "sec1Title": "1. Acceptation des conditions",
+      "sec1P": "En accédant ou en utilisant Best AI Tools Free (https://www.bestaitoolsfree.com), vous acceptez d'être lié par ces conditions d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser notre service.",
+      "sec2Title": "2. Annuaire et fins d'information uniquement",
+      "sec2P1": "Best AI Tools Free sert d'index et de plateforme de découverte pour les outils et services d'intelligence artificielle créés par des tiers. Nous ne possédons pas, ne développons pas et n'exploitons pas les outils tiers répertoriés dans notre annuaire, sauf indication contraire explicite.",
+      "sec2P2": "Les prix, la disponibilité des fonctionnalités et les conditions des outils tiers sont sujets à modification par leurs propriétaires respectifs à tout moment. Nous faisons tous les efforts raisonnables pour maintenir les listes à jour, mais nous ne garantissons pas la synchronisation en temps réel avec les services externes.",
+      "sec3Title": "3. Soumissions d'outils et contenu utilisateur",
+      "sec3P1": "Les utilisateurs et propriétaires de produits qui soumettent des outils, des logos, des descriptions ou des avis déclarent qu'ils possèdent tous les droits nécessaires pour publier ce matériel. En soumettant, vous nous accordez une licence non exclusive pour afficher, indexer et promouvoir la liste sur notre plateforme et sur les moteurs de recherche.",
+      "sec3P2": "Nous nous réservons le droit d'examiner, de modifier, de rejeter ou de supprimer toute soumission qui viole les lois sur la propriété intellectuelle, contient des allégations trompeuses ou ne répond pas à nos normes de qualité éditoriale.",
+      "sec4Title": "4. Propriété intellectuelle",
+      "sec4P": "Toutes les marques, logos et noms de marque apparaissant sur ce site Web appartiennent à leurs détenteurs respectifs. La conception, le code, les logos et la taxonomie organisée du site Web Best AI Tools Free sont protégés par le droit d'auteur.",
+      "sec5Title": "5. Avertissement de garanties et limitation de responsabilité",
+      "sec5P": "Le service est fourni « en l'état » et « selon disponibilité » sans garanties d'aucune sorte. Best AI Tools Free ne sera pas responsable des dommages directs, indirects, accessoires ou consécutifs résultant de votre utilisation de tout logiciel ou service découvert via notre annuaire.",
+      "sec6Title": "6. Coordonnées",
+      "sec6P": "Pour toute question concernant ces conditions, veuillez nous contacter à contact@bestaitoolsfree.com."
+    },
+    "contact": {
+      "metaTitle": "Contactez-nous | Best AI Tools Free",
+      "metaDescription": "Entrez en contact avec l'équipe de Best AI Tools Free. Renseignez-vous sur les soumissions d'outils, la publicité, les partenariats ou les commentaires sur l'annuaire.",
+      "h1": "Contactez-nous",
+      "lead": "Nous serions ravis de vous entendre. Que vous souhaitiez présenter un outil d'IA, signaler des informations obsolètes ou explorer un partenariat, contactez notre équipe.",
+      "card1Title": "Assistance par e-mail direct",
+      "card1Desc": "Pour les questions générales, les demandes de parrainage, les rapports de bogues et les demandes de confidentialité des données :",
+      "card2Title": "Soumissions d'outils",
+      "card2Desc": "Êtes-vous un développeur d'IA ou un fondateur de produit ? Soumettez votre outil directement via notre portail pour examen éditorial :",
+      "card2Btn": "Aller au portail de soumission",
+      "faqHeader": "Sujets d'assistance fréquemment posés",
+      "q1": "Combien de temps faut-il pour examiner un outil soumis ?",
+      "a1": "Les soumissions d'outils sont généralement examinées par notre équipe éditoriale dans les 24 à 48 heures.",
+      "q2": "Comment mettre à jour une liste d'outils existante ?",
+      "a2": "Envoyez-nous un e-mail à contact@bestaitoolsfree.com avec le nom de l'outil, l'URL et les détails mis à jour à partir de l'e-mail du propriétaire vérifié."
+    },
+    "faq": {
+      "metaTitle": "Questions fréquemment posées (FAQ) | Best AI Tools Free",
+      "metaDescription": "Trouvez des réponses aux questions courantes sur Best AI Tools Free, la recherche de logiciels d'intelligence artificielle gratuits, la soumission d'outils et les modèles de tarification.",
+      "h1": "Questions fréquemment posées",
+      "lead": "Trouvez des réponses rapides aux questions courantes sur notre annuaire, les soumissions d'outils et les classifications de logiciels d'IA.",
+      "ctaTitle": "Vous avez encore des questions ?",
+      "ctaDesc": "Contactez notre équipe d'assistance à tout moment.",
+      "ctaBtn": "Entrer en contact",
+      "items": [
+        {
+          "question": "Qu'est-ce que Best AI Tools Free ?",
+          "answer": "Best AI Tools Free est un annuaire organisé et une plateforme de recherche conçus pour aider les utilisateurs à découvrir, comparer et maîtriser les meilleurs logiciels d'intelligence artificielle gratuits et freemium dans plus de 50 catégories spécialisées."
+        },
+        {
+          "question": "Tous les outils d'IA sur ce site Web sont-ils complètement gratuits ?",
+          "answer": "Nous indexons une grande variété d'outils, en mettant fortement l'accent sur les outils offrant des plans 100 % gratuits, des modèles open source ou des crédits d'essai généreux. Chaque fiche d'outil affiche clairement son niveau de tarification : Gratuit, Freemium ou Payant."
+        },
+        {
+          "question": "Comment soumettre mon outil d'IA à l'annuaire ?",
+          "answer": "Vous pouvez soumettre votre outil à tout moment via notre page Soumettre un outil (/submit). Notre équipe éditoriale examine chaque demande pour vérifier l'authenticité, la sécurité et l'utilité."
+        },
+        {
+          "question": "À quelle fréquence l'annuaire est-il mis à jour ?",
+          "answer": "Notre base de données est mise à jour quotidiennement avec les nouveaux outils d'IA, les niveaux de tarification mis à jour et les nouvelles critiques éditoriales."
+        },
+        {
+          "question": "Puis-je mettre en signet ou voter pour mes outils d'IA préférés ?",
+          "answer": "Oui ! Vous pouvez voter pour les outils et consulter les évaluations de la communauté pour aider les autres créateurs et développeurs à trouver les meilleurs logiciels."
+        }
+      ]
+    }
+  },
+  "de": {
+    "about": {
+      "metaTitle": "Über uns | Best AI Tools Free",
+      "metaDescription": "Erfahren Sie mehr über Best AI Tools Free, unsere Mission, die besten kostenlosen und Freemium-KI-Tools zu kuratieren, und wie wir Nutzern helfen, KI-Software zu entdecken.",
+      "h1": "Über Best AI Tools Free",
+      "lead": "Willkommen bei Best AI Tools Free – dem umfassenden, community-getriebenen Verzeichnis verifizierter KI-Tools, Software und Webanwendungen.",
+      "missionTitle": "Unsere Mission",
+      "missionP1": "Die KI-Landschaft expandiert mit beispielloser Geschwindigkeit. Unsere Mission ist es, künstliche Intelligenz für alle zugänglich, transparent und praktisch zu machen – von Entwicklern und Designern über Studenten und Vermarkter bis hin zu Gründern.",
+      "missionP2": "Wir kuratieren, bewerten, kategorisieren und vergleichen Tausende von KI-Tools und heben echte kostenlose Tarife, Freemium-Optionen und Open-Source-Modelle hervor, damit Sie die perfekte Software ohne unnötige Reibung finden.",
+      "offerTitle": "Was wir bieten",
+      "card1Title": "Umfassendes Verzeichnis",
+      "card1Desc": "Über 900+ geprüfte Tools in über 50 spezialisierten Kategorien, darunter Schreiben, Videobearbeitung, Stimmklonen und Programmierassistenten.",
+      "card2Title": "Transparente Preise",
+      "card2Desc": "Klare Aufschlüsselung von kostenlosen Testversionen, Freemium-Einschränkungen, monatlichen Preisen und Lizenzen für die kommerzielle Nutzung.",
+      "card3Title": "Globaler Mehrsprachiger Zugang",
+      "card3Desc": "Vollständige Lokalisierung in 12 Sprachen, um globale Innovatoren und Kreative zu unterstützen.",
+      "card4Title": "Gründer-Einreichungen",
+      "card4Desc": "Eine direkte Startrampe für Indie-Entwickler und Gründer, um ihre KI-Tools Tausenden von täglichen Nutzern zu präsentieren.",
+      "ctaTitle": "Haben Sie ein KI-Produkt zu teilen?",
+      "ctaDesc": "Reichen Sie Ihr Tool zur Überprüfung ein und werden Sie in unserem Verzeichnis vorgestellt.",
+      "ctaBtn": "Tool einreichen"
+    },
+    "privacy": {
+      "metaTitle": "Datenschutzerklärung | Best AI Tools Free",
+      "metaDescription": "Lesen Sie die Datenschutz- und Cookie-Richtlinie für Best AI Tools Free. Erfahren Sie, wie wir Daten in Übereinstimmung mit globalen Standards sammeln, schützen und verarbeiten.",
+      "h1": "Datenschutz- und Cookie-Richtlinie",
+      "lastUpdated": "Zuletzt aktualisiert: August 2026",
+      "sec1Title": "1. Überblick",
+      "sec1P": "Best AI Tools Free (\"wir\", \"uns\" oder \"unser\") verpflichtet sich zum Schutz Ihrer persönlichen Daten. Diese Datenschutzerklärung erläutert, welche Informationen wir beim Besuch unserer Website (https://www.bestaitoolsfree.com) sammeln, wie wir sie verwenden und welche Möglichkeiten Sie in Bezug auf Ihre persönlichen Daten haben.",
+      "sec2Title": "2. Informationen, die wir sammeln",
+      "sec2L1": "Nutzungsdaten: Wir sammeln nicht personenbezogene Informationen wie Browsertyp, Betriebssystem, verweisende URLs, besuchte Seiten und Zeitstempel über Google Analytics, um die Leistung zu optimieren.",
+      "sec2L2": "Konto- und Einreichungsinformationen: Wenn Sie sich über OAuth (z. B. Google/Clerk) anmelden oder ein Tool oder einen Blogbeitrag einreichen, sammeln wir Ihre E-Mail-Adresse, Ihren Namen und die eingereichten Website-Details.",
+      "sec2L3": "Cookies & lokaler Speicher: Wir verwenden Cookies, um Spracheinstellungen, Designzustände zu speichern und Einwilligungspräferenzen über Cookiebot zu verwalten.",
+      "sec3Title": "3. Wie wir Informationen verwenden",
+      "sec3Lead": "Wir verwenden die gesammelten Informationen ausschließlich, um:",
+      "sec3L1": "Das Verzeichnis und die Suchfunktion zu betreiben, zu warten und zu verbessern.",
+      "sec3L2": "Benutzereingereichte KI-Tools und Artikel zu überprüfen, zu veröffentlichen und zu verifizieren.",
+      "sec3L3": "Aggregierte Benutzertrends zu analysieren, um die Navigation und Geschwindigkeit des Verzeichnisses zu verbessern.",
+      "sec3L4": "Geltende gesetzliche Verpflichtungen einzuhalten und Spam oder böswillige Aktivitäten zu verhindern.",
+      "sec4Title": "4. Drittanbieter-Links & Tools",
+      "sec4P": "Unsere Website verlinkt auf KI-Tools und Software von Drittanbietern. Wir sind nicht verantwortlich für die Datenschutzpraktiken oder den Inhalt von Websites Dritter. Wir empfehlen Ihnen, die Datenschutzerklärungen aller externen Dienste zu lesen, die Sie besuchen.",
+      "sec5Title": "5. DSGVO & Benutzerrechte",
+      "sec5P": "Je nach Ihrem Standort haben Sie das Recht, Zugang zu Ihren von uns gespeicherten personenbezogenen Daten zu beantragen, diese zu korrigieren oder zu löschen. Sie können Ihre Cookie-Einwilligung jederzeit über das Cookiebot-Einstellungssymbol ändern.",
+      "sec6Title": "6. Kontakt",
+      "sec6P": "Wenn Sie Fragen zu dieser Datenschutzerklärung oder Ihren Daten haben, kontaktieren Sie uns bitte über unsere Kontaktseite oder per E-Mail an contact@bestaitoolsfree.com."
+    },
+    "terms": {
+      "metaTitle": "Nutzungsbedingungen | Best AI Tools Free",
+      "metaDescription": "Lesen Sie die Nutzungsbedingungen für Best AI Tools Free, einschließlich Regeln für Tool-Einreichungen, Inhaltsnutzung und Haftungsausschlüsse.",
+      "h1": "Nutzungsbedingungen",
+      "effectiveDate": "Datum des Inkrafttretens: August 2026",
+      "sec1Title": "1. Annahme der Bedingungen",
+      "sec1P": "Durch den Zugriff auf oder die Nutzung von Best AI Tools Free (https://www.bestaitoolsfree.com) erklären Sie sich mit diesen Nutzungsbedingungen einverstanden. Wenn Sie diesen Bedingungen nicht zustimmen, nutzen Sie unseren Dienst bitte nicht.",
+      "sec2Title": "2. Nur Verzeichnis- und Informationszwecke",
+      "sec2P1": "Best AI Tools Free dient als Index und Entdeckungsplattform für KI-Tools und -Dienste, die von Dritten erstellt wurden. Wir besitzen, entwickeln oder betreiben die in unserem Verzeichnis aufgeführten Tools von Drittanbietern nicht, sofern nicht ausdrücklich angegeben.",
+      "sec2P2": "Preise, Funktionsverfügbarkeit und Bedingungen für Tools von Drittanbietern können sich jederzeit durch ihre jeweiligen Eigentümer ändern. Wir bemühen uns nach Kräften, die Einträge korrekt zu halten, garantieren jedoch keine Echtzeit-Synchronisierung mit externen Diensten.",
+      "sec3Title": "3. Tool-Einreichungen & Benutzerinhalte",
+      "sec3P1": "Benutzer und Produktinhaber, die Tools, Logos, Beschreibungen oder Bewertungen einreichen, versichern, dass sie über alle erforderlichen Rechte zur Veröffentlichung solcher Materialien verfügen. Mit der Einreichung gewähren Sie uns eine nicht-exklusive Lizenz, den Eintrag auf unserer Plattform und in Suchmaschinen anzuzeigen, zu indexieren und zu bewerben.",
+      "sec3P2": "Wir behalten uns das Recht vor, jede Einreichung zu überprüfen, zu bearbeiten, abzulehnen oder zu entfernen, die gegen geistige Eigentumsrechte verstößt, irreführende Behauptungen enthält oder nicht unseren redaktionellen Qualitätsstandards entspricht.",
+      "sec4Title": "4. Geistiges Eigentum",
+      "sec4P": "Alle auf dieser Website erscheinenden Marken, Logos und Markennamen gehören ihren jeweiligen Inhabern. Das Design, der Code, die Logos und die kuratierte Taxonomie der Website Best AI Tools Free sind urheberrechtlich geschützt.",
+      "sec5Title": "5. Gewährleistungsausschluss & Haftungsbeschränkung",
+      "sec5P": "Der Dienst wird auf einer \"wie besehen\"- und \"wie verfügbar\"-Basis ohne jegliche Gewährleistung bereitgestellt. Best AI Tools Free haftet nicht für direkte, indirekte, zufällige, Folge- oder sonstige Schäden, die aus Ihrer Nutzung von Software oder Diensten entstehen, die über unser Verzeichnis entdeckt wurden.",
+      "sec6Title": "6. Kontaktinformationen",
+      "sec6P": "Bei Fragen zu diesen Bedingungen kontaktieren Sie uns bitte unter contact@bestaitoolsfree.com."
+    },
+    "contact": {
+      "metaTitle": "Kontakt | Best AI Tools Free",
+      "metaDescription": "Kontaktieren Sie das Team von Best AI Tools Free. Fragen Sie nach Tool-Einreichungen, Werbung, Partnerschaften oder Feedback zum Verzeichnis.",
+      "h1": "Kontakt",
+      "lead": "Wir freuen uns, von Ihnen zu hören. Ob Sie ein KI-Tool vorstellen möchten, veraltete Informationen melden oder eine Partnerschaft erkunden möchten – kontaktieren Sie unser Team.",
+      "card1Title": "Direkter E-Mail-Support",
+      "card1Desc": "Für allgemeine Fragen, Sponsoring-Anfragen, Fehlerberichte und Datenschutzanfragen:",
+      "card2Title": "Tool-Einreichungen",
+      "card2Desc": "Sind Sie ein KI-Entwickler oder Produktgründer? Reichen Sie Ihr Tool direkt über unser Portal zur redaktionellen Überprüfung ein:",
+      "card2Btn": "Zum Einreichungsportal",
+      "faqHeader": "Häufig gestellte Support-Themen",
+      "q1": "Wie lange dauert es, ein eingereichtes Tool zu überprüfen?",
+      "a1": "Tool-Einreichungen werden in der Regel innerhalb von 24 bis 48 Stunden von unserem Redaktionsteam überprüft.",
+      "q2": "Wie aktualisiere ich einen bestehenden Tool-Eintrag?",
+      "a2": "Senden Sie uns eine E-Mail an contact@bestaitoolsfree.com mit dem Tool-Namen, der URL und den aktualisierten Details von der verifizierten Inhaber-E-Mail-Adresse."
+    },
+    "faq": {
+      "metaTitle": "Häufig gestellte Fragen (FAQ) | Best AI Tools Free",
+      "metaDescription": "Finden Sie Antworten auf häufige Fragen zu Best AI Tools Free, zum Finden kostenloser KI-Software, zum Einreichen von Tools und zu Preismodellen.",
+      "h1": "Häufig gestellte Fragen",
+      "lead": "Finden Sie schnelle Antworten auf häufige Fragen zu unserem Verzeichnis, Tool-Einreichungen und KI-Software-Klassifikationen.",
+      "ctaTitle": "Haben Sie noch Fragen?",
+      "ctaDesc": "Kontaktieren Sie unser Support-Team jederzeit.",
+      "ctaBtn": "Kontakt aufnehmen",
+      "items": [
+        {
+          "question": "Was ist Best AI Tools Free?",
+          "answer": "Best AI Tools Free ist ein kuratiertes Verzeichnis und eine Suchplattform, die Benutzern hilft, die besten kostenlosen und Freemium-KI-Software in über 50 spezialisierten Kategorien zu entdecken, zu vergleichen und zu meistern."
+        },
+        {
+          "question": "Sind alle KI-Tools auf dieser Website völlig kostenlos?",
+          "answer": "Wir indexieren eine Vielzahl von Tools, mit einem starken Fokus auf Tools, die 100% kostenlose Pläne, Open-Source-Modelle oder großzügige kostenlose Testguthaben anbieten. Jede Tool-Karte zeigt deutlich ihre Preisstufe: Kostenlos, Freemium oder Bezahlt."
+        },
+        {
+          "question": "Wie reiche ich mein KI-Tool im Verzeichnis ein?",
+          "answer": "Sie können Ihr Tool jederzeit über unsere Seite \"Tool einreichen\" (/submit) einreichen. Unser Redaktionsteam überprüft jede Anwendung auf Authentizität, Sicherheit und Nutzen."
+        },
+        {
+          "question": "Wie oft wird das Verzeichnis aktualisiert?",
+          "answer": "Unsere Datenbank wird täglich mit neuen KI-Tools, aktualisierten Preisstufen und neuen redaktionellen Bewertungen aktualisiert."
+        },
+        {
+          "question": "Kann ich meine Lieblings-KI-Tools mit einem Lesezeichen versehen oder bewerten?",
+          "answer": "Ja! Sie können Tools hochvoten und Community-Bewertungen durchsuchen, um Mitgestaltern und Entwicklern zu helfen, die beste Software zu finden."
+        }
+      ]
+    }
+  },
+  "pt": {
+    "about": {
+      "metaTitle": "Sobre Nós | Best AI Tools Free",
+      "metaDescription": "Saiba mais sobre o Best AI Tools Free, nossa missão de selecionar as melhores ferramentas de inteligência artificial gratuitas e freemium, e como ajudamos os usuários a descobrir software de IA.",
+      "h1": "Sobre o Best AI Tools Free",
+      "lead": "Bem-vindo ao Best AI Tools Free — o diretório abrangente e orientado pela comunidade de ferramentas de Inteligência Artificial, software e aplicações web verificadas.",
+      "missionTitle": "Nossa Missão",
+      "missionP1": "O cenário da IA está se expandindo a uma velocidade sem precedentes. Nossa missão é tornar a inteligência artificial acessível, transparente e prática para todos — desde desenvolvedores e designers até estudantes, profissionais de marketing e fundadores.",
+      "missionP2": "Curamos, revisamos, categorizamos e comparamos milhares de ferramentas de IA, destacando níveis gratuitos genuínos, opções freemium e modelos de código aberto, para que você encontre o software perfeito sem atritos desnecessários.",
+      "offerTitle": "O Que Oferecemos",
+      "card1Title": "Diretório Abrangente",
+      "card1Desc": "Mais de 900+ ferramentas avaliadas em mais de 50 categorias especializadas, incluindo escrita, edição de vídeo, clonagem de voz e assistentes de codificação.",
+      "card2Title": "Preços Transparentes",
+      "card2Desc": "Detalhamento claro de testes gratuitos, limitações freemium, preços mensais e licenças de uso comercial.",
+      "card3Title": "Acesso Global Multilíngue",
+      "card3Desc": "Suporte completo de localização em 12 idiomas para auxiliar inovadores e criadores globais.",
+      "card4Title": "Submissões de Fundadores",
+      "card4Desc": "Uma plataforma de lançamento direta para criadores independentes e fundadores mostrarem suas ferramentas de IA a milhares de usuários diários.",
+      "ctaTitle": "Tem um produto de IA para compartilhar?",
+      "ctaDesc": "Envie sua ferramenta para revisão e seja destaque em nosso diretório.",
+      "ctaBtn": "Envie sua Ferramenta"
+    },
+    "privacy": {
+      "metaTitle": "Política de Privacidade | Best AI Tools Free",
+      "metaDescription": "Leia a Política de Privacidade e Cookies do Best AI Tools Free. Saiba como coletamos, protegemos e tratamos dados em conformidade com os padrões globais.",
+      "h1": "Política de Privacidade e Cookies",
+      "lastUpdated": "Última atualização: agosto de 2026",
+      "sec1Title": "1. Visão Geral",
+      "sec1P": "O Best AI Tools Free (\"nós\", \"nosso\" ou \"nos\") está dedicado a proteger sua privacidade pessoal. Esta Política de Privacidade explica quais informações coletamos quando você visita nosso site (https://www.bestaitoolsfree.com), como as usamos e as escolhas que você tem em relação aos seus dados pessoais.",
+      "sec2Title": "2. Informações que Coletamos",
+      "sec2L1": "Dados de Uso: Coletamos informações não pessoalmente identificáveis, como tipo de navegador, sistema operacional, URLs de referência, páginas visualizadas e carimbos de data/hora via Google Analytics para otimizar o desempenho.",
+      "sec2L2": "Informações de Conta e Submissão: Se você fizer login via OAuth (ex.: Google/Clerk) ou enviar uma ferramenta ou postagem de blog, coletamos seu endereço de e-mail, nome e detalhes do site enviado.",
+      "sec2L3": "Cookies e Armazenamento Local: Usamos cookies para lembrar preferências de idioma, estados de tema e gerenciar preferências de consentimento por meio do Cookiebot.",
+      "sec3Title": "3. Como Usamos as Informações",
+      "sec3Lead": "Usamos as informações coletadas exclusivamente para:",
+      "sec3L1": "Operar, manter e aprimorar o diretório e a funcionalidade de busca.",
+      "sec3L2": "Verificar, revisar e publicar ferramentas de IA e artigos enviados por usuários.",
+      "sec3L3": "Analisar tendências agregadas de usuários para melhorar a navegação e a velocidade do diretório.",
+      "sec3L4": "Cumprir obrigações legais aplicáveis e prevenir spam ou atividades maliciosas.",
+      "sec4Title": "4. Links e Ferramentas de Terceiros",
+      "sec4P": "Nosso site contém links para ferramentas e software de IA de terceiros. Não somos responsáveis pelas práticas de privacidade ou conteúdo de sites de terceiros. Encorajamos você a ler as declarações de privacidade de qualquer serviço externo que visitar.",
+      "sec5Title": "5. GDPR e Direitos do Usuário",
+      "sec5P": "Dependendo da sua localização, você tem o direito de solicitar acesso, correção ou exclusão de suas informações pessoais mantidas por nós. Você também pode modificar seu consentimento de cookies a qualquer momento através do ícone de configurações do Cookiebot.",
+      "sec6Title": "6. Contato",
+      "sec6P": "Se você tiver dúvidas sobre esta Política de Privacidade ou seus dados, entre em contato pela nossa página de contato ou envie um e-mail para contact@bestaitoolsfree.com."
+    },
+    "terms": {
+      "metaTitle": "Termos de Serviço | Best AI Tools Free",
+      "metaDescription": "Revise os Termos de Serviço para usar o Best AI Tools Free, incluindo regras para envio de ferramentas, uso de conteúdo e avisos do diretório.",
+      "h1": "Termos de Serviço",
+      "effectiveDate": "Data de Vigência: agosto de 2026",
+      "sec1Title": "1. Aceitação dos Termos",
+      "sec1P": "Ao acessar ou usar o Best AI Tools Free (https://www.bestaitoolsfree.com), você concorda em ficar vinculado a estes Termos de Serviço. Se você não concorda com estes termos, por favor, não use nosso serviço.",
+      "sec2Title": "2. Apenas para Fins de Diretório e Informação",
+      "sec2P1": "O Best AI Tools Free serve como um índice e plataforma de descoberta para ferramentas e serviços de inteligência artificial criados por terceiros. Não possuímos, desenvolvemos ou operamos as ferramentas de terceiros listadas em nosso diretório, a menos que explicitamente declarado.",
+      "sec2P2": "Preços, disponibilidade de recursos e termos para ferramentas de terceiros estão sujeitos a alterações por seus respectivos proprietários a qualquer momento. Fazemos todos os esforços razoáveis para manter as listagens precisas, mas não garantimos sincronização em tempo real com serviços externos.",
+      "sec3Title": "3. Envios de Ferramentas e Conteúdo do Usuário",
+      "sec3P1": "Usuários e proprietários de produtos que enviam ferramentas, logotipos, descrições ou avaliações declaram que possuem todos os direitos necessários para publicar tal material. Ao enviar, você nos concede uma licença não exclusiva para exibir, indexar e promover a listagem em nossa plataforma e mecanismos de busca.",
+      "sec3P2": "Reservamo-nos o direito de revisar, editar, rejeitar ou remover qualquer envio que viole leis de propriedade intelectual, contenha alegações enganosas ou não atenda aos nossos padrões de qualidade editorial.",
+      "sec4Title": "4. Propriedade Intelectual",
+      "sec4P": "Todas as marcas registradas, logotipos e nomes de marcas que aparecem neste site pertencem aos seus respectivos titulares. O design do site, código, logotipos e taxonomia selecionada do Best AI Tools Free são protegidos por direitos autorais.",
+      "sec5Title": "5. Isenção de Garantias e Limitação de Responsabilidade",
+      "sec5P": "O serviço é fornecido \"como está\" e \"conforme disponível\", sem garantias de qualquer tipo. O Best AI Tools Free não será responsável por quaisquer danos diretos, indiretos, incidentais ou consequenciais resultantes do uso de qualquer software ou serviço descoberto através do nosso diretório.",
+      "sec6Title": "6. Informações de Contato",
+      "sec6P": "Para perguntas sobre estes Termos, entre em contato conosco em contact@bestaitoolsfree.com."
+    },
+    "contact": {
+      "metaTitle": "Contato | Best AI Tools Free",
+      "metaDescription": "Entre em contato com a equipe do Best AI Tools Free. Pergunte sobre envios de ferramentas, publicidade, parcerias ou feedback sobre o diretório.",
+      "h1": "Contato",
+      "lead": "Adoraríamos ouvir você. Se você deseja apresentar uma ferramenta de IA, relatar informações desatualizadas ou explorar uma parceria, entre em contato com nossa equipe.",
+      "card1Title": "Suporte por E-mail Direto",
+      "card1Desc": "Para perguntas gerais, consultas de patrocínio, relatórios de bugs e solicitações de privacidade de dados:",
+      "card2Title": "Envios de Ferramentas",
+      "card2Desc": "Você é um desenvolvedor de IA ou fundador de produto? Envie sua ferramenta diretamente através do nosso portal para revisão editorial:",
+      "card2Btn": "Ir para o Portal de Envio",
+      "faqHeader": "Tópicos de Suporte Frequentes",
+      "q1": "Quanto tempo leva para revisar uma ferramenta enviada?",
+      "a1": "Os envios de ferramentas são normalmente revisados pela nossa equipe editorial dentro de 24 a 48 horas.",
+      "q2": "Como atualizo uma listagem de ferramenta existente?",
+      "a2": "Envie um e-mail para contact@bestaitoolsfree.com com o nome da ferramenta, URL e detalhes atualizados do e-mail do proprietário verificado."
+    },
+    "faq": {
+      "metaTitle": "Perguntas Frequentes (FAQ) | Best AI Tools Free",
+      "metaDescription": "Encontre respostas para perguntas comuns sobre o Best AI Tools Free, como encontrar software de inteligência artificial gratuito, enviar ferramentas e modelos de preços.",
+      "h1": "Perguntas Frequentes",
+      "lead": "Encontre respostas rápidas para perguntas comuns sobre nosso diretório, envios de ferramentas e classificações de software de IA.",
+      "ctaTitle": "Ainda tem dúvidas?",
+      "ctaDesc": "Entre em contato com nossa equipe de suporte a qualquer momento.",
+      "ctaBtn": "Fale Conosco",
+      "items": [
+        {
+          "question": "O que é o Best AI Tools Free?",
+          "answer": "O Best AI Tools Free é um diretório selecionado e plataforma de busca projetada para ajudar os usuários a descobrir, comparar e dominar os melhores softwares de inteligência artificial gratuitos e freemium em mais de 50 categorias especializadas."
+        },
+        {
+          "question": "Todas as ferramentas de IA neste site são completamente gratuitas?",
+          "answer": "Indexamos uma grande variedade de ferramentas, com forte foco em ferramentas que oferecem planos 100% gratuitos, modelos de código aberto ou créditos generosos de teste gratuito. Cada cartão de ferramenta exibe claramente seu nível de preço: Gratuito, Freemium ou Pago."
+        },
+        {
+          "question": "Como envio minha ferramenta de IA para o diretório?",
+          "answer": "Você pode enviar sua ferramenta a qualquer momento através da nossa página Enviar Ferramenta (/submit). Nossa equipe editorial revisa cada aplicação quanto à autenticidade, segurança e utilidade."
+        },
+        {
+          "question": "Com que frequência o diretório é atualizado?",
+          "answer": "Nosso banco de dados é atualizado diariamente com novas ferramentas de IA, níveis de preço atualizados e novas análises editoriais."
+        },
+        {
+          "question": "Posso marcar ou votar nas minhas ferramentas de IA favoritas?",
+          "answer": "Sim! Você pode votar nas ferramentas e navegar pelas classificações da comunidade para ajudar outros criadores e desenvolvedores a encontrar o melhor software."
+        }
+      ]
+    }
+  },
+  "ar": {
+    "about": {
+      "metaTitle": "من نحن | أفضل أدوات الذكاء الاصطناعي المجانية",
+      "metaDescription": "تعرف على المزيد حول أفضل أدوات الذكاء الاصطناعي المجانية، ومهمتنا في تنظيم أفضل أدوات الذكاء الاصطناعي المجانية وشبه المجانية، وكيف نساعد المستخدمين على اكتشاف برامج الذكاء الاصطناعي.",
+      "h1": "من نحن - أفضل أدوات الذكاء الاصطناعي المجانية",
+      "lead": "مرحبًا بكم في أفضل أدوات الذكاء الاصطناعي المجانية - الدليل الشامل الذي يقوده المجتمع لأدوات وبرامج وتطبيقات الويب للذكاء الاصطناعي الموثوقة.",
+      "missionTitle": "مهمتنا",
+      "missionP1": "يتوسع مشهد الذكاء الاصطناعي بسرعة غير مسبوقة. مهمتنا هي جعل الذكاء الاصطناعي في متناول الجميع وشفافًا وعمليًا للجميع - من المطورين والمصممين إلى الطلاب والمسوقين والمؤسسين.",
+      "missionP2": "نقوم بتنظيم ومراجعة وتصنيف ومعايير آلاف أدوات الذكاء الاصطناعي، مع إبراز الخطط المجانية الحقيقية والخيارات شبه المجانية والنماذج مفتوحة المصدر حتى تتمكن من العثور على البرنامج المثالي دون احتكاك غير ضروري.",
+      "offerTitle": "ماذا نقدم",
+      "card1Title": "دليل شامل",
+      "card1Desc": "أكثر من 900+ أداة موثوقة عبر أكثر من 50 فئة متخصصة بما في ذلك الكتابة وتحرير الفيديو واستنساخ الصوت ومساعدي البرمجة.",
+      "card2Title": "أسعار شفافة",
+      "card2Desc": "تفصيل واضح للتجارب المجانية وقيود الخطط شبه المجانية والأسعار الشهرية وتراخيص الاستخدام التجاري.",
+      "card3Title": "وصول عالمي متعدد اللغات",
+      "card3Desc": "دعم كامل للترجمة عبر 12 لغة لمساعدة المبتكرين والمبدعين في جميع أنحاء العالم.",
+      "card4Title": "تقديمات المؤسسين",
+      "card4Desc": "منصة انطلاق مباشرة للمبدعين المستقلين والمؤسسين لعرض أدوات الذكاء الاصطناعي الخاصة بهم على آلاف المستخدمين يوميًا.",
+      "ctaTitle": "هل لديك منتج ذكاء اصطناعي لمشاركته؟",
+      "ctaDesc": "قدم أداتك للمراجعة واحصل على ميزة في دليلنا.",
+      "ctaBtn": "قدم أداتك"
+    },
+    "privacy": {
+      "metaTitle": "سياسة الخصوصية | أفضل أدوات الذكاء الاصطناعي المجانية",
+      "metaDescription": "اقرأ سياسة الخصوصية وملفات تعريف الارتباط لأفضل أدوات الذكاء الاصطناعي المجانية. تعرف على كيفية جمعنا للبيانات وحمايتها ومعالجتها وفقًا للمعايير العالمية.",
+      "h1": "سياسة الخصوصية وملفات تعريف الارتباط",
+      "lastUpdated": "آخر تحديث: أغسطس 2026",
+      "sec1Title": "1. نظرة عامة",
+      "sec1P": "أفضل أدوات الذكاء الاصطناعي المجانية (\"نحن\" أو \"خاصتنا\" أو \"لنا\") ملتزمة بحماية خصوصيتك الشخصية. توضح سياسة الخصوصية هذه المعلومات التي نجمعها عند زيارتك لموقعنا على الويب (https://www.bestaitoolsfree.com)، وكيف نستخدمها، والخيارات المتاحة لك فيما يتعلق ببياناتك الشخصية.",
+      "sec2Title": "2. المعلومات التي نجمعها",
+      "sec2L1": "بيانات الاستخدام: نجمع معلومات غير قابلة للتعريف الشخصي مثل نوع المتصفح ونظام التشغيل وعناوين URL المرجعية والصفحات التي تمت مشاهدتها والطوابع الزمنية عبر Google Analytics لتحسين الأداء.",
+      "sec2L2": "معلومات الحساب والتقديم: إذا قمت بتسجيل الدخول عبر OAuth (مثل Google/Clerk) أو قمت بتقديم أداة أو مشاركة مدونة، فإننا نجمع عنوان بريدك الإلكتروني واسمك وتفاصيل موقع الويب المقدم.",
+      "sec2L3": "ملفات تعريف الارتباط والتخزين المحلي: نستخدم ملفات تعريف الارتباط لتذكر تفضيلات اللغة وحالات السمة وإدارة تفضيلات الموافقة عبر Cookiebot.",
+      "sec3Title": "3. كيف نستخدم المعلومات",
+      "sec3Lead": "نستخدم المعلومات التي تم جمعها فقط من أجل:",
+      "sec3L1": "تشغيل وصيانة وتحسين الدليل ووظيفة البحث.",
+      "sec3L2": "التحقق من أدوات الذكاء الاصطناعي والمقالات المقدمة من المستخدمين ومراجعتها ونشرها.",
+      "sec3L3": "تحليل الاتجاهات الإجمالية للمستخدمين لتحسين التنقل في الدليل وسرعته.",
+      "sec3L4": "الامتثال للالتزامات القانونية المعمول بها ومنع البريد العشوائي أو النشاط الضار.",
+      "sec4Title": "4. الروابط والأدوات الخارجية",
+      "sec4P": "يربط موقعنا الإلكتروني بأدوات وبرامج ذكاء اصطناعي تابعة لجهات خارجية. نحن لسنا مسؤولين عن ممارسات الخصوصية أو محتوى مواقع الويب الخارجية. نشجعك على قراءة بيانات الخصوصية لأي خدمة خارجية تزورها.",
+      "sec5Title": "5. اللائحة العامة لحماية البيانات (GDPR) وحقوق المستخدم",
+      "sec5P": "اعتمادًا على موقعك، يحق لك طلب الوصول إلى معلوماتك الشخصية التي نحتفظ بها أو تصحيحها أو حذفها. يمكنك أيضًا تعديل موافقتك على ملفات تعريف الارتباط في أي وقت عبر أيقونة إعدادات Cookiebot.",
+      "sec6Title": "6. اتصل بنا",
+      "sec6P": "إذا كانت لديك أسئلة بخصوص سياسة الخصوصية هذه أو بياناتك، فيرجى التواصل معنا عبر صفحة الاتصال الخاصة بنا أو مراسلتنا عبر البريد الإلكتروني على contact@bestaitoolsfree.com."
+    },
+    "terms": {
+      "metaTitle": "شروط الخدمة | أفضل أدوات الذكاء الاصطناعي المجانية",
+      "metaDescription": "راجع شروط الخدمة لاستخدام أفضل أدوات الذكاء الاصطناعي المجانية، بما في ذلك قواعد تقديم الأدوات واستخدام المحتوى وإخلاء مسؤولية الدليل.",
+      "h1": "شروط الخدمة",
+      "effectiveDate": "تاريخ السريان: أغسطس 2026",
+      "sec1Title": "1. قبول الشروط",
+      "sec1P": "من خلال الوصول إلى أفضل أدوات الذكاء الاصطناعي المجانية (https://www.bestaitoolsfree.com) أو استخدامها، فإنك توا��ق على الالتزام بشروط الخدمة هذه. إذا كنت لا توافق على هذه الشروط، فيرجى عدم استخدام خدمتنا.",
+      "sec2Title": "2. الدليل ولأغراض إعلامية فقط",
+      "sec2P1": "تعمل أفضل أدوات الذكاء الاصطناعي المجانية كفهرس ومنصة اكتشاف لأدوات وخدمات الذكاء الاصطناعي التي أنشأتها جهات خارجية. نحن لا نملك أو نطور أو نشغل الأدوات الخارجية المدرجة في دليلنا ما لم يُذكر صراحة.",
+      "sec2P2": "الأسعار وتوافر الميزات وشروط الأدوات الخارجية قابلة للتغيير من قبل مالكيها في أي وقت. نبذل قصارى جهدنا للحفاظ على دقة القوائم، لكننا لا نضمن المزامنة في الوقت الفعلي مع الخدمات الخارجية.",
+      "sec3Title": "3. تقديمات الأدوات ومحتوى المستخدم",
+      "sec3P1": "المستخدمون وأصحاب المنتجات الذين يقدمون أدوات أو شعارات أو أوصافًا أو مراجعات يقرون بأنهم يمتلكون جميع الحقوق اللازمة لنشر هذه المواد. من خلال التقديم، تمنحنا ترخيصًا غير حصري لعرض القائمة وفهرستها والترويج لها عبر منصتنا ومحركات البحث.",
+      "sec3P2": "نحتفظ بالحق في مراجعة أو تعديل أو رفض أو إزالة أي تقديم ينتهك قوانين الملكية الفكرية أو يحتوي على ادعاءات خادعة أو لا يفي بمعايير الجودة التحريرية لدينا.",
+      "sec4Title": "4. الملكية الفكرية",
+      "sec4P": "جميع العلامات التجارية والشعارات وأسماء العلامات التجارية التي تظهر على هذا الموقع مملوكة لأصحابها. تصميم موقع أفضل أدوات الذكاء الاصطناعي المجانية والكود والشعارات والتصنيف المنسق محمية بموجب حقوق النشر.",
+      "sec5Title": "5. إخلاء المسؤولية عن الضمانات وتحديد المسؤولية",
+      "sec5P": "يتم توفير الخدمة على أساس \"كما هي\" و\"كما هي متاحة\" دون أي ضمانات من أي نوع. لن تكون أفضل أدوات الذكاء الاصطناعي المجانية مسؤولة عن أي أضرار مباشرة أو غير مباشرة أو عرضية أو تبعية ناتجة عن استخدامك لأي برنامج أو خدمة تكتشفها من خلال دليلنا.",
+      "sec6Title": "6. معلومات الاتصال",
+      "sec6P": "للاستفسارات المتعلقة بهذه الشروط، يرجى الاتصال بنا على contact@bestaitoolsfree.com."
+    },
+    "contact": {
+      "metaTitle": "اتصل بنا | أفضل أدوات الذكاء الاصطناعي المجانية",
+      "metaDescription": "تواصل مع فريق أفضل أدوات الذكاء الاصطناعي المجانية. استفسر عن تقديم الأدوات أو الإعلان أو الشراكات أو ملاحظات الدليل.",
+      "h1": "اتصل بنا",
+      "lead": "يسعدنا أن نسمع منك. سواء كنت ترغب في عرض أداة ذكاء اصطناعي أو الإبلاغ عن معلومات قديمة أو استكشاف شراكة، تواصل مع فريقنا.",
+      "card1Title": "دعم البريد الإلكتروني المباشر",
+      "card1Desc": "للاستفسارات العامة واستفسارات الرعاية وتقارير الأخطاء وطلبات خصوصية البيانات:",
+      "card2Title": "تقديم الأدوات",
+      "card2Desc": "هل أنت مطور ذكاء اصطناعي أو مؤسس منتج؟ قدم أداتك مباشرة من خلال بوابتنا للمراجعة التحريرية:",
+      "card2Btn": "الانتقال إلى بوابة التقديم",
+      "faqHeader": "مواضيع الدعم الشائعة",
+      "q1": "كم من الوقت يستغرق مراجعة الأداة المقدمة؟",
+      "a1": "عادةً ما تتم مراجعة تقديمات الأدوات من قبل فريق التحرير لدينا في غضون 24 إلى 48 ساعة.",
+      "q2": "كيف يمكنني تحديث قائمة أدوات موجودة؟",
+      "a2": "أرسل لنا بريدًا إلكترونيًا على contact@bestaitoolsfree.com مع اسم الأداة وعنوان URL والتفاصيل المحدثة من البريد الإلكتروني للمالك الموثق."
+    },
+    "faq": {
+      "metaTitle": "الأسئلة الشائعة | أفضل أدوات الذكاء الاصطناعي المجانية",
+      "metaDescription": "اعثر على إجابات للأسئلة الشائعة حول أفضل أدوات الذكاء الاصطناعي المجانية، والعثور على برامج الذكاء الاصطناعي المجانية، وتقديم الأدوات، ونماذج التسعير.",
+      "h1": "الأسئلة الشائعة",
+      "lead": "اعثر على إجابات سري��ة للأسئلة الشائعة حول دليلنا وتقديمات الأدوات وتصنيفات برامج الذكاء الاصطناعي.",
+      "ctaTitle": "لا تزال لديك أسئلة؟",
+      "ctaDesc": "اتصل بفريق الدعم لدينا في أي وقت.",
+      "ctaBtn": "تواصل معنا",
+      "items": [
+        {
+          "question": "ما هي أفضل أدوات الذكاء الاصطناعي المجانية؟",
+          "answer": "أفضل أدوات الذكاء الاصطناعي المجانية هي دليل منسق ومنصة بحث مصممة لمساعدة المستخدمين على اكتشاف ومقارنة وإتقان أفضل برامج الذكاء الاصطناعي المجانية وشبه المجانية عبر أكثر من 50 فئة متخصصة."
+        },
+        {
+          "question": "هل جميع أدوات الذكاء الاصطناعي على هذا الموقع مجانية تمامًا؟",
+          "answer": "نقوم بفهرسة مجموعة واسعة من الأدوات، مع تركيز قوي على الأدوات التي تقدم خططًا مجانية 100% أو نماذج مفتوحة المصدر أو أرصدة تجريبية سخية. تعرض كل بطاقة أداة بوضوح مستوى التسعير الخاص بها: مجاني أو شبه مجاني أو مدفوع."
+        },
+        {
+          "question": "كيف يمكنني تقديم أداتي إلى الدليل؟",
+          "answer": "يمكنك تقديم أداتك في أي وقت عبر صفحة تقديم الأداة (/submit). يراجع فريق التحرير لدينا كل طلب للتأكد من صحته وأمانه وفائدته."
+        },
+        {
+          "question": "كم مرة يتم تحديث الدليل؟",
+          "answer": "يتم تحديث قاعدة بياناتنا يوميًا بأحدث أدوات الذكاء الاصطناعي ومستويات الأسعار المحدثة والمراجعات التحريرية الجديدة."
+        },
+        {
+          "question": "هل يمكنني وضع إشارة مرجعية أو التصويت لأدوات الذكاء الاصطناعي المفضلة لدي؟",
+          "answer": "نعم! يمكنك التصويت للأدوات وتصفح تقييمات المجتمع لمساعدة زملائك المبدعين والمطورين في العثور على أفضل البرامج."
+        }
+      ]
+    }
+  },
+  "ru": {
+    "about": {
+      "metaTitle": "О нас | Best AI Tools Free",
+      "metaDescription": "Узнайте больше о Best AI Tools Free, нашей миссии по подбору лучших бесплатных и условно-бесплатных инструментов искусственного интеллекта, и о том, как мы помогаем пользователям находить AI-программы.",
+      "h1": "О Best AI Tools Free",
+      "lead": "Добро пожаловать в Best AI Tools Free — всеобъемлющий, управляемый сообществом каталог проверенных инструментов искусственного интеллекта, программного обеспечения и веб-приложений.",
+      "missionTitle": "Наша миссия",
+      "missionP1": "Сфера искусственного интеллекта расширяется с беспрецедентной скоростью. Наша миссия — сделать искусственный интеллект доступным, прозрачным и практичным для всех: от разработчиков и дизайнеров до студентов, маркетологов и основателей компаний.",
+      "missionP2": "Мы курируем, анализируем, классифицируем и сравниваем тысячи AI-инструментов, выделяя подлинные бесплатные тарифы, условно-бесплатные варианты и модели с открытым исходным кодом, чтобы вы могли найти идеальное программное обеспечение без лишних усилий.",
+      "offerTitle": "Что мы предлагаем",
+      "card1Title": "Всеобъемлющий каталог",
+      "card1Desc": "Более 900 проверенных инструментов в более чем 50 специализированных категориях, включая написание текстов, редактирование видео, клонирование голоса и помощников по программированию.",
+      "card2Title": "Прозрачные цены",
+      "card2Desc": "Четкое описание бесплатных пробных версий, ограничений freemium, ежемесячных тарифов и лицензий на коммерческое использование.",
+      "card3Title": "Глобальный многоязычный доступ",
+      "card3Desc": "Полная локализация на 12 языках для поддержки инноваторов и творческих людей по всему миру.",
+      "card4Title": "Подача заявок основателями",
+      "card4Desc": "Прямая стартовая площадка для независимых создателей и основателей, чтобы продемонстрировать свои AI-инструменты тысячам ежедневных пользователей.",
+      "ctaTitle": "У вас есть AI-продукт, которым хотите поделиться?",
+      "ctaDesc": "Отправьте свой инструмент на рассмотрение и получите место в нашем каталоге.",
+      "ctaBtn": "Отправить свой инструмент"
+    },
+    "privacy": {
+      "metaTitle": "Политика конфиденциальности | Best AI Tools Free",
+      "metaDescription": "Ознакомьтесь с Политикой конфиденциальности и использования файлов cookie для Best AI Tools Free. Узнайте, как мы собираем, защищаем и обрабатываем данные в соответствии с мировыми стандартами.",
+      "h1": "Политика конфиденциальности и использования файлов cookie",
+      "lastUpdated": "Последнее обновление: август 2026 г.",
+      "sec1Title": "1. Общие положения",
+      "sec1P": "Best AI Tools Free (\"мы\", \"наш\" или \"нас\") стремится защищать вашу личную конфиденциальность. Настоящая Политика конфиденциальности объясняет, какую информацию мы собираем при посещении вами нашего веб-сайта (https://www.bestaitoolsfree.com), как мы ее используем и какие у вас есть варианты выбора в отношении ваших личных данных.",
+      "sec2Title": "2. Информация, которую мы собираем",
+      "sec2L1": "Данные об использовании: Мы собираем информацию, не позволяющую идентифицировать личность, такую как тип браузера, операционная система, URL-адреса переходов, просмотренные страницы и временные метки, с помощью Google Analytics для оптимизации производительности.",
+      "sec2L2": "Информация об учетной записи и отправке: Если вы входите через OAuth (например, Google/Clerk) или отправляете инструмент или сообщение в блоге, мы собираем ваш адрес электронной почты, имя и данные о представленном веб-сайте.",
+      "sec2L3": "Файлы cookie и локальное хранилище: Мы используем файлы cookie для запоминания языковых предпочтений, состояния темы и управления настройками согласия через Cookiebot.",
+      "sec3Title": "3. Как мы используем информацию",
+      "sec3Lead": "Мы используем собранную информацию исключительно для:",
+      "sec3L1": "Работы, поддержки и улучшения каталога и функции поиска.",
+      "sec3L2": "Проверки, рецензирования и публикации пользовательских AI-инструментов и статей.",
+      "sec3L3": "Анализа общих тенденций пользователей для улучшения навигации и скорости каталога.",
+      "sec3L4": "Соблюдения применимых юридических обязательств и предотвращения спама или вредоносной деятельности.",
+      "sec4Title": "4. Сторонние ссылки и инструменты",
+      "sec4P": "Наш веб-сайт содержит ссылки на сторонние AI-инструменты и программное обеспечение. Мы не несем ответственности за политику конфиденциальности или содержание сторонних веб-сайтов. Мы рекомендуем вам ознакомиться с заявлениями о конфиденциальности любого внешнего сервиса, который вы посещаете.",
+      "sec5Title": "5. GDPR и права пользователей",
+      "sec5P": "В зависимости от вашего местоположения вы имеете право запросить доступ к вашей личной информации, хранящейся у нас, ее исправление или удаление. Вы также можете изменить свое согласие на использование файлов cookie в любое время через значок настроек Cookiebot.",
+      "sec6Title": "6. Свяжитесь с нами",
+      "sec6P": "Если у вас есть вопросы относительно настоящей Политики конфиденциальности или ваших данных, свяжитесь с нами через нашу контактную страницу или по электронной почте contact@bestaitoolsfree.com."
+    },
+    "terms": {
+      "metaTitle": "Условия предоставления услуг | Best AI Tools Free",
+      "metaDescription": "Ознакомьтесь с Условиями предоставления услуг для использования Best AI Tools Free, включая правила подачи инструментов, использования контента и отказ от ответственности каталога.",
+      "h1": "Условия предоставления услуг",
+      "effectiveDate": "Дата вступления в силу: август 2026 г.",
+      "sec1Title": "1. Принятие условий",
+      "sec1P": "Используя Best AI Tools Free (https://www.bestaitoolsfree.com), вы соглашаетесь соблюдать настоящие Условия предоставления услуг. Если вы не согласны с этими условиями, пожалуйста, не используйте наш сервис.",
+      "sec2Title": "2. Только каталог и информационные цели",
+      "sec2P1": "Best AI Tools Free служит индексом и платформой для обнаружения инструментов и сервисов искусственного интеллекта, созданных третьими лицами. Мы не владеем, не разрабатываем и не управляем сторонними инструментами, перечисленными в нашем каталоге, если это явно не указано.",
+      "sec2P2": "Цены, доступность функций и условия для сторонних инструментов могут быть изменены их владельцами в любое время. Мы прилагаем все разумные усилия для поддержания точности списк��в, но не гарантируем синхронизацию в реальном времени с внешними сервисами.",
+      "sec3Title": "3. Подача инструментов и пользовательский контент",
+      "sec3P1": "Пользователи и владельцы продуктов, которые отправляют инструменты, логотипы, описания или обзоры, заявляют, что они обладают всеми необходимыми правами на публикацию таких материалов. Отправляя материалы, вы предоставляете нам неисключительную лицензию на отображение, индексацию и продвижение списка на нашей платформе и в поисковых системах.",
+      "sec3P2": "Мы оставляем за собой право проверять, редактировать, отклонять или удалять любые материалы, нарушающие законы об интеллектуальной собственности, содержащие ложные заявления или не соответствующие нашим редакционным стандартам качества.",
+      "sec4Title": "4. Интеллектуальная собственность",
+      "sec4P": "Все товарные знаки, логотипы и фирменные наименования, появляющиеся на этом веб-сайте, принадлежат их соответствую��им владельцам. Дизайн, код, логотипы и курируемая таксономия веб-сайта Best AI Tools Free защищены авторским правом.",
+      "sec5Title": "5. Отказ от гарантий и ограничение ответственности",
+      "sec5P": "Сервис предоставляется на условиях \"как есть\" и \"как доступно\" без каких-либо гарантий. Best AI Tools Free не несет ответственности за любые прямые, косвенные, случайные или косвенные убытки, возникшие в результате использования вами любого программного обеспечения или сервиса, обнаруженного через наш каталог.",
+      "sec6Title": "6. Контактная информация",
+      "sec6P": "По вопросам, касающимся настоящих Условий, свяжитесь с нами по адресу contact@bestaitoolsfree.com."
+    },
+    "contact": {
+      "metaTitle": "Свяжитесь с нами | Best AI Tools Free",
+      "metaDescription": "Свяжитесь с командой Best AI Tools Free. Узнайте о подаче инструментов, рекламе, партнерстве или оставьте отзыв о каталоге.",
+      "h1": "Свяжитесь с нами",
+      "lead": "Мы будем рады услышать вас. Если вы хотите представить AI-инструмент, сообщить об устаревшей информации или изучить возможности партнерства, свяжитесь с нашей командой.",
+      "card1Title": "Прямая поддержка по электронной почте",
+      "card1Desc": "По общим вопросам, запросам о спонсорстве, сообщениям об ошибках и запросам о конфиденциальности данных:",
+      "card2Title": "Подача инструментов",
+      "card2Desc": "Вы разработчик AI или основатель продукта? Отправьте свой инструмент напрямую через наш портал для редакционного обзора:",
+      "card2Btn": "Перейти к порталу подачи",
+      "faqHeader": "Часто задаваемые темы поддержки",
+      "q1": "Сколько времени занимает рассмотрение отправленного инструмента?",
+      "a1": "Заявки на инструменты обычно рассматриваются нашей редакционной командой в течение 24–48 часов.",
+      "q2": "Как обновить существующий список инструментов?",
+      "a2": "Напишите нам на contact@bestaitoolsfree.com с указанием названия инструмента, URL-адреса и обновленных данных с подтвержденного адреса электронной почты владельца."
+    },
+    "faq": {
+      "metaTitle": "Часто задаваемые вопросы (FAQ) | Best AI Tools Free",
+      "metaDescription": "Найдите ответы на распространенные вопросы о Best AI Tools Free, поиске бесплатного программного обеспечения для искусственного интеллекта, подаче инструментов и моделях ценообразования.",
+      "h1": "Часто задаваемые вопросы",
+      "lead": "Найдите быстрые ответы на распространенные вопросы о нашем каталоге, подаче инструментов и классификации AI-программ.",
+      "ctaTitle": "Остались вопросы?",
+      "ctaDesc": "Свяжитесь с нашей службой поддержки в любое время.",
+      "ctaBtn": "Связаться с нами",
+      "items": [
+        {
+          "question": "Что такое Best AI Tools Free?",
+          "answer": "Best AI Tools Free — это курируемый каталог и поисковая платформа, предназначенная для того, чтобы помочь пользователям находить, сравнивать и осваивать лучшие бесплатные и условно-бесплатные программы для искусственного интеллекта в более чем 50 специализированных категориях."
+        },
+        {
+          "question": "Все ли AI-инструменты на этом сайте полностью бесплатны?",
+          "answer": "Мы индексируем широкий спектр инструментов, уделяя особое внимание инструментам со 100% бесплатными тарифами, моделям с открытым исходным кодом или щедрым бесплатным пробным кредитам. Каждая карточка инструмента четко отображает его ценовую категорию: Free (бесплатный), Freemium (условно-бесплатный) или Paid (платный)."
+        },
+        {
+          "question": "Как отправить свой AI-инструмент в каталог?",
+          "answer": "Вы можете отправить свой инструмент в любое время через нашу страницу Submit Tool (/submit). Наша редакционная команда проверяет каждую заявку на подлинность, безопасность и полезность."
+        },
+        {
+          "question": "Как часто обновляется каталог?",
+          "answer": "Наша база данных обновляется ежедневно новыми AI-инструментами, обновленными ценовыми категориями и новыми редакционными обзорами."
+        },
+        {
+          "question": "Могу ли я добавить в закладки или голосовать за понравившиеся AI-инструменты?",
+          "answer": "Да! Вы можете голосовать за инструменты и просматривать рейтинги сообщества, чтобы помочь другим создателям и разработчикам найти лучшее программное обеспечение."
+        }
+      ]
+    }
+  },
+  "ja": {
+    "about": {
+      "metaTitle": "私たちについて | Best AI Tools Free",
+      "metaDescription": "Best AI Tools Freeについて、最高の無料・フリーミアム人工知能ツールを厳選する私たちの使命、そしてユーザーがAIソフトウェアを発見するお手伝いについて詳しくご紹介します。",
+      "h1": "Best AI Tools Freeについて",
+      "lead": "Best AI Tools Freeへようこそ。検証済みの人工知能ツール、ソフトウェア、ウェブアプリケーションの包括的でコミュニティ主導のディレクトリです。",
+      "missionTitle": "私たちの使命",
+      "missionP1": "AIの世界はかつてない速さで拡大しています。私たちの使命は、開発者やデザイナーから学生、マーケター、創業者まで、すべての人にとって人工知能をアクセスしやすく、透明で、実用的なものにすることです。",
+      "missionP2": "私たちは、何千ものAIツールを厳選し、レビューし、分類し、ベンチマークし、真の無料プラン、フリーミアムオプション、オープンソースモデルを強調して、あなたが不必要な手間なく完璧なソフトウェアを見つけられるようにします。",
+      "offerTitle": "私たちが提供するもの",
+      "card1Title": "包括的なディレクトリ",
+      "card1Desc": "ライティング、動画編集、音声クローン、コーディングアシスタントなど、50以上の専門カテゴリにわたる900以上の精査済みツール。",
+      "card2Title": "透明な価格設定",
+      "card2Desc": "無料トライアル、フリーミアムの制限、月額料金、商用利用ライセンスの明確な内訳。",
+      "card3Title": "グローバルな多言語アクセス",
+      "card3Desc": "12言語での完全なローカライゼーションサポートにより、世界中のイノベーターやクリエイターを支援します。",
+      "card4Title": "創業者による提出",
+      "card4Desc": "インディーズクリエイターや創業者が、毎日何千人ものユーザーに自分のAIツールを紹介するための直接的な発射台です。",
+      "ctaTitle": "共有したいAIプロダクトがありますか？",
+      "ctaDesc": "レビューのためにツールを提出して、ディレクトリに掲載されましょう。",
+      "ctaBtn": "ツールを提出する"
+    },
+    "privacy": {
+      "metaTitle": "プライバシーポリシー | Best AI Tools Free",
+      "metaDescription": "Best AI Tools Freeのプライバシー＆クッキーポリシーをお読みください。グローバル基準に準拠して、私たちがどのようにデータを収集、保護、処理するかをご確認いただけます。",
+      "h1": "プライバシー＆クッキーポリシー",
+      "lastUpdated": "最終更新日：2026年8月",
+      "sec1Title": "1. 概要",
+      "sec1P": "Best AI Tools Free（以下「当社」「私たち」）は、お客様の個人情報の保護に努めています。このプライバシーポリシーでは、当社ウェブサイト（https://www.bestaitoolsfree.com）を訪問した際に収集する情報、その使用方法、およびお客様の個人データに関する選択肢について説明します。",
+      "sec2Title": "2. 収集する情報",
+      "sec2L1": "利用データ：ブラウザの種類、オペレーティングシステム、参照元URL、閲覧ページ、タイムスタンプなど、個人を特定できない情報をGoogle Analyticsを通じて収集し、パフォーマンスを最適化します。",
+      "sec2L2": "アカウントおよび提出情報：OAuth（例：Google/Clerk）を介してサインインするか、ツールやブログ記事を提出する場合、メールアドレス、名前、提出されたウェブサイトの詳細を収集します。",
+      "sec2L3": "クッキーとローカルストレージ：言語設定、テーマの状態を記憶し、Cookiebotを通じて同意設定を管理するためにクッキーを使用します。",
+      "sec3Title": "3. 情報の使用方法",
+      "sec3Lead": "収集した情報は、以下の目的にのみ使用します：",
+      "sec3L1": "ディレクトリと検索機能の運営、維持、向上。",
+      "sec3L2": "ユーザーが提出したAIツールや記事の検証、レビュー、公開。",
+      "sec3L3": "集計されたユーザートレンドを分析して、ディレクトリのナビゲーションと速度を改善。",
+      "sec3L4": "適用される法的義務の遵守、スパムや悪意のある活動の防止。",
+      "sec4Title": "4. サードパーティのリンクとツール",
+      "sec4P": "当ウェブサイトは、サードパーティのAIツールやソフトウェアへのリンクを提供しています。当社は、サードパーティのウェブサイトのプライバシー慣行やコンテンツについて責任を負いません。外部サービスを訪問する際は、そのプライバシーステートメントを読むことをお勧めします。",
+      "sec5Title": "5. GDPRとユーザーの権利",
+      "sec5P": "お住まいの地域によっては、当社が保有する個人情報へのアクセス、訂正、削除を要求する権利があります。また、Cookiebotの設定アイコンからいつでもクッキーの同意を変更できます。",
+      "sec6Title": "6. お問い合わせ",
+      "sec6P": "このプライバシーポリシーまたはお客様のデータに関するご質問がある場合は、お問い合わせページから、またはcontact@bestaitoolsfree.comまでメールでご連絡ください。"
+    },
+    "terms": {
+      "metaTitle": "利用規約 | Best AI Tools Free",
+      "metaDescription": "Best AI Tools Freeの利用規約をご確認ください。ツールの提出、コンテンツの使用、ディレクトリの免責事項に関するルールが含まれます。",
+      "h1": "利用規約",
+      "effectiveDate": "発効日：2026年8月",
+      "sec1Title": "1. 規約の承諾",
+      "sec1P": "Best AI Tools Free（https://www.bestaitoolsfree.com）にアクセスまたは使用することにより、これらの利用規約に拘束されることに同意したものとみなされます。これらの規約に同意しない場合は、当サービスを使用しないでください。",
+      "sec2Title": "2. ディレクトリおよび情報提供のみを目的とする",
+      "sec2P1": "Best AI Tools Freeは、第三者によって作成された人工知能ツールおよびサービスのインデックスおよび発見プラットフォームとして機能します。明示的に記載されていない限り、当社はディレクトリに掲載されている第三者のツールを所有、開発、運営していません。",
+      "sec2P2": "第三者のツールの価格、機能の利用可能性、および条件は、それぞれの所有者によっていつでも変更される可能性があります。当社はリストを正確に保つためにあらゆる合理的な努力を払っていますが、外部サービスとのリアルタイムの同期を保証するものではありません。",
+      "sec3Title": "3. ツールの提出とユーザーコンテンツ",
+      "sec3P1": "ツール、ロゴ、説明、レビューを提出するユーザーおよび製品所有者は、そのような資料を公開するために必要なすべての権利を所有していることを表明します。提出することにより、当社にプラットフォームおよび検索エンジン全体でリストを表示、インデックス化、宣伝するための非独占的ライセンスを付与したことになります。",
+      "sec3P2": "当社は、知的財産法に違反する、虚偽の主張を含む、または当社の編集品質基準を満たさない提出物をレビュー、編集、拒否、または削除する権利を留保します。",
+      "sec4Title": "4. 知的財産",
+      "sec4P": "このウェブサイトに表示されるすべての商標、ロゴ、ブランド名は、それぞれの権利所有者に帰属します。Best AI Tools Freeのウェブサイトのデザイン、コード、ロゴ、厳選された分類法は著作権で保護されています。",
+      "sec5Title": "5. 保証の免責事項と責任の制限",
+      "sec5P": "本サービスは、「現状のまま」および「利用可能な状態で」提供され、いかなる種類の保証もありません。Best AI Tools Freeは、当ディレクトリを通じて発見されたソフトウェアまたはサービスの使用から生じる直接的、間接的、付随的、または結果的な損害について責任を負いません。",
+      "sec6Title": "6. 連絡先情報",
+      "sec6P": "これらの規約に関するご質問は、contact@bestaitoolsfree.comまでお問い合わせください。"
+    },
+    "contact": {
+      "metaTitle": "お問い合わせ | Best AI Tools Free",
+      "metaDescription": "Best AI Tools Freeチームにご連絡ください。ツールの提出、広告、パートナーシップ、ディレクトリに関するフィードバックについてお問い合わせいただけます。",
+      "h1": "お問い合わせ",
+      "lead": "ぜひお声をお聞かせください。AIツールを紹介したい、古い情報を報告したい、パートナーシップを検討したいなど、お気軽にチームまでご連絡ください。",
+      "card1Title": "メールでの直接サポート",
+      "card1Desc": "一般的なご質問、スポンサーシップのお問い合わせ、バグ報告、データプライバシーに関するリクエストはこちら：",
+      "card2Title": "ツールの提出",
+      "card2Desc": "AI開発者またはプロダクト創業者ですか？ポータルから直接ツールを提出して、編集レビューを受けてください：",
+      "card2Btn": "提出ポータルへ",
+      "faqHeader": "よくあるサポートトピック",
+      "q1": "提出したツールのレビューにはどのくらい時間がかかりますか？",
+      "a1": "ツールの提出は、通常24〜48時間以内に編集チームによってレビューされます。",
+      "q2": "既存のツールリストを更新するにはどうすればよいですか？",
+      "a2": "検証済みの所有者メールから、ツール名、URL、更新された詳細を添えてcontact@bestaitoolsfree.comまでメールでお送りください。"
+    },
+    "faq": {
+      "metaTitle": "よくある質問（FAQ） | Best AI Tools Free",
+      "metaDescription": "Best AI Tools Free、無料の人工知能ソフトウェアの検索、ツールの提出、価格モデルに関するよくある質問への回答をご覧ください。",
+      "h1": "よくある質問",
+      "lead": "ディレクトリ、ツールの提出、AIソフトウェアの分類に関する一般的な質問への簡単な回答をご覧ください。",
+      "ctaTitle": "まだ質問がありますか？",
+      "ctaDesc": "いつでもサポートチームにお問い合わせください。",
+      "ctaBtn": "お問い合わせ",
+      "items": [
+        {
+          "question": "Best AI Tools Freeとは何ですか？",
+          "answer": "Best AI Tools Freeは、50以上の専門カテゴリにわたる最高の無料およびフリーミアム人工知能ソフトウェアをユーザーが発見、比較、習得できるように設計された厳選されたディレクトリおよび検索プラットフォームです。"
+        },
+        {
+          "question": "このウェブサイトのAIツールはすべて完全に無料ですか？",
+          "answer": "当社は多種多様なツールをインデックス化しており、100%無料プラン、オープンソースモデル、または寛大な無料トライアルクレジットを提供するツールに重点を置いています。各ツールカードには、無料、フリーミアム、有料の価格帯が明確に表示されています。"
+        },
+        {
+          "question": "自分のAIツールをディレク���リに提出するにはどうすればよいですか？",
+          "answer": "提出ツールページ（/submit）からいつでもツールを提出できます。編集チームがすべての申請を信頼性、セキュリティ、有用性についてレビューします。"
+        },
+        {
+          "question": "ディレクトリはどのくらいの頻度で更新されますか？",
+          "answer": "当社のデータベースは、新しいAIツールの登場、更新された価格帯、新しい編集レビューで毎日更新されています。"
+        },
+        {
+          "question": "お気に入りのAIツールをブックマークしたり、投票したりできますか？",
+          "answer": "はい！ツールにアップvoteしたり、コミュニティの評価を閲覧して、仲間のクリエイターや開発者が最高のソフトウェアを見つけるのを助けることができます。"
+        }
+      ]
+    }
+  },
+  "zh": {
+    "about": {
+      "metaTitle": "关于我们 | 最佳免费AI工具",
+      "metaDescription": "了解最佳免费AI工具，我们的使命是精选最佳免费和免费增值人工智能工具，以及我们如何帮助用户发现AI软件。",
+      "h1": "关于最佳免费AI工具",
+      "lead": "欢迎来到最佳免费AI工具——一个全面、社区驱动的已验证人工智能工具、软件和网络应用目录。",
+      "missionTitle": "我们的使命",
+      "missionP1": "AI领域正以前所未有的速度发展。我们的使命是让人工智能对每个人都可访问、透明且实用——无论是开发者、设计师、学生、营销人员还是创始人。",
+      "missionP2": "我们精选、审查、分类并基准测试数千种AI工具，突出真正的免费层级、免费增值选项和开源模型，以便您轻松找到完美的软件。",
+      "offerTitle": "我们提供什么",
+      "card1Title": "全面目录",
+      "card1Desc": "超过900种经过验证的工具，涵盖50多个专业类别，包括写作、视频编辑、语音克隆和编码助手。",
+      "card2Title": "透明定价",
+      "card2Desc": "清晰分解免费试用、免费增值限制、月度定价和商业使用许可。",
+      "card3Title": "全球多语言访问",
+      "card3Desc": "支持12种语言的全面本地化，以帮助全球创新者和创作者。",
+      "card4Title": "创始人提交",
+      "card4Desc": "为独立创作者和创始人提供直接发射台，向数千名日常用户展示他们的AI工具。",
+      "ctaTitle": "有AI产品要分享吗？",
+      "ctaDesc": "提交您的工具以供审查，并在我们的目录中展示。",
+      "ctaBtn": "提交您的工具"
+    },
+    "privacy": {
+      "metaTitle": "隐私政策 | 最佳免费AI工具",
+      "metaDescription": "阅读最佳免费AI工具的隐私与Cookie政策。了解我们如何按照全球标准收集、保护和处理数据。",
+      "h1": "隐私与Cookie政策",
+      "lastUpdated": "最后更新：2026年8月",
+      "sec1Title": "1. 概述",
+      "sec1P": "最佳免费AI工具（“我们”或“我们的”）致力于保护您的个人隐私。本隐私政策解释了我们访问我们的网站（https://www.bestaitoolsfree.com）时收集哪些信息、如何使用这些信息以及您对个人数据的选择。",
+      "sec2Title": "2. 我们收集的信息",
+      "sec2L1": "使用数据：我们通过Google Analytics收集非个人身份信息，如浏览器类型、操作系统、引用URL、浏览页面和时间戳，以优化性能。",
+      "sec2L2": "账户与提交信息：如果您通过OAuth（例如Google/Clerk）登录或提交工具或博客文章，我们会收集您的电子邮件地址、姓名和提交的网站详情。",
+      "sec2L3": "Cookie与本地存储：我们使用Cookie来记住语言偏好、主题状态，并通过Cookiebot管理同意偏好。",
+      "sec3Title": "3. 我们如何使用信息",
+      "sec3Lead": "我们仅将收集的信息用于：",
+      "sec3L1": "运营、维护和增强目录及搜索功能。",
+      "sec3L2": "验证、审查和发布用户提交的AI工具和文章。",
+      "sec3L3": "分析总体用户趋势以改进目录导航和速度。",
+      "sec3L4": "遵守适用的法律义务并防止垃圾邮件或恶意活动。",
+      "sec4Title": "4. 第三方链接与工具",
+      "sec4P": "我们的网站链接到第三方AI工具和软件。我们对第三方网站的隐私实践或内容不承担责任。我们鼓励您阅读您访问的任何外部服务的隐私声明。",
+      "sec5Title": "5. GDPR与用户权利",
+      "sec5P": "根据您所在的位置，您有权请求访问、更正或删除我们持有的您的个人信息。您也可以随时通过Cookiebot设置图标修改您的Cookie同意。",
+      "sec6Title": "6. 联系我们",
+      "sec6P": "如果您对本隐私政策或您的数据有疑问，请通过我们的联系页面或发送电子邮件至contact@bestaitoolsfree.com与我们联系。"
+    },
+    "terms": {
+      "metaTitle": "服务条款 | 最佳免费AI工具",
+      "metaDescription": "查看使用最佳免费AI工具的服务条款，包括工具提交规则、内容使用和目录免责声明。",
+      "h1": "服务条款",
+      "effectiveDate": "生效日期：2026年8月",
+      "sec1Title": "1. 条款接受",
+      "sec1P": "通过访问或使用最佳免费AI工具（https://www.bestaitoolsfree.com），您同意受这些服务条款的约束。如果您不同意这些条款，请勿使用我们的服务。",
+      "sec2Title": "2. 仅用于目录和信息目的",
+      "sec2P1": "最佳免费AI工具作为第三方创建的人工智能工具和服务的索引和发现平台。除非明确说明，我们不拥有、开发或运营我们目录中列出的第三方工具。",
+      "sec2P2": "第三方工具的定价、功能可用性和条款可能随时由其各自所有者更改。我们尽一切合理努力保持列表准确，但我们不保证与外部服务的实时同步。",
+      "sec3Title": "3. 工具提交与用户内容",
+      "sec3P1": "提交工具、徽标、描述或评论的用户和产品所有者声明他们拥有发布此类材料的必要权利。通过提交，您授予我们非独占许可，以在我们的平台和搜索引擎上展示、索引和推广列表。",
+      "sec3P2": "我们保留审查、编辑、拒绝或删除任何违反知识产权法、包含欺骗性声明或不符合我们编辑质量标准的提交的权利。",
+      "sec4Title": "4. 知识产权",
+      "sec4P": "本网站上出现的所有商标、徽标和品牌名称均属于其各自所有者。最佳免费AI工具网站的设计、代码、徽标和策划分类受版权保护。",
+      "sec5Title": "5. 保证免责声明与责任限制",
+      "sec5P": "服务按“现状”和“可用”基础提供，不附带任何形式的保证。最佳免费AI工具不对因您使用通过我们目录发现的任何软件或服务而产生的任何直接、间接、偶然或后果性损害承担责任。",
+      "sec6Title": "6. 联系信息",
+      "sec6P": "有关这些条款的问题，请通过contact@bestaitoolsfree.com与我们联系。"
+    },
+    "contact": {
+      "metaTitle": "联系我们 | 最佳免费AI工具",
+      "metaDescription": "与最佳免费AI工具团队取得联系。咨询工具提交、广告、合作或目录反馈。",
+      "h1": "联系我们",
+      "lead": "我们很乐意听到您的意见。无论您是想展示AI工具、报告过时信息，还是探索合作，请与我们的团队联系。",
+      "card1Title": "直接邮件支持",
+      "card1Desc": "对于一般问题、赞助咨询、错误报告和数据隐私请求：",
+      "card2Title": "工具提交",
+      "card2Desc": "您是AI开发者或产品创始人吗？通过我们的门户直接提交您的工具以供编辑审查：",
+      "card2Btn": "前往提交门户",
+      "faqHeader": "常见支持主题",
+      "q1": "审查提交的工具需要多长时间？",
+      "a1": "工具提交通常由我们的编辑团队在24至48小时内审查。",
+      "q2": "如何更新现有的工具列表？",
+      "a2": "请使用经过验证的所有者电子邮件，将工具名称、URL和更新详情发送至contact@bestaitoolsfree.com。"
+    },
+    "faq": {
+      "metaTitle": "常见问题解答（FAQ） | 最佳免费AI工具",
+      "metaDescription": "查找有关最佳免费AI工具、寻找免费人工智能软件、提交工具和定价模型的常见问题解答。",
+      "h1": "常见问题解答",
+      "lead": "快速查找有关我们的目录、工具提交和AI软件分类的常见问题解答。",
+      "ctaTitle": "还有问题吗？",
+      "ctaDesc": "随时联系我们的支持团队。",
+      "ctaBtn": "联系我们",
+      "items": [
+        {
+          "question": "什么是最佳免费AI工具？",
+          "answer": "最佳免费AI工具是一个精选目录和搜索平台，旨在帮助用户发现、比较和掌握50多个专业类别中的最佳免费和免费增值人工智能软件。"
+        },
+        {
+          "question": "这个网站上的所有AI工具都是完全免费的吗？",
+          "answer": "我们收录了各种各样的工具，重点关注提供100%免费计划、开源模型或慷慨免费试用额度的工具。每个工具卡片都清楚显示其定价层级：免费、免费增值或付费。"
+        },
+        {
+          "question": "如何将我的AI工具提交到目录？",
+          "answer": "您可以随时通过我们的提交工具页面（/submit）提交您的工具。我们的编辑团队会审查每个申请的 authenticity、安全性和实用性。"
+        },
+        {
+          "question": "目录多久更新一次？",
+          "answer": "我们的数据库每天更新，包含新的AI工具、更新的定价层级和新的编辑评论。"
+        },
+        {
+          "question": "我可以收藏或投票支持我喜欢的AI工具吗？",
+          "answer": "是的！您可以对工具进行点赞并浏览社区评分，以帮助其他创作者和开发者找到最佳软件。"
+        }
+      ]
+    }
+  },
+  "it": {
+    "about": {
+      "metaTitle": "Chi Siamo | Best AI Tools Free",
+      "metaDescription": "Scopri di più su Best AI Tools Free, la nostra missione di curare i migliori strumenti di intelligenza artificiale gratuiti e freemium, e come aiutiamo gli utenti a scoprire software AI.",
+      "h1": "Chi Siamo - Best AI Tools Free",
+      "lead": "Benvenuto su Best AI Tools Free — la directory completa e guidata dalla comunità di strumenti, software e applicazioni web di intelligenza artificiale verificati.",
+      "missionTitle": "La Nostra Missione",
+      "missionP1": "Il panorama dell'IA si sta espandendo a una velocità senza precedenti. La nostra missione è rendere l'intelligenza artificiale accessibile, trasparente e pratica per tutti — dagli sviluppatori e designer a studenti, marketer e fondatori.",
+      "missionP2": "Curiamo, recensiamo, categorizziamo e confrontiamo migliaia di strumenti AI, evidenziando livelli gratuiti autentici, opzioni freemium e modelli open-source, così puoi trovare il software perfetto senza attriti inutili.",
+      "offerTitle": "Cosa Offriamo",
+      "card1Title": "Directory Completa",
+      "card1Desc": "Oltre 900+ strumenti selezionati in più di 50 categorie specializzate, tra cui scrittura, editing video, clonazione vocale e assistenti di codifica.",
+      "card2Title": "Prezzi Trasparenti",
+      "card2Desc": "Chiara ripartizione di prove gratuite, limitazioni freemium, prezzi mensili e licenze per uso commerciale.",
+      "card3Title": "Accesso Globale Multilingue",
+      "card3Desc": "Supporto completo di localizzazione in 12 lingue per assistere innovatori e creatori globali.",
+      "card4Title": "Invii dei Fondatori",
+      "card4Desc": "Una piattaforma di lancio diretta per creatori indipendenti e fondatori per mostrare i loro strumenti AI a migliaia di utenti giornalieri.",
+      "ctaTitle": "Hai un prodotto AI da condividere?",
+      "ctaDesc": "Invia il tuo strumento per la revisione e mettilo in evidenza nella nostra directory.",
+      "ctaBtn": "Invia il Tuo Strumento"
+    },
+    "privacy": {
+      "metaTitle": "Informativa sulla Privacy | Best AI Tools Free",
+      "metaDescription": "Leggi l'Informativa sulla Privacy e sui Cookie per Best AI Tools Free. Scopri come raccogliamo, proteggiamo e gestiamo i dati in conformità con gli standard globali.",
+      "h1": "Informativa sulla Privacy e sui Cookie",
+      "lastUpdated": "Ultimo aggiornamento: agosto 2026",
+      "sec1Title": "1. Panoramica",
+      "sec1P": "Best AI Tools Free (\"noi\", \"nostro\" o \"ci\") è dedicato alla protezione della tua privacy personale. Questa Informativa sulla Privacy spiega quali informazioni raccogliamo quando visiti il nostro sito web (https://www.bestaitoolsfree.com), come le utilizziamo e le scelte che hai riguardo ai tuoi dati personali.",
+      "sec2Title": "2. Informazioni che Raccogliamo",
+      "sec2L1": "Dati di utilizzo: raccogliamo informazioni non personalmente identificabili come tipo di browser, sistema operativo, URL di riferimento, pagine visualizzate e timestamp tramite Google Analytics per ottimizzare le prestazioni.",
+      "sec2L2": "Informazioni su account e invii: se accedi tramite OAuth (es. Google/Clerk) o invii uno strumento o un post del blog, raccogliamo il tuo indirizzo email, nome e dettagli del sito web inviato.",
+      "sec2L3": "Cookie e archiviazione locale: utilizziamo i cookie per ricordare le preferenze linguistiche, gli stati del tema e gestire le preferenze di consenso tramite Cookiebot.",
+      "sec3Title": "3. Come Usiamo le Informazioni",
+      "sec3Lead": "Usiamo le informazioni raccolte esclusivamente per:",
+      "sec3L1": "Operare, mantenere e migliorare la directory e la funzionalità di ricerca.",
+      "sec3L2": "Verificare, recensire e pubblicare strumenti AI e articoli inviati dagli utenti.",
+      "sec3L3": "Analizzare le tendenze aggregate degli utenti per migliorare la navigazione e la velocità della directory.",
+      "sec3L4": "Conformarsi agli obblighi legali applicabili e prevenire spam o attività dannose.",
+      "sec4Title": "4. Link e Strumenti di Terze Parti",
+      "sec4P": "Il nostro sito web collega a strumenti e software AI di terze parti. Non siamo responsabili per le pratiche sulla privacy o i contenuti di siti web di terze parti. Ti invitiamo a leggere le dichiarazioni sulla privacy di qualsiasi servizio esterno che visiti.",
+      "sec5Title": "5. GDPR e Diritti dell'Utente",
+      "sec5P": "A seconda della tua posizione, hai il diritto di richiedere l'accesso, la correzione o la cancellazione delle tue informazioni personali da noi detenute. Puoi anche modificare il tuo consenso ai cookie in qualsiasi momento tramite l'icona delle impostazioni di Cookiebot.",
+      "sec6Title": "6. Contattaci",
+      "sec6P": "Se hai domande su questa Informativa sulla Privacy o sui tuoi dati, contattaci tramite la nostra pagina di contatto o inviaci un'email a contact@bestaitoolsfree.com."
+    },
+    "terms": {
+      "metaTitle": "Termini di Servizio | Best AI Tools Free",
+      "metaDescription": "Rivedi i Termini di Servizio per l'uso di Best AI Tools Free, incluse le regole per gli invii di strumenti, l'uso dei contenuti e le liberatorie della directory.",
+      "h1": "Termini di Servizio",
+      "effectiveDate": "Data di entrata in vigore: agosto 2026",
+      "sec1Title": "1. Accettazione dei Termini",
+      "sec1P": "Accedendo o utilizzando Best AI Tools Free (https://www.bestaitoolsfree.com), accetti di essere vincolato da questi Termini di Servizio. Se non accetti questi termini, ti preghiamo di non utilizzare il nostro servizio.",
+      "sec2Title": "2. Solo Scopi Informativi e di Directory",
+      "sec2P1": "Best AI Tools Free funge da indice e piattaforma di scoperta per strumenti e servizi di intelligenza artificiale creati da terze parti. Non possediamo, sviluppiamo o gestiamo gli strumenti di terze parti elencati nella nostra directory, salvo diversa indicazione esplicita.",
+      "sec2P2": "Prezzi, disponibilità delle funzionalità e termini per gli strumenti di terze parti sono soggetti a modifiche da parte dei rispettivi proprietari in qualsiasi momento. Facciamo ogni ragionevole sforzo per mantenere accurate le inserzioni, ma non garantiamo la sincronizzazione in tempo reale con servizi esterni.",
+      "sec3Title": "3. Invii di Strumenti e Contenuti Utente",
+      "sec3P1": "Gli utenti e i proprietari di prodotti che inviano strumenti, loghi, descrizioni o recensioni dichiarano di possedere tutti i diritti necessari per pubblicare tale materiale. Inviando, ci concedi una licenza non esclusiva per visualizzare, indicizzare e promuovere l'inserzione sulla nostra piattaforma e sui motori di ricerca.",
+      "sec3P2": "Ci riserviamo il diritto di rivedere, modificare, rifiutare o rimuovere qualsiasi invio che violi le leggi sulla proprietà intellettuale, contenga affermazioni ingannevoli o non soddisfi i nostri standard di qualità editoriale.",
+      "sec4Title": "4. Proprietà Intellettuale",
+      "sec4P": "Tutti i marchi, loghi e nomi di marca che appaiono su questo sito web appartengono ai rispettivi titolari. Il design, il codice, i loghi e la tassonomia curata del sito web Best AI Tools Free sono protetti da copyright.",
+      "sec5Title": "5. Esclusione di Garanzie e Limitazione di Responsabilità",
+      "sec5P": "Il servizio è fornito \"così com'è\" e \"come disponibile\" senza garanzie di alcun tipo. Best AI Tools Free non sarà responsabile per danni diretti, indiretti, incidentali o consequenziali derivanti dall'uso di qualsiasi software o servizio scoperto tramite la nostra directory.",
+      "sec6Title": "6. Informazioni di Contatto",
+      "sec6P": "Per domande su questi Termini, contattaci a contact@bestaitoolsfree.com."
+    },
+    "contact": {
+      "metaTitle": "Contattaci | Best AI Tools Free",
+      "metaDescription": "Mettiti in contatto con il team di Best AI Tools Free. Richiedi informazioni su invii di strumenti, pubblicità, partnership o feedback sulla directory.",
+      "h1": "Contattaci",
+      "lead": "Ci piacerebbe sentirti. Che tu voglia presentare uno strumento AI, segnalare informazioni obsolete o esplorare una partnership, contatta il nostro team.",
+      "card1Title": "Supporto Email Diretto",
+      "card1Desc": "Per domande generali, richieste di sponsorizzazione, segnalazioni di bug e richieste sulla privacy dei dati:",
+      "card2Title": "Invii di Strumenti",
+      "card2Desc": "Sei uno sviluppatore AI o un fondatore di prodotto? Invia il tuo strumento direttamente tramite il nostro portale per la revisione editoriale:",
+      "card2Btn": "Vai al Portale di Invio",
+      "faqHeader": "Argomenti di Supporto Frequenti",
+      "q1": "Quanto tempo ci vuole per rivedere uno strumento inviato?",
+      "a1": "Gli invii di strumenti vengono generalmente revisionati dal nostro team editoriale entro 24-48 ore.",
+      "q2": "Come aggiorno un inserimento di strumento esistente?",
+      "a2": "Inviaci un'email a contact@bestaitoolsfree.com con il nome dello strumento, l'URL e i dettagli aggiornati dall'email del proprietario verificato."
+    },
+    "faq": {
+      "metaTitle": "Domande Frequenti (FAQ) | Best AI Tools Free",
+      "metaDescription": "Trova risposte alle domande comuni su Best AI Tools Free, trovare software di intelligenza artificiale gratuiti, inviare strumenti e modelli di prezzo.",
+      "h1": "Domande Frequenti",
+      "lead": "Trova risposte rapide alle domande comuni sulla nostra directory, invii di strumenti e classificazioni di software AI.",
+      "ctaTitle": "Hai ancora domande?",
+      "ctaDesc": "Contatta il nostro team di supporto in qualsiasi momento.",
+      "ctaBtn": "Mettiti in Contatto",
+      "items": [
+        {
+          "question": "Cos'è Best AI Tools Free?",
+          "answer": "Best AI Tools Free è una directory curata e una piattaforma di ricerca progettata per aiutare gli utenti a scoprire, confrontare e padroneggiare i migliori software di intelligenza artificiale gratuiti e freemium in oltre 50 categorie specializzate."
+        },
+        {
+          "question": "Tutti gli strumenti AI su questo sito web sono completamente gratuiti?",
+          "answer": "Indicizziamo un'ampia varietà di strumenti, con una forte attenzione a quelli che offrono piani completamente gratuiti, modelli open-source o generosi crediti di prova gratuiti. Ogni scheda dello strumento mostra chiaramente il suo livello di prezzo: Gratuito, Freemium o A Pagamento."
+        },
+        {
+          "question": "Come invio il mio strumento AI alla directory?",
+          "answer": "Puoi inviare il tuo strumento in qualsiasi momento tramite la nostra pagina Invia Strumento (/submit). Il nostro team editoriale esamina ogni applicazione per autenticità, sicurezza e utilità."
+        },
+        {
+          "question": "Con quale frequenza viene aggiornata la directory?",
+          "answer": "Il nostro database viene aggiornato quotidianamente con nuovi arrivi di strumenti AI, livelli di prezzo aggiornati e nuove recensioni editoriali."
+        },
+        {
+          "question": "Posso aggiungere ai preferiti o votare per i miei strumenti AI preferiti?",
+          "answer": "Sì! Puoi votare a favore degli strumenti e consultare le valutazioni della comunità per aiutare altri creatori e sviluppatori a trovare il miglior software."
+        }
+      ]
+    }
+  },
+  "nl": {
+    "about": {
+      "metaTitle": "Over Ons | Best AI Tools Free",
+      "metaDescription": "Leer meer over Best AI Tools Free, onze missie om de beste gratis en freemium kunstmatige intelligentie tools te cureren, en hoe we gebruikers helpen AI-software te ontdekken.",
+      "h1": "Over Best AI Tools Free",
+      "lead": "Welkom bij Best AI Tools Free — de uitgebreide, community-gedreven directory van geverifieerde AI-tools, software en webapplicaties.",
+      "missionTitle": "Onze Missie",
+      "missionP1": "Het AI-landschap breidt zich in een ongekend tempo uit. Onze missie is om kunstmatige intelligentie toegankelijk, transparant en praktisch te maken voor iedereen — van ontwikkelaars en ontwerpers tot studenten, marketeers en oprichters.",
+      "missionP2": "We cureren, beoordelen, categoriseren en benchmarken duizenden AI-tools, met de nadruk op echte gratis niveaus, freemium-opties en open-source modellen, zodat u de perfecte software kunt vinden zonder onnodige wrijving.",
+      "offerTitle": "Wat We Bieden",
+      "card1Title": "Uitgebreide Directory",
+      "card1Desc": "Meer dan 900+ beoordeelde tools in 50+ gespecialiseerde categorieën, waaronder schrijven, videobewerking, stemklonen en codeerassistenten.",
+      "card2Title": "Transparante Prijzen",
+      "card2Desc": "Duidelijk overzicht van gratis proefperiodes, freemium-beperkingen, maandelijkse prijzen en licenties voor commercieel gebruik.",
+      "card3Title": "Wereldwijde Meertalige Toegang",
+      "card3Desc": "Volledige lokalisatie-ondersteuning in 12 talen om wereldwijde innovators en makers te ondersteunen.",
+      "card4Title": "Inzendingen van Oprichters",
+      "card4Desc": "Een direct lanceerplatform voor indie-makers en oprichters om hun AI-tools te tonen aan duizenden dagelijkse gebruikers.",
+      "ctaTitle": "Heeft u een AI-product om te delen?",
+      "ctaDesc": "Dien uw tool in voor beoordeling en word uitgelicht in onze directory.",
+      "ctaBtn": "Dien Uw Tool In"
+    },
+    "privacy": {
+      "metaTitle": "Privacybeleid | Best AI Tools Free",
+      "metaDescription": "Lees het Privacy- en Cookiebeleid voor Best AI Tools Free. Ontdek hoe we gegevens verzamelen, beschermen en verwerken in overeenstemming met wereldwijde normen.",
+      "h1": "Privacy- en Cookiebeleid",
+      "lastUpdated": "Laatst bijgewerkt: augustus 2026",
+      "sec1Title": "1. Overzicht",
+      "sec1P": "Best AI Tools Free (\"wij\", \"ons\" of \"onze\") is toegewijd aan het beschermen van uw persoonlijke privacy. Dit privacybeleid legt uit welke informatie we verzamelen wanneer u onze website bezoekt (https://www.bestaitoolsfree.com), hoe we deze gebruiken en welke keuzes u heeft met betrekking tot uw persoonlijke gegevens.",
+      "sec2Title": "2. Informatie Die We Verzamelen",
+      "sec2L1": "Gebruiksgegevens: We verzamelen niet-persoonlijk identificeerbare informatie zoals browsertype, besturingssysteem, verwijzende URL's, bekeken pagina's en tijdstempels via Google Analytics om de prestaties te optimaliseren.",
+      "sec2L2": "Account- en inzendingsinformatie: Als u inlogt via OAuth (bijv. Google/Clerk) of een tool of blogpost indient, verzamelen we uw e-mailadres, naam en ingediende websitedetails.",
+      "sec2L3": "Cookies en lokale opslag: We gebruiken cookies om taalvoorkeuren, themastatus en cookievoorkeuren te onthouden via Cookiebot.",
+      "sec3Title": "3. Hoe We Informatie Gebruiken",
+      "sec3Lead": "We gebruiken de verzamelde informatie uitsluitend om:",
+      "sec3L1": "De directory en zoekfunctionaliteit te exploiteren, onderhouden en verbeteren.",
+      "sec3L2": "Door gebruikers ingediende AI-tools en artikelen te verifiëren, beoordelen en publiceren.",
+      "sec3L3": "Geaggregeerde gebruikstrends te analyseren om de navigatie en snelheid van de directory te verbeteren.",
+      "sec3L4": "Te voldoen aan toepasselijke wettelijke verplichtingen en spam of kwaadaardige activiteiten te voorkomen.",
+      "sec4Title": "4. Links en Tools van Derden",
+      "sec4P": "Onze website linkt naar AI-tools en software van derden. We zijn niet verantwoordelijk voor de privacypraktijken of inhoud van websites van derden. We raden u aan de privacyverklaringen van elke externe service die u bezoekt te lezen.",
+      "sec5Title": "5. GDPR en Gebruikersrechten",
+      "sec5P": "Afhankelijk van uw locatie heeft u het recht om toegang te vragen tot, correctie van, of verwijdering van uw persoonlijke gegevens die door ons worden bewaard. U kunt uw cookie-toestemming op elk moment wijzigen via het Cookiebot-instellingenpictogram.",
+      "sec6Title": "6. Contact Opnemen",
+      "sec6P": "Als u vragen heeft over dit privacybeleid of uw gegevens, neem dan contact met ons op via onze contactpagina of e-mail ons op contact@bestaitoolsfree.com."
+    },
+    "terms": {
+      "metaTitle": "Servicevoorwaarden | Best AI Tools Free",
+      "metaDescription": "Bekijk de servicevoorwaarden voor het gebruik van Best AI Tools Free, inclusief regels voor toolinzendingen, inhoudsgebruik en directory-disclaimers.",
+      "h1": "Servicevoorwaarden",
+      "effectiveDate": "Ingangsdatum: augustus 2026",
+      "sec1Title": "1. Aanvaarding van Voorwaarden",
+      "sec1P": "Door toegang te krijgen tot of gebruik te maken van Best AI Tools Free (https://www.bestaitoolsfree.com), gaat u akkoord met deze servicevoorwaarden. Als u niet akkoord gaat met deze voorwaarden, gebruik dan onze service niet.",
+      "sec2Title": "2. Alleen Directory en Informatieve Doeleinden",
+      "sec2P1": "Best AI Tools Free fungeert als een index en ontdekkingsplatform voor AI-tools en -diensten die door derden zijn gemaakt. We zijn geen eigenaar van, ontwikkelen of exploiteren de tools van derden die in onze directory staan, tenzij expliciet vermeld.",
+      "sec2P2": "Prijzen, beschikbaarheid van functies en voorwaarden voor tools van derden kunnen op elk moment door hun respectieve eigenaren worden gewijzigd. We doen ons uiterste best om vermeldingen nauwkeurig te houden, maar we garanderen geen realtime synchronisatie met externe diensten.",
+      "sec3Title": "3. Toolinzendingen en Gebruikersinhoud",
+      "sec3P1": "Gebruikers en producteigenaren die tools, logo's, beschrijvingen of recensies indienen, verklaren dat ze alle benodigde rechten bezitten om dergelijk materiaal te publiceren. Door in te dienen verleent u ons een niet-exclusieve licentie om de vermelding op ons platform en in zoekmachines weer te geven, te indexeren en te promoten.",
+      "sec3P2": "We behouden ons het recht voor om elke inzending die inbreuk maakt op intellectuele eigendomsrechten, misleidende claims bevat of niet voldoet aan onze redactionele kwaliteitsnormen, te beoordelen, te bewerken, af te wijzen of te verwijderen.",
+      "sec4Title": "4. Intellectueel Eigendom",
+      "sec4P": "Alle handelsmerken, logo's en merknamen die op deze website verschijnen, zijn eigendom van hun respectieve houders. Het websiteontwerp, de code, logo's en de gecureerde taxonomie van Best AI Tools Free worden beschermd door auteursrecht.",
+      "sec5Title": "5. Vrijwaring van Garanties en Beperking van Aansprakelijkheid",
+      "sec5P": "De service wordt verstrekt op een \"as is\" en \"as available\" basis zonder enige vorm van garanties. Best AI Tools Free is niet aansprakelijk voor enige directe, indirecte, incidentele of gevolgschade die voortvloeit uit uw gebruik van software of diensten die via onze directory zijn ontdekt.",
+      "sec6Title": "6. Contactinformatie",
+      "sec6P": "Voor vragen over deze voorwaarden kunt u contact met ons opnemen via contact@bestaitoolsfree.com."
+    },
+    "contact": {
+      "metaTitle": "Contact Opnemen | Best AI Tools Free",
+      "metaDescription": "Neem contact op met het team van Best AI Tools Free. Informeer naar toolinzendingen, advertenties, partnerschappen of feedback over de directory.",
+      "h1": "Contact Opnemen",
+      "lead": "We horen graag van u. Of u nu een AI-tool wilt aanbieden, verouderde informatie wilt melden of een partnerschap wilt verkennen, neem contact op met ons team.",
+      "card1Title": "Directe E-mailondersteuning",
+      "card1Desc": "Voor algemene vragen, sponsoringaanvragen, bugmeldingen en privacyverzoeken:",
+      "card2Title": "Toolinzendingen",
+      "card2Desc": "Bent u een AI-ontwikkelaar of productoprichter? Dien uw tool rechtstreeks in via ons portaal voor redactionele beoordeling:",
+      "card2Btn": "Ga naar Inzendingsportaal",
+      "faqHeader": "Veelgestelde Ondersteuningsonderwerpen",
+      "q1": "Hoe lang duurt het om een ingediende tool te beoordelen?",
+      "a1": "Toolinzendingen worden doorgaans binnen 24 tot 48 uur beoordeeld door ons redactieteam.",
+      "q2": "Hoe werk ik een bestaande toolvermelding bij?",
+      "a2": "E-mail ons op contact@bestaitoolsfree.com met de toolnaam, URL en bijgewerkte gegevens vanaf het geverifieerde eigenaars-e-mailadres."
+    },
+    "faq": {
+      "metaTitle": "Veelgestelde Vragen (FAQ) | Best AI Tools Free",
+      "metaDescription": "Vind antwoorden op veelgestelde vragen over Best AI Tools Free, het vinden van gratis kunstmatige intelligentie software, het indienen van tools en prijsmodellen.",
+      "h1": "Veelgestelde Vragen",
+      "lead": "Vind snelle antwoorden op veelgestelde vragen over onze directory, toolinzendingen en AI-softwareclassificaties.",
+      "ctaTitle": "Heeft u nog vragen?",
+      "ctaDesc": "Neem op elk moment contact op met ons ondersteuningsteam.",
+      "ctaBtn": "Neem Contact Op",
+      "items": [
+        {
+          "question": "Wat is Best AI Tools Free?",
+          "answer": "Best AI Tools Free is een gecureerde directory en zoekplatform ontworpen om gebruikers te helpen de beste gratis en freemium kunstmatige intelligentie software te ontdekken, vergelijken en beheersen in meer dan 50 gespecialiseerde categorieën."
+        },
+        {
+          "question": "Zijn alle AI-tools op deze website volledig gratis?",
+          "answer": "We indexeren een breed scala aan tools, met een sterke focus op tools die 100% gratis abonnementen, open-source modellen of royale gratis proefkredieten bieden. Elke toolkaart toont duidelijk het prijsniveau: Gratis, Freemium of Betaald."
+        },
+        {
+          "question": "Hoe dien ik mijn AI-tool in voor de directory?",
+          "answer": "U kunt uw tool op elk moment indienen via onze Tool Indienen-pagina (/submit). Ons redactieteam beoordeelt elke aanvraag op authenticiteit, beveiliging en bruikbaarheid."
+        },
+        {
+          "question": "Hoe vaak wordt de directory bijgewerkt?",
+          "answer": "Onze database wordt dagelijks bijgewerkt met nieuwe AI-tools, bijgewerkte prijsniveaus en nieuwe redactionele recensies."
+        },
+        {
+          "question": "Kan ik mijn favoriete AI-tools bladwijzers of stemmen?",
+          "answer": "Ja! U kunt tools upvoten en communitybeoordelingen bekijken om mede-makers en ontwikkelaars te helpen de beste software te vinden."
+        }
+      ]
+    }
+  }
+}

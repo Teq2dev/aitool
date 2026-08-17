@@ -1,42 +1,47 @@
 import Breadcrumbs from '@/components/seo/Breadcrumbs';
 import Link from 'next/link';
+import staticTranslations from '@/lib/static-page-translations.json';
 
-export const metadata = {
-  title: 'Frequently Asked Questions (FAQ) | Best AI Tools Free',
-  description: 'Find answers to common questions about Best AI Tools Free, finding free artificial intelligence software, submitting tools, and pricing models.',
-  alternates: {
-    canonical: 'https://www.bestaitoolsfree.com/faq',
-  },
-};
+export async function generateMetadata({ searchParams }) {
+  const lang = searchParams?.lang || 'en';
+  const t = staticTranslations[lang]?.faq || staticTranslations.en.faq;
+  const baseUrl = 'https://www.bestaitoolsfree.com';
+  const canonicalUrl = lang === 'en' ? `${baseUrl}/faq` : `${baseUrl}/${lang}/faq`;
 
-export default function FAQPage() {
+  return {
+    title: t.metaTitle,
+    description: t.metaDescription,
+    alternates: {
+      canonical: canonicalUrl,
+      languages: {
+        'x-default': `${baseUrl}/faq`,
+        'en': `${baseUrl}/faq`,
+        'es': `${baseUrl}/es/faq`,
+        'fr': `${baseUrl}/fr/faq`,
+        'de': `${baseUrl}/de/faq`,
+        'pt': `${baseUrl}/pt/faq`,
+        'ar': `${baseUrl}/ar/faq`,
+        'ru': `${baseUrl}/ru/faq`,
+        'ja': `${baseUrl}/ja/faq`,
+        'zh': `${baseUrl}/zh/faq`,
+        'it': `${baseUrl}/it/faq`,
+        'nl': `${baseUrl}/nl/faq`,
+      }
+    },
+  };
+}
+
+export default function FAQPage({ searchParams }) {
+  const lang = searchParams?.lang || 'en';
+  const t = staticTranslations[lang]?.faq || staticTranslations.en.faq;
+  const isRtl = lang === 'ar';
+
   const breadcrumbData = [
-    { label: 'Home', href: '/' },
-    { label: 'FAQ' }
+    { label: 'Home', href: lang === 'en' ? '/' : `/${lang}` },
+    { label: t.h1 }
   ];
 
-  const faqs = [
-    {
-      question: 'What is Best AI Tools Free?',
-      answer: 'Best AI Tools Free is a curated directory and search platform designed to help users discover, compare, and master the best free and freemium artificial intelligence software across 50+ specialized categories.'
-    },
-    {
-      question: 'Are all the AI tools on this website completely free?',
-      answer: 'We index a wide variety of tools, with a strong focus on tools offering 100% free plans, open-source models, or generous free trial credits. Each tool card clearly displays its pricing tier: Free, Freemium, or Paid.'
-    },
-    {
-      question: 'How do I submit my AI tool to the directory?',
-      answer: 'You can submit your tool anytime via our Submit Tool page (/submit). Our editorial team reviews every application for authenticity, security, and utility.'
-    },
-    {
-      question: 'How often is the directory updated?',
-      answer: 'Our database is updated daily with fresh AI tool arrivals, updated pricing tiers, and new editorial reviews.'
-    },
-    {
-      question: 'Can I bookmark or vote for my favorite AI tools?',
-      answer: 'Yes! You can upvote tools and browse community ratings to help fellow creators and developers find the best software.'
-    }
-  ];
+  const faqs = t.items || staticTranslations.en.faq.items;
 
   const faqSchema = {
     '@context': 'https://schema.org',
@@ -52,7 +57,7 @@ export default function FAQPage() {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen py-12">
+    <div className={`bg-gray-50 min-h-screen py-12 ${isRtl ? 'rtl' : 'ltr'}`} dir={isRtl ? 'rtl' : 'ltr'}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
@@ -63,10 +68,10 @@ export default function FAQPage() {
         <div className="bg-white rounded-2xl p-8 md:p-12 shadow-sm border border-gray-200 mt-6 space-y-8">
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-2">
-              Frequently Asked Questions
+              {t.h1}
             </h1>
             <p className="text-lg text-slate-600 leading-relaxed">
-              Find quick answers to common questions about our directory, tool submissions, and AI software classifications.
+              {t.lead}
             </p>
           </div>
 
@@ -85,14 +90,14 @@ export default function FAQPage() {
 
           <div className="border-t border-gray-100 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <h3 className="font-bold text-slate-900">Still have questions?</h3>
-              <p className="text-sm text-slate-500">Contact our support team anytime.</p>
+              <h3 className="font-bold text-slate-900">{t.ctaTitle}</h3>
+              <p className="text-sm text-slate-500">{t.ctaDesc}</p>
             </div>
             <Link 
-              href="/contact" 
+              href={lang === 'en' ? '/contact' : `/${lang}/contact`} 
               className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-md transition-colors"
             >
-              Get in Touch
+              {t.ctaBtn}
             </Link>
           </div>
         </div>
