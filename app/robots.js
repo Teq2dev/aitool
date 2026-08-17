@@ -10,6 +10,7 @@ export default function robots() {
           '/api',
           '/_next',
           '/submit-success',
+          '/search',
         ],
       },
       {

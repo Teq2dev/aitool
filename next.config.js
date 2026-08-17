@@ -97,6 +97,95 @@ const nextConfig = {
         statusCode: 301,
       });
     }
+
+    // Legacy Static Pages & GSC 404 Redirects
+    redirectsList.push(
+      {
+        source: '/terms-and-conditions',
+        destination: '/terms',
+        statusCode: 301,
+      },
+      {
+        source: '/:lang(es|fr|de|pt|ar|ru|ja|zh|it|nl)/terms-and-conditions',
+        destination: '/:lang/terms',
+        statusCode: 301,
+      },
+      {
+        source: '/pricing',
+        destination: '/tools',
+        statusCode: 301,
+      },
+      {
+        source: '/blogs/future-of-ai-in-business',
+        destination: '/blogs',
+        statusCode: 301,
+      },
+      {
+        source: '/categories/Chatbots',
+        destination: '/categories/customer-support',
+        statusCode: 301,
+      },
+      {
+        source: '/categories/Translation%20&%20Transcription',
+        destination: '/categories/text-to-speech',
+        statusCode: 301,
+      },
+      {
+        source: '/categories/Coding%20&%20Development',
+        destination: '/categories/dev-tools',
+        statusCode: 301,
+      },
+      {
+        source: '/:lang(es|fr|de|pt|ar|ru|ja|zh|it|nl)/categories/SEO%20&%20Social',
+        destination: '/:lang/categories/seo',
+        statusCode: 301,
+      },
+      {
+        source: '/:lang(es|fr|de|pt|ar|ru|ja|zh|it|nl)/categories/Coding%20&%20Development',
+        destination: '/:lang/categories/dev-tools',
+        statusCode: 301,
+      },
+      {
+        source: '/:lang(es|fr|de|pt|ar|ru|ja|zh|it|nl)/categories/Image%20&%20Art%20Generation',
+        destination: '/:lang/categories/text-to-image',
+        statusCode: 301,
+      },
+      {
+        source: '/:lang(es|fr|de|pt|ar|ru|ja|zh|it|nl)/categories/AI%20Agents%20&%20Automation',
+        destination: '/:lang/categories/customer-support',
+        statusCode: 301,
+      },
+      {
+        source: '/:lang(es|fr|de|pt|ar|ru|ja|zh|it|nl)/categories/AI%20Assistants%20&%20Chatbots',
+        destination: '/:lang/categories/customer-support',
+        statusCode: 301,
+      },
+      {
+        source: '/:lang(es|fr|de|pt|ar|ru|ja|zh|it|nl)/categories/Data%20&%20Analytics',
+        destination: '/:lang/categories',
+        statusCode: 301,
+      },
+      {
+        source: '/:lang(es|fr|de|pt|ar|ru|ja|zh|it|nl)/categories/AI%20Infrastructure%20&%20Developer%20Tools',
+        destination: '/:lang/categories/dev-tools',
+        statusCode: 301,
+      },
+      {
+        source: '/:lang(es|fr|de|pt|ar|ru|ja|zh|it|nl)/categories/Translation%20&%20Transcription',
+        destination: '/:lang/categories/text-to-speech',
+        statusCode: 301,
+      },
+      {
+        source: '/:lang(es|fr|de|pt|ar|ru|ja|zh|it|nl)/categories/Other',
+        destination: '/:lang/categories',
+        statusCode: 301,
+      },
+      {
+        source: '/:lang(es|fr|de|pt|ar|ru|ja|zh|it|nl)/categories/midjourney-image-generator',
+        destination: '/tools/midjourney',
+        statusCode: 301,
+      }
+    );
     
     return redirectsList;
   },

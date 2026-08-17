@@ -50,6 +50,11 @@ export async function GET() {
       { url: '/categories', priority: '0.8', changefreq: 'weekly' },
       { url: '/blogs', priority: '0.8', changefreq: 'weekly' },
       { url: '/submit', priority: '0.5', changefreq: 'monthly' },
+      { url: '/about', priority: '0.6', changefreq: 'monthly' },
+      { url: '/contact', priority: '0.6', changefreq: 'monthly' },
+      { url: '/privacy', priority: '0.5', changefreq: 'monthly' },
+      { url: '/terms', priority: '0.5', changefreq: 'monthly' },
+      { url: '/faq', priority: '0.7', changefreq: 'monthly' },
     ];
 
     // Helper to format date safely
