@@ -3,13 +3,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  experimental: {
-    // Remove if not using Server Components
-    serverComponentsExternalPackages: ['mongodb'],
-    outputFileTracingIncludes: {
-      '/*': ['./v6_field_embeddings_cache.json'],
-      '/tools/[slug]': ['./v6_field_embeddings_cache.json'],
-    },
+  serverExternalPackages: ['mongodb'],
+  outputFileTracingIncludes: {
+    '/*': ['./v6_field_embeddings_cache.json'],
+    '/tools/[slug]': ['./v6_field_embeddings_cache.json'],
   },
   webpack(config, { dev }) {
     config.resolve.alias = {

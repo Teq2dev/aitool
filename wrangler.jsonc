@@ -12,7 +12,7 @@
   },
   "vars": {
     "DB_NAME": "ai_directory",
-    "NEXTAUTH_URL": "https://bestaitoolsfree.parwal111.workers.dev",
+    "NEXTAUTH_URL": "https://www.bestaitoolsfree.com",
     "CORS_ORIGINS": "*"
   }
 }
