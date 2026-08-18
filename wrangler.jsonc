@@ -12,11 +12,11 @@
   },
   "routes": [
     {
-      "pattern": "bestaitoolsfree.com/*",
+      "pattern": "bestaitoolsfree.com",
       "custom_domain": true
     },
     {
-      "pattern": "www.bestaitoolsfree.com/*",
+      "pattern": "www.bestaitoolsfree.com",
       "custom_domain": true
     }
   ],
