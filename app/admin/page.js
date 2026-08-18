@@ -33,8 +33,6 @@ export default function AdminPage() {
   // Modal states
   const [rejectModal, setRejectModal] = useState({ open: false, toolId: null, toolName: '' });
   const [rejectComment, setRejectComment] = useState('');
-  const [editModal, setEditModal] = useState({ open: false, tool: null });
-  const [editForm, setEditForm] = useState({});
   const [shopModal, setShopModal] = useState({ open: false, product: null });
   const [shopForm, setShopForm] = useState({});
   const [blogModal, setBlogModal] = useState({ open: false, blog: null });
@@ -105,19 +103,63 @@ export default function AdminPage() {
     }
   }, [isLoaded, isSignedIn]);
 
-  const fetchTools = async () => {
+  const [toolStatus, setToolStatus] = useState('pending');
+  const [toolPage, setToolPage] = useState(1);
+  const [toolSearch, setToolSearch] = useState('');
+  const [toolPagination, setToolPagination] = useState({ page: 1, limit: 50, total: 0, totalPages: 1 });
+  const [toolCounts, setToolCounts] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
+  const [toolsLoading, setToolsLoading] = useState(false);
+
+  const fetchTools = async (status = toolStatus, page = toolPage, search = toolSearch) => {
+    setToolsLoading(true);
     try {
-      const res = await fetch('/api/admin/tools?status=all');
+      const q = new URLSearchParams({
+        status: status || 'all',
+        page: String(page || 1),
+        limit: '50',
+        search: search || '',
+      });
+      const res = await fetch(`/api/admin/tools?${q.toString()}`);
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.error || `Failed to fetch tools (HTTP ${res.status})`);
       }
       const data = await res.json();
-      setTools(Array.isArray(data) ? data : []);
+      if (data.tools && data.pagination) {
+        setTools(Array.isArray(data.tools) ? data.tools : []);
+        setToolPagination(data.pagination);
+        if (data.counts) {
+          setToolCounts(data.counts);
+        }
+      } else if (Array.isArray(data)) {
+        setTools(data);
+      }
     } catch (error) {
       console.error('Error fetching tools:', error);
       setFetchError(prev => prev || error.message);
+    } finally {
+      setToolsLoading(false);
     }
+  };
+
+  // Re-fetch tools on filter/page change
+  useEffect(() => {
+    if (isSignedIn) {
+      fetchTools(toolStatus, toolPage, toolSearch);
+    }
+  }, [toolStatus, toolPage]);
+
+  // Handle status tab change
+  const handleStatusChange = (newStatus) => {
+    setToolStatus(newStatus);
+    setToolPage(1);
+  };
+
+  // Handle tool search submit
+  const handleSearchSubmit = (e) => {
+    e?.preventDefault?.();
+    setToolPage(1);
+    fetchTools(toolStatus, 1, toolSearch);
   };
 
   const fetchUsers = async () => {
@@ -507,40 +549,10 @@ export default function AdminPage() {
     }
   };
 
-  // Open edit modal
+  // Navigate to dedicated edit page
   const openEditModal = (tool) => {
-    setEditModal({ open: true, tool });
-    setEditForm({
-      name: tool.name || '',
-      shortDescription: tool.shortDescription || '',
-      description: tool.description || '',
-      website: tool.website || '',
-      logo: tool.logo || '',
-      categories: tool.categories?.join(', ') || '',
-      tags: tool.tags?.join(', ') || '',
-      pricing: tool.pricing || 'Free',
-      status: tool.status || 'pending',
-      featured: tool.featured || false,
-    });
-  };
-
-  // Submit edit
-  const handleEdit = async () => {
-    if (!editModal.tool) return;
-    try {
-      await fetch(`/api/admin/tools/${editModal.tool._id}/edit`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...editForm,
-          categories: editForm.categories.split(',').map(c => c.trim()).filter(c => c),
-          tags: editForm.tags.split(',').map(t => t.trim()).filter(t => t),
-        }),
-      });
-      setEditModal({ open: false, tool: null });
-      fetchTools();
-    } catch (error) {
-      console.error('Error editing tool:', error);
+    if (tool?._id) {
+      router.push(`/admin/tools/${tool._id}/edit`);
     }
   };
 
@@ -792,7 +804,7 @@ export default function AdminPage() {
             <CardContent className="p-6">
               <div className="text-center">
                 <p className="text-sm text-gray-600 mb-1">Total Tools</p>
-                <p className="text-3xl font-bold text-blue-600">{tools.length}</p>
+                <p className="text-3xl font-bold text-blue-600">{toolCounts.total || tools.length}</p>
               </div>
             </CardContent>
           </Card>
@@ -801,7 +813,7 @@ export default function AdminPage() {
             <CardContent className="p-6">
               <div className="text-center">
                 <p className="text-sm text-gray-600 mb-1">Pending Review</p>
-                <p className="text-3xl font-bold text-orange-600">{pendingTools.length}</p>
+                <p className="text-3xl font-bold text-orange-600">{toolCounts.pending || 0}</p>
               </div>
             </CardContent>
           </Card>
@@ -834,15 +846,15 @@ export default function AdminPage() {
               <TabsList className="flex flex-wrap">
                 <TabsTrigger value="tools">
                   <Eye className="w-4 h-4 mr-2" />
-                  Tools ({tools.length})
+                  Tools ({toolCounts.total || tools.length})
                 </TabsTrigger>
                 <TabsTrigger value="featured">
                   <Star className="w-4 h-4 mr-2" />
-                  Featured ({tools.filter(t => t.featured).length})
+                  Featured
                 </TabsTrigger>
                 <TabsTrigger value="trending">
                   <Zap className="w-4 h-4 mr-2" />
-                  Trending ({tools.filter(t => t.trending).length})
+                  Trending
                 </TabsTrigger>
                 <TabsTrigger value="users">
                   <Users className="w-4 h-4 mr-2" />
@@ -863,58 +875,107 @@ export default function AdminPage() {
               </TabsList>
 
               <TabsContent value="tools" className="mt-6">
-                <Tabs defaultValue="pending">
-                  <TabsList>
-                    <TabsTrigger value="pending">Pending ({pendingTools.length})</TabsTrigger>
-                    <TabsTrigger value="approved">Approved ({approvedTools.length})</TabsTrigger>
-                    <TabsTrigger value="rejected">Rejected ({rejectedTools.length})</TabsTrigger>
-                    <TabsTrigger value="all">All ({tools.length})</TabsTrigger>
-                  </TabsList>
+                {/* Search and Status Navigation */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                  <Tabs value={toolStatus} onValueChange={handleStatusChange}>
+                    <TabsList>
+                      <TabsTrigger value="pending">Pending ({toolCounts.pending})</TabsTrigger>
+                      <TabsTrigger value="approved">Approved ({toolCounts.approved})</TabsTrigger>
+                      <TabsTrigger value="rejected">Rejected ({toolCounts.rejected})</TabsTrigger>
+                      <TabsTrigger value="all">All ({toolCounts.total})</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
 
-                  <TabsContent value="pending" className="mt-6">
-                    <AdminToolList
-                      tools={pendingTools}
-                      onApprove={handleApprove}
-                      onReject={openRejectModal}
-                      onToggleFeatured={handleToggleFeatured}
-                      onToggleTrending={handleToggleTrending}
-                      onDelete={handleDelete}
-                      onEdit={openEditModal}
+                  <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full sm:w-72">
+                    <Input
+                      value={toolSearch}
+                      onChange={(e) => setToolSearch(e.target.value)}
+                      placeholder="Search tools by name..."
+                      className="h-9"
                     />
-                  </TabsContent>
-                  <TabsContent value="approved" className="mt-6">
-                    <AdminToolList
-                      tools={approvedTools}
-                      onApprove={handleApprove}
-                      onReject={openRejectModal}
-                      onToggleFeatured={handleToggleFeatured}
-                      onToggleTrending={handleToggleTrending}
-                      onDelete={handleDelete}
-                      onEdit={openEditModal}
-                    />
-                  </TabsContent>
-                  <TabsContent value="rejected" className="mt-6">
-                    <AdminToolList
-                      tools={rejectedTools}
-                      onApprove={handleApprove}
-                      onReject={openRejectModal}
-                      onToggleFeatured={handleToggleFeatured}
-                      onDelete={handleDelete}
-                      onEdit={openEditModal}
-                    />
-                  </TabsContent>
-                  <TabsContent value="all" className="mt-6">
-                    <AdminToolList
-                      tools={tools}
-                      onApprove={handleApprove}
-                      onReject={openRejectModal}
-                      onToggleFeatured={handleToggleFeatured}
-                      onToggleTrending={handleToggleTrending}
-                      onDelete={handleDelete}
-                      onEdit={openEditModal}
-                    />
-                  </TabsContent>
-                </Tabs>
+                    <Button type="submit" size="sm" variant="secondary" className="h-9">
+                      Search
+                    </Button>
+                  </form>
+                </div>
+
+                {/* Pagination Info */}
+                {toolPagination.total > 0 && (
+                  <div className="flex justify-between items-center text-sm text-gray-500 mb-4 pb-2 border-b">
+                    <span>
+                      Showing {((toolPagination.page - 1) * toolPagination.limit) + 1}–
+                      {Math.min(toolPagination.page * toolPagination.limit, toolPagination.total)} of {toolPagination.total} tools
+                    </span>
+                    <span>Page {toolPagination.page} of {toolPagination.totalPages}</span>
+                  </div>
+                )}
+
+                {/* Tools List */}
+                {toolsLoading ? (
+                  <div className="py-16 text-center text-gray-500">
+                    <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    Loading tools...
+                  </div>
+                ) : (
+                  <AdminToolList
+                    tools={tools}
+                    onApprove={handleApprove}
+                    onReject={openRejectModal}
+                    onToggleFeatured={handleToggleFeatured}
+                    onToggleTrending={handleToggleTrending}
+                    onDelete={handleDelete}
+                    onEdit={(tool) => router.push(`/admin/tools/${tool._id}/edit`)}
+                  />
+                )}
+
+                {/* Pagination Controls */}
+                {toolPagination.totalPages > 1 && (
+                  <div className="flex items-center justify-between mt-8 pt-4 border-t">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={toolPagination.page <= 1 || toolsLoading}
+                      onClick={() => setToolPage(p => Math.max(1, p - 1))}
+                    >
+                      Previous
+                    </Button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(5, toolPagination.totalPages) }, (_, i) => {
+                        let pageNum;
+                        if (toolPagination.totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (toolPagination.page <= 3) {
+                          pageNum = i + 1;
+                        } else if (toolPagination.page >= toolPagination.totalPages - 2) {
+                          pageNum = toolPagination.totalPages - 4 + i;
+                        } else {
+                          pageNum = toolPagination.page - 2 + i;
+                        }
+                        return (
+                          <Button
+                            key={pageNum}
+                            size="sm"
+                            variant={toolPagination.page === pageNum ? 'default' : 'outline'}
+                            onClick={() => setToolPage(pageNum)}
+                            className="w-8 h-8 p-0"
+                          >
+                            {pageNum}
+                          </Button>
+                        );
+                      })}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={toolPagination.page >= toolPagination.totalPages || toolsLoading}
+                      onClick={() => setToolPage(p => Math.min(toolPagination.totalPages, p + 1))}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
               </TabsContent>
 
               {/* Featured Tools Tab */}
@@ -1375,147 +1436,7 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* Edit Modal */}
-      {editModal.open && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto py-8">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 my-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Edit Tool</h3>
-              <button onClick={() => setEditModal({ open: false, tool: null })}>
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-              <div>
-                <label className="block text-sm font-medium mb-1">Name</label>
-                <Input
-                  value={editForm.name}
-                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Website</label>
-                <Input
-                  value={editForm.website}
-                  onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Logo URL</label>
-                <div className="flex gap-2">
-                  <Input
-                    value={editForm.logo}
-                    onChange={(e) => setEditForm({ ...editForm, logo: e.target.value })}
-                    className="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      if (editForm.website) {
-                        try {
-                          const url = new URL(editForm.website);
-                          const faviconUrl = `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=128`;
-                          setEditForm({ ...editForm, logo: faviconUrl });
-                        } catch {
-                          alert('Invalid website URL');
-                        }
-                      } else {
-                        alert('Please enter a website URL first');
-                      }
-                    }}
-                    className="whitespace-nowrap"
-                  >
-                    Fetch Favicon
-                  </Button>
-                </div>
-                {editForm.logo && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <img src={editForm.logo} alt="Logo preview" className="w-10 h-10 rounded object-cover border" />
-                    <span className="text-xs text-gray-500">Logo preview</span>
-                  </div>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Short Description</label>
-                <Textarea
-                  value={editForm.shortDescription}
-                  onChange={(e) => setEditForm({ ...editForm, shortDescription: e.target.value })}
-                  rows={2}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Full Description</label>
-                <Textarea
-                  value={editForm.description}
-                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                  rows={4}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Categories (comma-separated)</label>
-                  <Input
-                    value={editForm.categories}
-                    onChange={(e) => setEditForm({ ...editForm, categories: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Tags (comma-separated)</label>
-                  <Input
-                    value={editForm.tags}
-                    onChange={(e) => setEditForm({ ...editForm, tags: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Pricing</label>
-                  <select
-                    value={editForm.pricing}
-                    onChange={(e) => setEditForm({ ...editForm, pricing: e.target.value })}
-                    className="w-full border rounded-md px-3 py-2"
-                  >
-                    <option value="Free">Free</option>
-                    <option value="Freemium">Freemium</option>
-                    <option value="Paid">Paid</option>
-                    <option value="Contact for Pricing">Contact for Pricing</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Status</label>
-                  <select
-                    value={editForm.status}
-                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                    className="w-full border rounded-md px-3 py-2"
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
-                  </select>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="featured"
-                  checked={editForm.featured}
-                  onChange={(e) => setEditForm({ ...editForm, featured: e.target.checked })}
-                />
-                <label htmlFor="featured" className="text-sm font-medium">Featured Tool</label>
-              </div>
-            </div>
-            <div className="flex gap-3 justify-end mt-6">
-              <Button variant="outline" onClick={() => setEditModal({ open: false, tool: null })}>
-                Cancel
-              </Button>
-              <Button onClick={handleEdit} className="bg-blue-600 hover:bg-blue-700">
-                Save Changes
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Bulk Log Tools Modal */}
       {bulkLogTools.open && (
@@ -1877,8 +1798,15 @@ function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onToggleT
   return (
     <div className="space-y-4">
       {tools.map((tool) => (
-        <div key={tool._id} className="flex items-start gap-4 p-4 border rounded-lg">
-          <img src={tool.logo} alt={tool.name} className="w-20 h-20 rounded-lg object-cover flex-shrink-0" />
+        <div key={tool._id} className="flex items-start gap-4 p-4 border rounded-lg hover:border-gray-300 transition-colors bg-white">
+          <img
+            src={tool.logo || '/placeholder-tool.png'}
+            alt={tool.name}
+            loading="lazy"
+            decoding="async"
+            className="w-16 h-16 rounded-lg object-cover flex-shrink-0 bg-gray-100 border border-gray-100"
+            onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+          />
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between mb-2">
               <div>

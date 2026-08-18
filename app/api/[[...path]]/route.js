@@ -560,54 +560,106 @@ export async function GET(request, { params }) {
       return NextResponse.json({ isAdmin: admin, email: user?.email || null });
     }
     
-    // GET /api/admin/tools - Get all tools for admin
-    if (pathname === '/api/admin/tools') {
+    // GET /api/admin/tools - Get tools for admin with server-side pagination and counts
+    if (pathname === '/api/admin/tools' || pathname.startsWith('/api/admin/tools/')) {
       const admin = await isUserAdmin();
       if (!admin) {
         return NextResponse.json({ error: 'Unauthorized. Admin role required.' }, { status: 403 });
       }
       
+      const toolsCollection = await getCollection('tools');
+      const { serializeData } = await import('@/lib/utils');
+      
+      // Single tool by ID lookup for admin edit page
+      if (pathname.startsWith('/api/admin/tools/') && !pathname.endsWith('/edit') && !pathname.endsWith('/approve') && !pathname.endsWith('/reject') && !pathname.endsWith('/featured') && !pathname.endsWith('/trending')) {
+        const id = pathname.split('/api/admin/tools/')[1].replace(/\/$/, '');
+        let tool = await toolsCollection.findOne({ _id: id });
+        if (!tool) {
+          try {
+            const { ObjectId } = await import('mongodb');
+            tool = await toolsCollection.findOne({ _id: new ObjectId(id) });
+          } catch (e) {}
+        }
+        if (!tool) {
+          tool = await toolsCollection.findOne({ slug: id });
+        }
+        if (!tool) {
+          return NextResponse.json({ error: 'Tool not found' }, { status: 404 });
+        }
+        return NextResponse.json(serializeData(tool));
+      }
+      
       const status = searchParams.get('status') || 'all';
       const search = searchParams.get('search') || '';
+      const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+      const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
+      const skip = (page - 1) * limit;
       
       try {
-        const toolsCollection = await getCollection('tools');
-        
         let query = {};
-        if (status !== 'all') {
+        if (status && status !== 'all') {
           query.status = status;
         }
         if (search) {
-          query.name = { $regex: search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
+          const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          query.$or = [
+            { name: { $regex: escapedSearch, $options: 'i' } },
+            { slug: { $regex: escapedSearch, $options: 'i' } },
+            { submitterEmail: { $regex: escapedSearch, $options: 'i' } }
+          ];
         }
         
-        const allTools = await toolsCollection
-          .find(query, {
-            projection: {
-              name: 1,
-              slug: 1,
-              status: 1,
-              featured: 1,
-              trending: 1,
-              logo: 1,
-              createdAt: 1,
-              categories: 1,
-              pricing: 1,
-              rating: 1,
-              votes: 1,
-              shortDescription: 1,
-              rejectionComment: 1,
-              submittedBy: 1,
-              submitterEmail: 1,
-              website: 1,
-            }
-          })
-          .sort({ createdAt: -1 })
-          .limit(1000)
-          .toArray();
+        // Execute parallel queries for tools, filtered total, and summary tab counts
+        const [tools, totalFiltered, totalAll, pendingCount, approvedCount, rejectedCount] = await Promise.all([
+          toolsCollection
+            .find(query, {
+              projection: {
+                name: 1,
+                slug: 1,
+                status: 1,
+                featured: 1,
+                trending: 1,
+                logo: 1,
+                createdAt: 1,
+                categories: 1,
+                pricing: 1,
+                rating: 1,
+                votes: 1,
+                shortDescription: 1,
+                rejectionComment: 1,
+                submittedBy: 1,
+                submitterEmail: 1,
+                website: 1,
+              }
+            })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .toArray(),
+          toolsCollection.countDocuments(query),
+          toolsCollection.countDocuments({}),
+          toolsCollection.countDocuments({ status: 'pending' }),
+          toolsCollection.countDocuments({ status: 'approved' }),
+          toolsCollection.countDocuments({ status: 'rejected' }),
+        ]);
         
-        const { serializeData } = await import('@/lib/utils');
-        return NextResponse.json(serializeData(allTools));
+        const totalPages = Math.max(1, Math.ceil(totalFiltered / limit));
+        
+        return NextResponse.json({
+          tools: serializeData(tools),
+          pagination: {
+            page,
+            limit,
+            total: totalFiltered,
+            totalPages,
+          },
+          counts: {
+            total: totalAll,
+            pending: pendingCount,
+            approved: approvedCount,
+            rejected: rejectedCount,
+          }
+        });
       } catch (error) {
         console.error('Error fetching admin tools:', error);
         return NextResponse.json({ error: 'Failed to fetch admin tools: ' + error.message }, { status: 500 });
@@ -1137,30 +1189,43 @@ export async function PUT(request) {
     
     // PUT /api/admin/tools/:id/edit - Edit tool details
     if (pathname.includes('/api/admin/tools/') && pathname.includes('/edit')) {
-      const { userId } = await auth();
-      
-      if (!userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      const admin = await isUserAdmin();
+      if (!admin) {
+        return NextResponse.json({ error: 'Unauthorized. Admin role required.' }, { status: 403 });
       }
       
-      const id = pathname.split('/api/admin/tools/')[1].replace('/edit', '');
+      const id = pathname.split('/api/admin/tools/')[1].replace('/edit', '').replace(/\/$/, '');
       const body = await request.json();
       const toolsCollection = await getCollection('tools');
       
-      // Build update object with only provided fields
+      // Build update object
       const updateFields = {};
-      if (body.name) updateFields.name = body.name;
-      if (body.shortDescription) updateFields.shortDescription = body.shortDescription;
-      if (body.description) updateFields.description = body.description;
-      if (body.website) updateFields.website = body.website;
-      if (body.logo) updateFields.logo = body.logo;
-      if (body.categories) updateFields.categories = body.categories;
-      if (body.tags) updateFields.tags = body.tags;
-      if (body.pricing) updateFields.pricing = body.pricing;
-      if (body.status) updateFields.status = body.status;
+      if (body.name !== undefined) updateFields.name = body.name;
+      if (body.shortDescription !== undefined) updateFields.shortDescription = body.shortDescription;
+      if (body.fullDescription !== undefined) updateFields.fullDescription = body.fullDescription;
+      if (body.description !== undefined && body.fullDescription === undefined) updateFields.description = body.description;
+      if (body.website !== undefined) updateFields.website = body.website;
+      if (body.logo !== undefined) updateFields.logo = body.logo;
+      if (body.categories !== undefined) updateFields.categories = Array.isArray(body.categories) ? body.categories : [];
+      if (body.tags !== undefined) updateFields.tags = Array.isArray(body.tags) ? body.tags : [];
+      if (body.pricing !== undefined) updateFields.pricing = body.pricing;
+      if (body.pricingModel !== undefined) updateFields.pricingModel = body.pricingModel;
+      if (body.startingPrice !== undefined) updateFields.startingPrice = body.startingPrice;
+      if (body.hasFreePlan !== undefined) updateFields.hasFreePlan = body.hasFreePlan;
+      if (body.hasFreeTrial !== undefined) updateFields.hasFreeTrial = body.hasFreeTrial;
+      if (body.billingCycle !== undefined) updateFields.billingCycle = body.billingCycle;
+      if (body.pricingDetails !== undefined) updateFields.pricingDetails = body.pricingDetails;
+      if (body.features !== undefined) updateFields.features = Array.isArray(body.features) ? body.features : [];
+      if (body.pros !== undefined) updateFields.pros = Array.isArray(body.pros) ? body.pros : [];
+      if (body.cons !== undefined) updateFields.cons = Array.isArray(body.cons) ? body.cons : [];
+      if (body.status !== undefined) updateFields.status = body.status;
+      if (body.rejectionComment !== undefined) updateFields.rejectionComment = body.rejectionComment;
       if (typeof body.featured === 'boolean') updateFields.featured = body.featured;
+      if (typeof body.trending === 'boolean') updateFields.trending = body.trending;
+      
+      const authUser = await getAuthUser();
       updateFields.updatedAt = new Date();
-      updateFields.updatedBy = userId;
+      updateFields.updatedBy = authUser?.id || authUser?.email || 'admin';
       
       const { ObjectId } = await import('mongodb');
       let result = await toolsCollection.updateOne(
@@ -1175,6 +1240,14 @@ export async function PUT(request) {
             { $set: updateFields }
           );
         } catch (e) {}
+      }
+      
+      if (result.matchedCount === 0) {
+        // Also fallback to search by slug if id matches slug
+        result = await toolsCollection.updateOne(
+          { slug: id },
+          { $set: updateFields }
+        );
       }
       
       if (result.matchedCount === 0) {
