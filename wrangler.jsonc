@@ -9,5 +9,10 @@
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
+  },
+  "vars": {
+    "DB_NAME": "ai_directory",
+    "NEXTAUTH_URL": "https://www.bestaitoolsfree.com",
+    "CORS_ORIGINS": "*"
   }
 }
