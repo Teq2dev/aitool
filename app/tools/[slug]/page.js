@@ -6,7 +6,8 @@ import { getRelatedBlogs, getRelatedCategories } from '@/lib/internalLinks';
 import ToolDetailClient from './ToolDetailClient';
 import { notFound } from 'next/navigation';
 
-import { getLocalizedDescription, TRANSLATIONS } from '@/lib/languages';
+import { getLocalizedDescription } from '@/lib/languages';
+import { getTranslation } from '@/lib/translations';
 
 export async function generateMetadata({ params, searchParams }) {
   const tool = await getToolBySlug(params.slug);
@@ -204,8 +205,9 @@ export default async function ToolPage({ params, searchParams }) {
     ]
   };
 
+  const langDict = await getTranslation(lang);
   const getLangUrl = (path) => lang === 'en' ? path : `/${lang}${path}`;
-  const t = (key) => TRANSLATIONS[lang]?.[key] || TRANSLATIONS['en']?.[key] || key;
+  const t = (key) => langDict[key] || key;
 
   const breadcrumbData = [
     { label: t('home'), href: getLangUrl('/') },

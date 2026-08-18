@@ -4,7 +4,7 @@ import { getRelatedCategories, getRelatedBlogs } from '@/lib/internalLinks';
 import { serializeData } from '@/lib/utils';
 import CategoryDetailClient from './CategoryDetailClient';
 import { notFound } from 'next/navigation';
-import { TRANSLATIONS } from '@/lib/languages';
+import { getTranslation } from '@/lib/translations';
 
 // Strip HTML tags and decode basic entities for safe use in meta tags
 function stripHtml(html) {
@@ -165,8 +165,9 @@ export default async function CategoryPage({ params, searchParams }) {
   }
 
   const lang = searchParams?.lang || 'en';
+  const langDict = await getTranslation(lang);
   const getLangUrl = (path) => lang === 'en' ? path : `/${lang}${path}`;
-  const t = (key) => TRANSLATIONS[lang]?.[key] || TRANSLATIONS['en']?.[key] || key;
+  const t = (key) => langDict[key] || key;
 
   const breadcrumbData = [
     { label: t('home'), href: getLangUrl('/') },

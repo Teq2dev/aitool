@@ -1,119 +1,110 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { LANGUAGES, TRANSLATIONS } from '@/lib/languages';
+import { LANGUAGES } from '@/lib/languages';
+import { loaders } from '@/lib/translations';
 
 const LanguageContext = createContext();
 const VALID_LANGS = ['es', 'fr', 'de', 'pt', 'ar', 'ru', 'ja', 'zh', 'it', 'nl'];
 
-export function LanguageProvider({ children }) {
+export function LanguageProvider({ children, initialLang = 'en', initialTranslations = null }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Initialize language from pathname during SSR to avoid English flash
-  const [currentLang, setCurrentLangState] = useState(() => {
+  // Helper to extract language directly from current URL pathname
+  const getUrlLang = useCallback(() => {
     const segments = pathname ? pathname.split('/').filter(Boolean) : [];
-    const firstSegment = segments[0];
-    if (firstSegment && VALID_LANGS.includes(firstSegment)) {
-      return firstSegment;
+    const first = segments[0];
+    if (first && VALID_LANGS.includes(first)) return first;
+    return initialLang || 'en';
+  }, [pathname, initialLang]);
+
+  const [currentLang, setCurrentLangState] = useState(getUrlLang);
+  
+  // Cache of loaded dictionaries: { en: {...}, fr: {...} }
+  const [translationsCache, setTranslationsCache] = useState(() => {
+    const initial = {};
+    const effectiveLang = getUrlLang();
+    if (initialTranslations) {
+      initial[effectiveLang] = initialTranslations;
     }
-    // Fallback: we cannot reliably check localStorage/URLSearchParams during SSR,
-    // so we default to 'en'. The useEffect will pick up saved prefs on mount.
-    return 'en';
+    return initial;
   });
 
+  // Ensure active language is loaded asynchronously if navigating to a localized URL
   useEffect(() => {
-    // 1. Detect language from URL pathname prefix (e.g. /fr, /es/tools/midjourney)
-    const segments = pathname ? pathname.split('/').filter(Boolean) : [];
-    const firstSegment = segments[0];
+    const lang = getUrlLang();
+    setCurrentLangState(lang);
 
-    if (firstSegment && VALID_LANGS.includes(firstSegment)) {
-      setCurrentLangState(firstSegment);
-      localStorage.setItem('app_lang', firstSegment);
-      document.cookie = `app_lang=${firstSegment}; path=/; max-age=31536000; SameSite=Lax`;
-      const langObj = LANGUAGES.find(l => l.code === firstSegment);
-      if (langObj) {
-        document.documentElement.lang = firstSegment;
-        document.documentElement.dir = langObj.dir || 'ltr';
+    // Apply document lang and direction
+    const langObj = LANGUAGES.find(l => l.code === lang) || LANGUAGES[0];
+    document.documentElement.lang = lang;
+    document.documentElement.dir = langObj.dir || 'ltr';
+
+    if (!translationsCache[lang] && loaders[lang]) {
+      loaders[lang]().then(data => {
+        setTranslationsCache(prev => ({
+          ...prev,
+          [lang]: data.default || data
+        }));
+      });
+    }
+  }, [pathname, getUrlLang]);
+
+  const setLanguage = async (newLang) => {
+    if (newLang === currentLang) return;
+
+    // Dynamically lazy-load only the newly selected language if not in cache
+    if (!translationsCache[newLang] && loaders[newLang]) {
+      try {
+        const data = await loaders[newLang]();
+        setTranslationsCache(prev => ({
+          ...prev,
+          [newLang]: data.default || data
+        }));
+      } catch (e) {
+        console.error('Error loading translation chunk for', newLang, e);
       }
-      return;
     }
 
-    // 2. Check query parameter ?lang=code
-    let urlLang = null;
+    setCurrentLangState(newLang);
+    localStorage.setItem('app_lang', newLang);
+    document.cookie = `app_lang=${newLang}; path=/; max-age=31536000; SameSite=Lax`;
+
+    const langObj = LANGUAGES.find(l => l.code === newLang);
+    if (langObj) {
+      document.documentElement.lang = newLang;
+      document.documentElement.dir = langObj.dir || 'ltr';
+    }
+
+    // Strip existing language prefix from pathname
+    const segments = pathname ? pathname.split('/').filter(Boolean) : [];
+    if (segments.length > 0 && VALID_LANGS.includes(segments[0])) {
+      segments.shift();
+    }
+    const cleanPath = '/' + segments.join('/');
+
+    // Construct clean localized route
+    let newUrl = '';
+    if (newLang === 'en') {
+      newUrl = cleanPath;
+    } else {
+      newUrl = `/${newLang}${cleanPath === '/' ? '' : cleanPath}`;
+    }
+
+    let queryStr = '';
     if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      urlLang = urlParams.get('lang');
+      const currentParams = new URLSearchParams(window.location.search);
+      currentParams.delete('lang');
+      queryStr = currentParams.toString();
     }
     
-    if (urlLang && TRANSLATIONS[urlLang]) {
-      setCurrentLangState(urlLang);
-      localStorage.setItem('app_lang', urlLang);
-      document.cookie = `app_lang=${urlLang}; path=/; max-age=31536000; SameSite=Lax`;
-      const langObj = LANGUAGES.find(l => l.code === urlLang);
-      if (langObj) {
-        document.documentElement.lang = urlLang;
-        document.documentElement.dir = langObj.dir || 'ltr';
-      }
-      return;
+    if (queryStr) {
+      newUrl += `?${queryStr}`;
     }
 
-    // 3. Fallback to localStorage
-    if (typeof window !== 'undefined') {
-      const savedLang = localStorage.getItem('app_lang');
-      if (savedLang && TRANSLATIONS[savedLang]) {
-        setCurrentLangState(savedLang);
-        const langObj = LANGUAGES.find(l => l.code === savedLang);
-        if (langObj) {
-          document.documentElement.lang = savedLang;
-          document.documentElement.dir = langObj.dir || 'ltr';
-        }
-      }
-    }
-  }, [pathname]);
-
-  const setLanguage = (langCode) => {
-    if (TRANSLATIONS[langCode]) {
-      setCurrentLangState(langCode);
-      localStorage.setItem('app_lang', langCode);
-      document.cookie = `app_lang=${langCode}; path=/; max-age=31536000; SameSite=Lax`;
-
-      const langObj = LANGUAGES.find(l => l.code === langCode);
-      if (langObj) {
-        document.documentElement.lang = langCode;
-        document.documentElement.dir = langObj.dir || 'ltr';
-      }
-
-      // Strip existing language prefix from pathname
-      const segments = pathname ? pathname.split('/').filter(Boolean) : [];
-      if (segments.length > 0 && VALID_LANGS.includes(segments[0])) {
-        segments.shift();
-      }
-      const cleanPath = '/' + segments.join('/');
-
-      // Construct subpath URL e.g. /fr/tools/midjourney or /fr or /
-      let newUrl = '';
-      if (langCode === 'en') {
-        newUrl = cleanPath;
-      } else {
-        newUrl = `/${langCode}${cleanPath === '/' ? '' : cleanPath}`;
-      }
-
-      // Retain non-lang search params
-      let queryStr = '';
-      if (typeof window !== 'undefined') {
-        const currentParams = new URLSearchParams(window.location.search);
-        currentParams.delete('lang');
-        queryStr = currentParams.toString();
-      }
-      
-      if (queryStr) {
-        newUrl += `?${queryStr}`;
-      }
-
-      router.push(newUrl, { scroll: false });
-    }
+    router.push(newUrl, { scroll: false });
   };
 
   const getLangUrl = (path) => {
@@ -124,8 +115,14 @@ export function LanguageProvider({ children }) {
   };
 
   const t = (key) => {
-    const langDict = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
-    return langDict[key] || TRANSLATIONS.en[key] || key;
+    const activeDict = translationsCache[currentLang];
+    if (activeDict && activeDict[key]) {
+      return activeDict[key];
+    }
+    if (initialTranslations && initialTranslations[key]) {
+      return initialTranslations[key];
+    }
+    return key;
   };
 
   const langObj = LANGUAGES.find(l => l.code === currentLang) || LANGUAGES[0];
@@ -143,7 +140,7 @@ export function useLanguage() {
     return {
       currentLang: 'en',
       setLanguage: () => {},
-      t: (key) => TRANSLATIONS.en[key] || key,
+      t: (key) => key,
       langObj: LANGUAGES[0],
       languages: LANGUAGES,
       getLangUrl: (p) => p

@@ -1,5 +1,7 @@
+const path = require('path');
+
 const nextConfig = {
-  output: 'standalone',
+  outputFileTracingRoot: path.join(__dirname),
   images: {
     unoptimized: true,
   },

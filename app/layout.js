@@ -9,6 +9,8 @@ import Link from 'next/link';
 import { getCategories } from '@/lib/getTools';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { LANGUAGES } from '@/lib/languages';
+import { getTranslation } from '@/lib/translations';
+import { headers } from 'next/headers';
 import NextTopLoader from 'nextjs-toploader';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -83,7 +85,12 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }) {
-  const categories = await getCategories();
+  const headerList = await headers();
+  const invokeLang = headerList.get('x-invoke-lang') || 'en';
+  const [categories, initialTranslations] = await Promise.all([
+    getCategories(),
+    getTranslation(invokeLang)
+  ]);
   const topCategories = (categories || []).slice(0, 6);
   const baseUrl = 'https://www.bestaitoolsfree.com';
   
@@ -179,7 +186,7 @@ export default async function RootLayout({ children }) {
             />
           </noscript>
           
-          <LanguageProvider>
+          <LanguageProvider initialLang={invokeLang} initialTranslations={initialTranslations}>
             <div className="min-h-screen bg-white">
               <a
                 href="#main-content"
