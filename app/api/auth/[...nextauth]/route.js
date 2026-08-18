@@ -69,11 +69,22 @@ export const authOptions = {
       if (user) {
         token.id = user.id;
       }
+      const email = (token.email || user?.email || '').toLowerCase();
+      const envAdmins = (process.env.ADMIN_EMAILS || 'parwal111@gmail.com,admin@bestaitoolsfree.com')
+        .split(',')
+        .map(e => e.trim().toLowerCase())
+        .filter(Boolean);
+      if (email && envAdmins.includes(email)) {
+        token.role = 'admin';
+        token.isAdmin = true;
+      }
       return token;
     },
     async session({ session, token }) {
       if (session?.user) {
         session.user.id = token.id || token.sub;
+        session.user.role = token.role || 'user';
+        session.user.isAdmin = token.isAdmin || token.role === 'admin';
       }
       return session;
     },

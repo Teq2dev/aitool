@@ -30,15 +30,20 @@ async function getAuthUserId() {
 // Helper to check if current user is an admin
 async function isUserAdmin() {
   try {
-    const user = await getAuthUser();
-    if (!user) return false;
+    const session = await getServerSession(authOptions);
+    if (!session?.user) return false;
 
-    const envAdmins = (process.env.ADMIN_EMAILS || '')
+    if (session.user.role === 'admin' || session.user.isAdmin === true) {
+      return true;
+    }
+
+    const email = session.user.email?.toLowerCase();
+    const envAdmins = (process.env.ADMIN_EMAILS || 'parwal111@gmail.com,admin@bestaitoolsfree.com')
       .split(',')
       .map(e => e.trim().toLowerCase())
       .filter(Boolean);
 
-    if (user.email && envAdmins.includes(user.email)) {
+    if (email && envAdmins.includes(email)) {
       return true;
     }
 
@@ -47,8 +52,9 @@ async function isUserAdmin() {
 
     const dbUser = await usersCollection.findOne({
       $or: [
-        { userId: user.id },
-        { email: user.email },
+        { userId: session.user.id },
+        { email },
+        { email: session.user.email },
       ],
       role: 'admin',
     });
