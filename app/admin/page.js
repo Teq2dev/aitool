@@ -549,10 +549,10 @@ export default function AdminPage() {
     }
   };
 
-  // Navigate to dedicated edit page
+  // Navigate to dedicated edit page in new tab
   const openEditModal = (tool) => {
     if (tool?._id) {
-      router.push(`/admin/tools/${tool._id}/edit`);
+      window.open(`/admin/tools/${tool._id}/edit`, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -924,7 +924,7 @@ export default function AdminPage() {
                     onToggleFeatured={handleToggleFeatured}
                     onToggleTrending={handleToggleTrending}
                     onDelete={handleDelete}
-                    onEdit={(tool) => router.push(`/admin/tools/${tool._id}/edit`)}
+                    onEdit={openEditModal}
                   />
                 )}
 
@@ -1911,11 +1911,13 @@ function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onToggleT
                 Approve
               </Button>
             )}
-            {/* Edit button - always visible */}
-            <Button size="sm" variant="outline" onClick={() => onEdit(tool)} className="text-blue-600 border-blue-600 hover:bg-blue-50">
-              <Edit className="w-4 h-4 mr-1" />
-              Edit
-            </Button>
+            {/* Edit button - always opens in new tab */}
+            <Link href={`/admin/tools/${tool._id}/edit`} target="_blank" rel="noopener noreferrer">
+              <Button size="sm" variant="outline" className="w-full text-blue-600 border-blue-600 hover:bg-blue-50">
+                <Edit className="w-4 h-4 mr-1" />
+                Edit
+              </Button>
+            </Link>
             <Button size="sm" variant="ghost" onClick={() => onDelete(tool._id)} className="text-red-600 hover:text-red-700 hover:bg-red-50">
               <Trash2 className="w-4 h-4 mr-1" />
               Delete
