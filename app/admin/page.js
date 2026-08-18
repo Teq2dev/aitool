@@ -78,6 +78,21 @@ export default function AdminPage() {
       setImageFetching(false);
     }
   };
+  const [fetchError, setFetchError] = useState(null);
+
+  const loadAllAdminData = () => {
+    setLoading(true);
+    setFetchError(null);
+    Promise.all([
+      fetchTools(),
+      fetchUsers(),
+      fetchBlogs(),
+      fetchBulkLogs(),
+      fetchShopProducts()
+    ]).finally(() => {
+      setLoading(false);
+    });
+  };
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
@@ -86,77 +101,70 @@ export default function AdminPage() {
     }
     
     if (isSignedIn) {
-      setLoading(true);
-      // Fetch all administrative data in parallel
-      Promise.all([
-        fetchTools(),
-        fetchUsers(),
-        fetchBlogs(),
-        fetchBulkLogs(),
-        fetchShopProducts()
-      ]).finally(() => {
-        setLoading(false);
-      });
+      loadAllAdminData();
     }
   }, [isLoaded, isSignedIn]);
 
   const fetchTools = async () => {
     try {
       const res = await fetch('/api/admin/tools?status=all');
-      if (!res.ok) { setTools([]); return; }
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Failed to fetch tools (HTTP ${res.status})`);
+      }
       const data = await res.json();
       setTools(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching tools:', error);
-      setTools([]);
+      setFetchError(prev => prev || error.message);
     }
   };
 
   const fetchUsers = async () => {
     try {
       const res = await fetch('/api/admin/users');
-      if (!res.ok) { setUsers([]); return; }
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Failed to fetch users (HTTP ${res.status})`);
+      }
       const data = await res.json();
       setUsers(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching users:', error);
-      setUsers([]);
+      setFetchError(prev => prev || error.message);
     }
   };
 
   const fetchBlogs = async () => {
     try {
       const res = await fetch('/api/admin/blogs');
-      if (!res.ok) { setBlogs([]); return; }
+      if (!res.ok) return;
       const data = await res.json();
       setBlogs(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching blogs:', error);
-      setBlogs([]);
     }
   };
 
   const fetchBulkLogs = async () => {
     try {
       const res = await fetch('/api/admin/bulk-logs');
-      if (!res.ok) { setBulkLogs([]); return; }
+      if (!res.ok) return;
       const data = await res.json();
       setBulkLogs(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching bulk logs:', error);
-      setBulkLogs([]);
     }
   };
 
   const fetchShopProducts = async () => {
     try {
       const res = await fetch('/api/admin/shop');
-      if (!res.ok) { setShopProducts([]); return; }
+      if (!res.ok) return;
       const data = await res.json();
       setShopProducts(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching shop products:', error);
-      setShopProducts([]);
     }
   };
 
@@ -751,10 +759,33 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-black mb-2">Admin Dashboard</h1>
-          <p className="text-gray-600">Manage all content and users</p>
+        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold text-black mb-2">Admin Dashboard</h1>
+            <p className="text-gray-600">Manage all content and users</p>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={loadAllAdminData} 
+            disabled={loading}
+            className="self-start md:self-auto"
+          >
+            {loading ? 'Refreshing...' : '↻ Refresh Data'}
+          </Button>
         </div>
+
+        {fetchError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-red-800">Failed to load admin data</p>
+              <p className="text-xs text-red-600 mt-0.5">{fetchError}</p>
+            </div>
+            <Button size="sm" onClick={loadAllAdminData} className="bg-red-600 hover:bg-red-700 text-white">
+              Retry
+            </Button>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
@@ -1887,7 +1918,7 @@ function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onToggleT
               ))}
             </div>
 
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+            <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
               <span>{tool.pricing}</span>
               <span>•</span>
               <span>⭐ {tool.rating}</span>
@@ -1895,6 +1926,14 @@ function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onToggleT
               <span>{tool.votes} votes</span>
               <span>•</span>
               <span>Added {new Date(tool.createdAt).toLocaleDateString()}</span>
+              {tool.submitterEmail && (
+                <>
+                  <span>•</span>
+                  <span className="text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-xs">
+                    Submitted by: {tool.submitterEmail}
+                  </span>
+                </>
+              )}
             </div>
           </div>
 

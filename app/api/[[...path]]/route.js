@@ -5,14 +5,58 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { v4 as uuidv4 } from 'uuid';
 
-// Helper to get authenticated user ID from session
-async function getAuthUserId() {
+// Helper to get authenticated user from session
+async function getAuthUser() {
   try {
     const session = await getServerSession(authOptions);
-    return session?.user?.id || null;
+    if (!session?.user) return null;
+    return {
+      id: session.user.id || session.user.email,
+      email: session.user.email?.toLowerCase() || null,
+      name: session.user.name || null,
+    };
   } catch (error) {
-    console.error('Error getting auth user ID:', error);
+    console.error('Error getting auth user:', error);
     return null;
+  }
+}
+
+// Helper to get authenticated user ID from session
+async function getAuthUserId() {
+  const user = await getAuthUser();
+  return user?.id || null;
+}
+
+// Helper to check if current user is an admin
+async function isUserAdmin() {
+  try {
+    const user = await getAuthUser();
+    if (!user) return false;
+
+    const envAdmins = (process.env.ADMIN_EMAILS || '')
+      .split(',')
+      .map(e => e.trim().toLowerCase())
+      .filter(Boolean);
+
+    if (user.email && envAdmins.includes(user.email)) {
+      return true;
+    }
+
+    const usersCollection = await getCollection('users').catch(() => null);
+    if (!usersCollection) return false;
+
+    const dbUser = await usersCollection.findOne({
+      $or: [
+        { userId: user.id },
+        { email: user.email },
+      ],
+      role: 'admin',
+    });
+
+    return !!dbUser;
+  } catch (error) {
+    console.error('Error checking admin status:', error);
+    return false;
   }
 }
 
@@ -487,83 +531,81 @@ export async function GET(request, { params }) {
     
     // GET /api/admin/users - Get all users (admin only)
     if (pathname === '/api/admin/users') {
-      const userId = await getAuthUserId();
-      
-      if (!userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      const admin = await isUserAdmin();
+      if (!admin) {
+        return NextResponse.json({ error: 'Unauthorized. Admin role required.' }, { status: 403 });
       }
       
       try {
         const usersCollection = await getCollection('users');
-        const users = await usersCollection.find({}).toArray();
-        return NextResponse.json(users || []);
+        const users = await usersCollection.find({}).sort({ createdAt: -1 }).toArray();
+        const { serializeData } = await import('@/lib/utils');
+        return NextResponse.json(serializeData(users || []));
       } catch (error) {
         console.error('Error fetching users:', error);
-        return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to fetch users: ' + error.message }, { status: 500 });
       }
     }
     
     // GET /api/admin/check - Check if current user is admin
     if (pathname === '/api/admin/check') {
-      const session = await getServerSession(authOptions);
-      const userEmail = session?.user?.email?.toLowerCase();
-      
-      const ADMIN_EMAILS = ['parwal111@gmail.com', 'admin@bestaitoolsfree.com'];
-      if (userEmail && ADMIN_EMAILS.includes(userEmail)) {
-        return NextResponse.json({ isAdmin: true, email: userEmail });
-      }
-      
-      const userId = await getAuthUserId();
-      if (!userId) {
-        return NextResponse.json({ isAdmin: false });
-      }
-      
-      const usersCollection = await getCollection('users');
-      const user = await usersCollection.findOne({ $or: [{ userId }, { email: userId }, { email: userEmail }], role: 'admin' });
-      
-      return NextResponse.json({ isAdmin: !!user });
+      const admin = await isUserAdmin();
+      const user = await getAuthUser();
+      return NextResponse.json({ isAdmin: admin, email: user?.email || null });
     }
     
     // GET /api/admin/tools - Get all tools for admin
     if (pathname === '/api/admin/tools') {
-      const userId = await getAuthUserId();
-      
-      if (!userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      const admin = await isUserAdmin();
+      if (!admin) {
+        return NextResponse.json({ error: 'Unauthorized. Admin role required.' }, { status: 403 });
       }
       
       const status = searchParams.get('status') || 'all';
-      const toolsCollection = await getCollection('tools');
+      const search = searchParams.get('search') || '';
       
-      let query = {};
-      if (status !== 'all') {
-        query.status = status;
+      try {
+        const toolsCollection = await getCollection('tools');
+        
+        let query = {};
+        if (status !== 'all') {
+          query.status = status;
+        }
+        if (search) {
+          query.name = { $regex: search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
+        }
+        
+        const allTools = await toolsCollection
+          .find(query, {
+            projection: {
+              name: 1,
+              slug: 1,
+              status: 1,
+              featured: 1,
+              trending: 1,
+              logo: 1,
+              createdAt: 1,
+              categories: 1,
+              pricing: 1,
+              rating: 1,
+              votes: 1,
+              shortDescription: 1,
+              rejectionComment: 1,
+              submittedBy: 1,
+              submitterEmail: 1,
+              website: 1,
+            }
+          })
+          .sort({ createdAt: -1 })
+          .limit(1000)
+          .toArray();
+        
+        const { serializeData } = await import('@/lib/utils');
+        return NextResponse.json(serializeData(allTools));
+      } catch (error) {
+        console.error('Error fetching admin tools:', error);
+        return NextResponse.json({ error: 'Failed to fetch admin tools: ' + error.message }, { status: 500 });
       }
-      
-      const allTools = await toolsCollection
-        .find(query, {
-          projection: {
-            name: 1,
-            slug: 1,
-            status: 1,
-            featured: 1,
-            trending: 1,
-            logo: 1,
-            createdAt: 1,
-            categories: 1,
-            pricing: 1,
-            rating: 1,
-            votes: 1,
-            shortDescription: 1,
-            rejectionComment: 1
-          }
-        })
-        .sort({ createdAt: -1 })
-        .limit(1000)
-        .toArray();
-      
-      const { serializeData } = await import('@/lib/utils');
-      return NextResponse.json(serializeData(allTools));
     }
     
     // GET /api/admin/bulk-logs - Get bulk upload logs
@@ -665,12 +707,9 @@ export async function POST(request, { params }) {
   try {
     // POST /api/tools - Submit tool
     if (pathname === '/api/tools' || pathname === '/api/tools/') {
-      console.log('=== POST /api/tools called ===');
-      
-      let userId = await getAuthUserId();
-      if (!userId) {
-        userId = 'anonymous-' + Date.now();
-      }
+      const authUser = await getAuthUser();
+      const userId = authUser ? authUser.id : ('anonymous-' + Date.now());
+      const submitterEmail = authUser ? authUser.email : (body.email || body.submitterEmail || null);
       
       const body = await request.json();
       const toolsCollection = await getCollection('tools');
@@ -714,6 +753,7 @@ export async function POST(request, { params }) {
         rating: 0,
         votes: 0,
         submittedBy: userId,
+        submitterEmail: submitterEmail,
         createdAt: new Date(),
       };
       
