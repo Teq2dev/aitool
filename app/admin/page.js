@@ -106,7 +106,7 @@ export default function AdminPage() {
   const [toolStatus, setToolStatus] = useState('pending');
   const [toolPage, setToolPage] = useState(1);
   const [toolSearch, setToolSearch] = useState('');
-  const [toolPagination, setToolPagination] = useState({ page: 1, limit: 50, total: 0, totalPages: 1 });
+  const [toolPagination, setToolPagination] = useState({ page: 1, limit: 25, total: 0, totalPages: 1 });
   const [toolCounts, setToolCounts] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
   const [toolsLoading, setToolsLoading] = useState(false);
 
@@ -116,7 +116,7 @@ export default function AdminPage() {
       const q = new URLSearchParams({
         status: status || 'all',
         page: String(page || 1),
-        limit: '50',
+        limit: '25',
         search: search || '',
       });
       const res = await fetch(`/api/admin/tools?${q.toString()}`);
