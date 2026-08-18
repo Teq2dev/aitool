@@ -451,7 +451,7 @@ export default function ToolEditorForm({
                   <div>
                     <Label className="mb-1.5 block font-semibold text-gray-700">Status</Label>
                     <Select value={formData.status} onValueChange={set('status')}>
-                      <SelectTrigger className="bg-white">
+                      <SelectTrigger aria-label="Moderation status" className="bg-white">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -532,10 +532,10 @@ export default function ToolEditorForm({
                 <Tabs value={logoOption} onValueChange={setLogoOption} className="mt-1">
                   <TabsList className="grid w-full grid-cols-2 mb-3">
                     <TabsTrigger value="upload">
-                      <ImageIcon className="w-4 h-4 mr-2" /> Upload Image
+                      <ImageIcon className="w-4 h-4 mr-2" aria-hidden="true" /> Upload Image
                     </TabsTrigger>
                     <TabsTrigger value="favicon">
-                      <Globe className="w-4 h-4 mr-2" /> Auto-fetch Favicon
+                      <Globe className="w-4 h-4 mr-2" aria-hidden="true" /> Auto-fetch Favicon
                     </TabsTrigger>
                   </TabsList>
 
@@ -545,9 +545,9 @@ export default function ToolEditorForm({
                         htmlFor="logo-upload"
                         className="cursor-pointer inline-flex items-center gap-2 rounded-lg text-sm font-medium border border-blue-500 bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 transition-colors"
                       >
-                        <Upload className="w-4 h-4" /> Choose Image
+                        <Upload className="w-4 h-4" aria-hidden="true" /> Choose Image
                       </label>
-                      <input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
+                      <input id="logo-upload" type="file" accept="image/*" aria-label="Upload logo image file" className="hidden" onChange={handleLogoChange} />
                       {logoPreview && (
                         <div className="relative">
                           <img src={logoPreview} alt="Logo preview" className="w-16 h-16 rounded-xl border border-gray-200 object-cover" />
@@ -557,12 +557,12 @@ export default function ToolEditorForm({
                             className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 shadow"
                             aria-label="Remove logo"
                           >
-                            <X className="w-3 h-3" />
+                            <X className="w-3 h-3" aria-hidden="true" />
                           </button>
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-gray-400">Recommended: Square PNG/JPEG. Max 2 MB.</p>
+                    <p className="text-xs text-gray-500">Recommended: Square PNG/JPEG. Max 2 MB.</p>
                   </TabsContent>
 
                   <TabsContent value="favicon" className="space-y-2">
@@ -574,9 +574,9 @@ export default function ToolEditorForm({
                         className="bg-blue-600 hover:bg-blue-700"
                       >
                         {fetchingFavicon ? (
-                          <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />Fetching…</>
+                          <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" aria-hidden="true" />Fetching…</>
                         ) : (
-                          <><Globe className="w-4 h-4 mr-2" />Fetch Favicon</>
+                          <><Globe className="w-4 h-4 mr-2" aria-hidden="true" />Fetch Favicon</>
                         )}
                       </Button>
                       {logoPreview && (
@@ -588,7 +588,7 @@ export default function ToolEditorForm({
                             className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 shadow"
                             aria-label="Remove favicon"
                           >
-                            <X className="w-3 h-3" />
+                            <X className="w-3 h-3" aria-hidden="true" />
                           </button>
                         </div>
                       )}
@@ -609,13 +609,13 @@ export default function ToolEditorForm({
                   maxLength={150}
                   className={errors.shortDescription ? 'border-red-400' : ''}
                 />
-                <p className="text-xs text-gray-400 mt-1">{formData.shortDescription.length}/150</p>
+                <p className="text-xs text-gray-500 mt-1">{formData.shortDescription.length}/150</p>
                 {errors.shortDescription && <p className="text-xs text-red-500 mt-0.5">{errors.shortDescription}</p>}
               </div>
 
               {/* Full description */}
               <div>
-                <Label htmlFor="full-desc" className="mb-1.5 block">Full Description <span className="text-gray-400 font-normal">(optional)</span></Label>
+                <Label htmlFor="full-desc" className="mb-1.5 block">Full Description <span className="text-gray-500 font-normal">(optional)</span></Label>
                 <Textarea
                   id="full-desc"
                   value={formData.fullDescription}
@@ -624,7 +624,7 @@ export default function ToolEditorForm({
                   rows={5}
                   maxLength={3000}
                 />
-                <p className="text-xs text-gray-400 mt-1">{formData.fullDescription.length}/3000</p>
+                <p className="text-xs text-gray-500 mt-1">{formData.fullDescription.length}/3000</p>
               </div>
 
             </CardContent>
@@ -645,23 +645,24 @@ export default function ToolEditorForm({
                       onChange={(e) => updateListItem('features')(i, e.target.value)}
                       className="flex-1"
                       placeholder={`Feature ${i + 1}`}
+                      aria-label={`Feature ${i + 1}`}
                     />
                     <button
                       type="button"
                       onClick={() => removeFromList('features')(i)}
-                      className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors"
-                      aria-label="Remove feature"
+                      className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors cursor-pointer"
+                      aria-label={`Remove feature ${i + 1}`}
                     >
-                      <X className="w-4 h-4 text-red-500" />
+                      <X className="w-4 h-4 text-red-500" aria-hidden="true" />
                     </button>
                   </div>
                 ))}
                 <button
                   type="button"
                   onClick={addToList('features')}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200 cursor-pointer"
                 >
-                  <Plus className="w-4 h-4" /> Add Feature
+                  <Plus className="w-4 h-4" aria-hidden="true" /> Add Feature
                 </button>
               </div>
             </CardContent>
@@ -677,7 +678,7 @@ export default function ToolEditorForm({
                 <div>
                   <Label className="mb-1.5 block">Pricing Model <span className="text-red-500">*</span></Label>
                   <Select value={formData.pricing} onValueChange={(val) => { set('pricing')(val); set('pricingModel')(val); }}>
-                    <SelectTrigger id="pricing-model">
+                    <SelectTrigger id="pricing-model" aria-label="Pricing Model">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -692,7 +693,7 @@ export default function ToolEditorForm({
                 </div>
 
                 <div>
-                  <Label htmlFor="starting-price" className="mb-1.5 block">Starting Price <span className="text-gray-400 font-normal">(optional)</span></Label>
+                  <Label htmlFor="starting-price" className="mb-1.5 block">Starting Price <span className="text-gray-500 font-normal">(optional)</span></Label>
                   <Input
                     id="starting-price"
                     value={formData.startingPrice}
@@ -731,7 +732,7 @@ export default function ToolEditorForm({
               </div>
 
               <div>
-                <Label htmlFor="pricing-details" className="mb-1.5 block">Detailed Pricing Info <span className="text-gray-400 font-normal">(optional)</span></Label>
+                <Label htmlFor="pricing-details" className="mb-1.5 block">Detailed Pricing Info <span className="text-gray-500 font-normal">(optional)</span></Label>
                 <Textarea
                   id="pricing-details"
                   value={formData.pricingDetails}
@@ -753,7 +754,7 @@ export default function ToolEditorForm({
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
                 <div className="flex items-center gap-1.5 mb-2">
-                  <ThumbsUp className="w-4 h-4 text-green-600" />
+                  <ThumbsUp className="w-4 h-4 text-green-600" aria-hidden="true" />
                   <Label>Pros</Label>
                 </div>
                 <div className="space-y-2">
@@ -764,29 +765,31 @@ export default function ToolEditorForm({
                         onChange={(e) => updateListItem('pros')(i, e.target.value)}
                         className="flex-1"
                         placeholder={`Pro ${i + 1}`}
+                        aria-label={`Pro ${i + 1}`}
                       />
                       <button
                         type="button"
                         onClick={() => removeFromList('pros')(i)}
-                        className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors"
+                        className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors cursor-pointer"
+                        aria-label={`Remove pro ${i + 1}`}
                       >
-                        <X className="w-4 h-4 text-red-500" />
+                        <X className="w-4 h-4 text-red-500" aria-hidden="true" />
                       </button>
                     </div>
                   ))}
                   <button
                     type="button"
                     onClick={addToList('pros')}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200 cursor-pointer"
                   >
-                    <Plus className="w-4 h-4" /> Add Pro
+                    <Plus className="w-4 h-4" aria-hidden="true" /> Add Pro
                   </button>
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center gap-1.5 mb-2">
-                  <ThumbsDown className="w-4 h-4 text-red-500" />
+                  <ThumbsDown className="w-4 h-4 text-red-500" aria-hidden="true" />
                   <Label>Cons</Label>
                 </div>
                 <div className="space-y-2">
@@ -797,22 +800,24 @@ export default function ToolEditorForm({
                         onChange={(e) => updateListItem('cons')(i, e.target.value)}
                         className="flex-1"
                         placeholder={`Con ${i + 1}`}
+                        aria-label={`Con ${i + 1}`}
                       />
                       <button
                         type="button"
                         onClick={() => removeFromList('cons')(i)}
-                        className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors"
+                        className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors cursor-pointer"
+                        aria-label={`Remove con ${i + 1}`}
                       >
-                        <X className="w-4 h-4 text-red-500" />
+                        <X className="w-4 h-4 text-red-500" aria-hidden="true" />
                       </button>
                     </div>
                   ))}
                   <button
                     type="button"
                     onClick={addToList('cons')}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200 cursor-pointer"
                   >
-                    <Plus className="w-4 h-4" /> Add Con
+                    <Plus className="w-4 h-4" aria-hidden="true" /> Add Con
                   </button>
                 </div>
               </div>
@@ -828,7 +833,7 @@ export default function ToolEditorForm({
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <Label>Main Categories <span className="text-red-500">*</span></Label>
-                  <span className="text-xs text-gray-400">{formData.categories.length}/5 selected</span>
+                  <span className="text-xs text-gray-500">{formData.categories.length}/5 selected</span>
                 </div>
                 <div className="flex flex-wrap gap-2 max-h-52 overflow-y-auto pr-1 py-1">
                   {categories.map((cat) => {
@@ -838,14 +843,14 @@ export default function ToolEditorForm({
                         key={cat._id}
                         type="button"
                         onClick={() => toggleCategory(cat.slug)}
-                        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
+                        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium border transition-all cursor-pointer ${
                           selected
                             ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
                             : 'bg-white text-gray-700 border-gray-200 hover:border-blue-300 hover:text-blue-700'
                         }`}
                         aria-pressed={selected}
                       >
-                        {cat.icon && <span className="text-base leading-none">{cat.icon}</span>}
+                        {cat.icon && <span className="text-base leading-none" aria-hidden="true">{cat.icon}</span>}
                         {cat.name}
                       </button>
                     );
@@ -856,8 +861,8 @@ export default function ToolEditorForm({
 
               <div>
                 <div className="flex items-center gap-1.5 mb-2">
-                  <Tag className="w-4 h-4 text-gray-500" />
-                  <Label>Tags <span className="text-gray-400 font-normal">(optional)</span></Label>
+                  <Tag className="w-4 h-4 text-gray-500" aria-hidden="true" />
+                  <Label>Tags <span className="text-gray-500 font-normal">(optional)</span></Label>
                 </div>
                 <div className="space-y-2">
                   {formData.tags.map((item, i) => (
@@ -868,22 +873,24 @@ export default function ToolEditorForm({
                         className="flex-1"
                         maxLength={40}
                         placeholder={`Tag ${i + 1}`}
+                        aria-label={`Tag ${i + 1}`}
                       />
                       <button
                         type="button"
                         onClick={() => removeFromList('tags')(i)}
-                        className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors"
+                        className="inline-flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors cursor-pointer"
+                        aria-label={`Remove tag ${i + 1}`}
                       >
-                        <X className="w-4 h-4 text-red-500" />
+                        <X className="w-4 h-4 text-red-500" aria-hidden="true" />
                       </button>
                     </div>
                   ))}
                   <button
                     type="button"
                     onClick={addToList('tags')}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200 cursor-pointer"
                   >
-                    <Plus className="w-4 h-4" /> Add Tag
+                    <Plus className="w-4 h-4" aria-hidden="true" /> Add Tag
                   </button>
                 </div>
               </div>

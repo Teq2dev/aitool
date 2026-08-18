@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import SearchBar from '@/components/SearchBar';
 import ToolCard from '@/components/ToolCard';
 import CategoryCard from '@/components/CategoryCard';
+import HomeSEOContent from '@/components/HomeSEOContent';
 import { ArrowRightIcon, SparklesIcon, TrendingUpIcon, ZapIcon, LayoutGridIcon, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
@@ -234,6 +235,9 @@ export default function HomeClient({
           </div>
         </div>
       </section>
+
+      {/* SEO & Topical Content Section */}
+      <HomeSEOContent />
     </div>
   );
 }

@@ -973,15 +973,17 @@ function AdminDashboardContent() {
                         value={toolSearch}
                         onChange={(e) => setToolSearch(e.target.value)}
                         placeholder="Search tools by name..."
+                        aria-label="Search tools by name"
                         className="h-9 pr-7"
                       />
                       {toolSearch && (
                         <button
                           type="button"
                           onClick={handleClearSearch}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          aria-label="Clear search input"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                         >
-                          <X className="w-4 h-4" />
+                          <X className="w-4 h-4" aria-hidden="true" />
                         </button>
                       )}
                     </div>
@@ -1004,8 +1006,8 @@ function AdminDashboardContent() {
 
                 {/* Tools List */}
                 {toolsLoading ? (
-                  <div className="py-16 text-center text-gray-500">
-                    <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                  <div className="py-16 text-center text-gray-500" aria-live="polite" aria-busy="true">
+                    <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" aria-label="Loading tools" />
                     Loading tools...
                   </div>
                 ) : (
@@ -1029,6 +1031,7 @@ function AdminDashboardContent() {
                       size="sm"
                       disabled={toolPagination.page <= 1 || toolsLoading}
                       onClick={() => handlePageChange(Math.max(1, toolPagination.page - 1))}
+                      aria-label="Go to previous page"
                     >
                       Previous
                     </Button>
@@ -1051,6 +1054,8 @@ function AdminDashboardContent() {
                             size="sm"
                             variant={toolPagination.page === pageNum ? 'default' : 'outline'}
                             onClick={() => handlePageChange(pageNum)}
+                            aria-label={`Page ${pageNum}`}
+                            aria-current={toolPagination.page === pageNum ? 'page' : undefined}
                             className="w-8 h-8 p-0"
                           >
                             {pageNum}
@@ -1064,6 +1069,7 @@ function AdminDashboardContent() {
                       size="sm"
                       disabled={toolPagination.page >= toolPagination.totalPages || toolsLoading}
                       onClick={() => handlePageChange(Math.min(toolPagination.totalPages, toolPagination.page + 1))}
+                      aria-label="Go to next page"
                     >
                       Next
                     </Button>
@@ -1501,12 +1507,17 @@ function AdminDashboardContent() {
 
       {/* Reject Modal */}
       {rejectModal.open && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="reject-tool-modal-title">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Reject Tool</h3>
-              <button onClick={() => setRejectModal({ open: false, toolId: null, toolName: '' })}>
-                <X className="w-5 h-5" />
+              <h3 id="reject-tool-modal-title" className="text-lg font-semibold">Reject Tool</h3>
+              <button
+                type="button"
+                onClick={() => setRejectModal({ open: false, toolId: null, toolName: '' })}
+                aria-label="Close reject modal"
+                className="cursor-pointer"
+              >
+                <X className="w-5 h-5" aria-hidden="true" />
               </button>
             </div>
             <p className="text-gray-600 mb-4">
@@ -1514,6 +1525,7 @@ function AdminDashboardContent() {
             </p>
             <Textarea
               placeholder="Enter rejection reason (will be visible to the user)..."
+              aria-label="Enter rejection reason (visible to submitter)"
               value={rejectComment}
               onChange={(e) => setRejectComment(e.target.value)}
               className="mb-4"

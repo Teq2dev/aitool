@@ -35,7 +35,7 @@ export default function CategoryDetailClient({ category, popularTools, freeTools
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Breadcrumbs data={breadcrumbData} />
           <div className="flex items-center space-x-4 mb-6 mt-4">
-            <span className="text-5xl">{category.icon}</span>
+            <span className="text-5xl" aria-hidden="true">{category.icon}</span>
             <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
               {displayName} Tools
             </h1>
@@ -126,13 +126,13 @@ export default function CategoryDetailClient({ category, popularTools, freeTools
           {/* Sidebar Area */}
           <div className="lg:col-span-1 space-y-8">
             <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm sticky top-24">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Latest Arrivals</h3>
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Latest Arrivals</h2>
               <div className="space-y-4">
                 {newTools.map((tool) => (
                   <Link href={getLangUrl(`/tools/${tool.slug}`)} key={tool._id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition">
-                    <img src={tool.logo} alt={tool.name} className="w-12 h-12 rounded-lg object-cover border border-gray-200" />
+                    <img src={tool.logo} alt={`${tool.name} logo`} className="w-12 h-12 rounded-lg object-cover border border-gray-200" />
                     <div>
-                      <h4 className="font-semibold text-gray-900 text-sm">{tool.name}</h4>
+                      <h3 className="font-semibold text-gray-900 text-sm">{tool.name}</h3>
                       <div className="flex items-center space-x-1 mt-1">
                         <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">{tool.pricing}</span>
                       </div>

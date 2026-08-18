@@ -13,7 +13,7 @@ export default function CategoryCard({ category }) {
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-              <span className="text-xl">{category.icon}</span>
+              <span className="text-xl" aria-hidden="true">{category.icon}</span>
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-sm text-black group-hover:text-blue-600 transition-colors truncate">

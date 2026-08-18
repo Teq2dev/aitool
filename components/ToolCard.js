@@ -23,13 +23,13 @@ export default function ToolCard({ tool }) {
       {/* Badge Overlays */}
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
         {tool.featured && (
-          <Badge className="bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200 transition-colors px-2 py-0.5 text-[10px] uppercase tracking-wider font-bold">
+          <Badge className="bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200 transition-colors px-2 py-0.5 text-[10px] uppercase tracking-wider font-bold">
             {getLocalizedBadge('Featured', currentLang)}
           </Badge>
         )}
         {tool.trending && (
           <Badge className="bg-blue-600 text-white border-transparent hover:bg-blue-700 transition-colors flex items-center gap-1 px-2 py-0.5 text-[10px] uppercase tracking-wider font-bold">
-            <TrendingUp className="w-2.5 h-2.5" /> {getLocalizedBadge('Trending', currentLang)}
+            <TrendingUp className="w-2.5 h-2.5" aria-hidden="true" /> {getLocalizedBadge('Trending', currentLang)}
           </Badge>
         )}
       </div>
@@ -40,7 +40,7 @@ export default function ToolCard({ tool }) {
             <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-50 flex-shrink-0 border border-slate-100 shadow-sm group-hover:shadow-md transition-all duration-300">
               <img
                 src={tool.logo || '/placeholder-logo.png'}
-                alt={tool.name}
+                alt={`${tool.name} logo`}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
               />
             </div>
@@ -50,10 +50,10 @@ export default function ToolCard({ tool }) {
               </CardTitle>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
                   <span className="text-sm font-bold text-slate-700">{tool.rating || '0.0'}</span>
                 </div>
-                <span className="text-xs font-medium text-slate-400">
+                <span className="text-xs font-medium text-slate-500">
                   {tool.votes || 0} {t('reviews')}
                 </span>
               </div>
@@ -86,20 +86,24 @@ export default function ToolCard({ tool }) {
         </div>
         <div className="flex gap-2">
           <Button
+            type="button"
             variant="ghost"
             size="icon"
-            className="w-9 h-9 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+            aria-label={`Visit ${tool.name} website (opens in new tab)`}
+            className="w-9 h-9 rounded-xl text-slate-500 hover:text-blue-600 hover:bg-blue-50"
             onClick={(e) => {
               e.preventDefault();
-              window.open(tool.website, '_blank');
+              window.open(tool.website, '_blank', 'noopener,noreferrer');
             }}
           >
-            <ExternalLink className="w-4 h-4" />
+            <ExternalLink className="w-4 h-4" aria-hidden="true" />
           </Button>
           <Link href={detailLink}>
             <Button
+              type="button"
               variant="secondary"
               size="sm"
+              aria-label={`View details for ${tool.name}`}
               className="rounded-xl font-bold text-xs bg-slate-900 text-white hover:bg-blue-600 hover:text-white transition-all shadow-lg shadow-slate-200"
             >
               Details

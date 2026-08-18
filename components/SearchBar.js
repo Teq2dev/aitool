@@ -29,12 +29,13 @@ function SearchInput({ placeholder, className = '' }) {
   };
 
   return (
-    <form onSubmit={handleSearch} className={`relative ${className}`}>
+    <form onSubmit={handleSearch} role="search" className={`relative ${className}`}>
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" aria-hidden="true" />
         <Input
           type="text"
           placeholder={activePlaceholder}
+          aria-label={activePlaceholder || "Search AI tools"}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-12 pr-4 py-6 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-full shadow-sm"

@@ -12,7 +12,7 @@ export default function Footer({ topCategories }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <img src="/logo.jpg" alt="Best AI Tools Free" className="w-8 h-8 rounded-lg object-cover" />
+              <img src="/logo.jpg" alt="Best AI Tools Free logo" className="w-8 h-8 rounded-lg object-cover" />
               <span className="font-bold text-lg">Best AI Tools Free</span>
             </div>
             <p className="text-sm text-gray-600 leading-relaxed">

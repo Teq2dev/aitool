@@ -146,7 +146,7 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
               </div>
 
               <Select value={filters.category || 'all'} onValueChange={handleCategoryChange}>
-                <SelectTrigger className="w-[180px] h-10 rounded-lg border-slate-200 focus:ring-blue-500">
+                <SelectTrigger aria-label="Filter by category" className="w-[180px] h-10 rounded-lg border-slate-200 focus:ring-blue-500">
                   <SelectValue placeholder="Categories" />
                 </SelectTrigger>
                 <SelectContent>
@@ -160,7 +160,7 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
               </Select>
 
               <Select value={filters.sort} onValueChange={handleSortChange}>
-                <SelectTrigger className="w-[160px] h-10 rounded-lg border-slate-200 focus:ring-blue-500">
+                <SelectTrigger aria-label="Sort tools by" className="w-[160px] h-10 rounded-lg border-slate-200 focus:ring-blue-500">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
@@ -173,12 +173,14 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
 
               {(filters.category || filters.search) && (
                 <Button 
+                  type="button"
                   variant="ghost" 
                   size="sm" 
                   onClick={clearFilters}
+                  aria-label="Reset all search and category filters"
                   className="text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
                 >
-                  <X className="w-4 h-4 mr-2" />
+                  <X className="w-4 h-4 mr-2" aria-hidden="true" />
                   Reset Filters
                 </Button>
               )}
@@ -189,18 +191,18 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
         {/* Results Info */}
         {!isPending && tools.length > 0 && (
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-sm font-medium text-slate-500">
+            <p className="text-sm font-medium text-slate-500" role="status">
               Showing page {pagination.page} of {pagination.totalPages} ({pagination.total} tools)
-            </h2>
+            </p>
           </div>
         )}
 
         {/* Content Area */}
         <div className="relative">
           {isPending && (
-            <div className="absolute inset-0 z-20 bg-white/60 backdrop-blur-[1px] flex items-start justify-center pt-20">
+            <div className="absolute inset-0 z-20 bg-white/60 backdrop-blur-[1px] flex items-start justify-center pt-20" aria-live="polite" aria-busy="true">
               <div className="bg-white p-4 rounded-full shadow-xl border border-slate-100">
-                <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                <Loader2 className="w-8 h-8 text-blue-600 animate-spin" aria-label="Loading tools" />
               </div>
             </div>
           )}
@@ -209,13 +211,13 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
             <div className="text-center py-32 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
               <div className="max-w-md mx-auto">
                 <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Filter className="w-10 h-10 text-slate-300" />
+                  <Filter className="w-10 h-10 text-slate-300" aria-hidden="true" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 mb-2">No matching tools found</h3>
                 <p className="text-slate-500 mb-8">
                   We couldn't find any tools matching your current filters. Try adjusting your search or categories.
                 </p>
-                <Button onClick={clearFilters} className="rounded-xl px-8 shadow-lg shadow-blue-200">
+                <Button type="button" onClick={clearFilters} className="rounded-xl px-8 shadow-lg shadow-blue-200">
                   Clear All Filters
                 </Button>
               </div>
@@ -237,6 +239,8 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
                         <PaginationPrevious 
                           href={pagination.page > 1 ? `/tools?${new URLSearchParams({...filters, page: pagination.page - 1}).toString()}` : '#'}
                           onClick={(e) => { e.preventDefault(); handlePageChange(pagination.page - 1); }}
+                          aria-disabled={pagination.page <= 1}
+                          tabIndex={pagination.page <= 1 ? -1 : 0}
                           className={pagination.page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                         />
                       </PaginationItem>
@@ -250,6 +254,8 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
                               href={`/tools?${new URLSearchParams({...filters, page: pageNum}).toString()}`}
                               onClick={(e) => { e.preventDefault(); handlePageChange(pageNum); }}
                               isActive={pagination.page === pageNum}
+                              aria-label={`Page ${pageNum}`}
+                              aria-current={pagination.page === pageNum ? "page" : undefined}
                               className="cursor-pointer"
                             >
                               {pageNum}
@@ -262,6 +268,8 @@ export default function ToolsClient({ initialTools, initialPagination, categorie
                         <PaginationNext 
                           href={pagination.page < pagination.totalPages ? `/tools?${new URLSearchParams({...filters, page: pagination.page + 1}).toString()}` : '#'}
                           onClick={(e) => { e.preventDefault(); handlePageChange(pagination.page + 1); }}
+                          aria-disabled={pagination.page >= pagination.totalPages}
+                          tabIndex={pagination.page >= pagination.totalPages ? -1 : 0}
                           className={pagination.page === pagination.totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                         />
                       </PaginationItem>

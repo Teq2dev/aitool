@@ -86,12 +86,13 @@ function BlogsContent() {
         </div>
 
         {/* Search */}
-        <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-12">
+        <form onSubmit={handleSearch} role="search" className="max-w-2xl mx-auto mb-12">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" aria-hidden="true" />
             <Input
               type="text"
               placeholder="Search blogs..."
+              aria-label="Search blogs"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-12 pr-4 py-6 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-full"

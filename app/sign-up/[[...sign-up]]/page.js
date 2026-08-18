@@ -34,9 +34,9 @@ export default function SignUpPage() {
           <Button
             type="button"
             onClick={() => signIn('google', { callbackUrl: getLangUrl('/dashboard') })}
-            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 border border-gray-300 rounded-xl shadow-sm transition-all text-base"
+            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 border border-gray-300 rounded-xl shadow-sm transition-all text-base cursor-pointer"
           >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
               <path
                 fill="#4285F4"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -57,7 +57,7 @@ export default function SignUpPage() {
             <span>Sign Up with Google</span>
           </Button>
 
-          <div className="mt-6 text-center text-xs text-gray-400">
+          <div className="mt-6 text-center text-xs text-gray-500">
             By signing up, you agree to our Terms of Service & Privacy Policy.
           </div>
         </CardContent>

@@ -31,10 +31,11 @@ export default function CategoriesClient({ initialCategories }) {
       {/* Search Bar */}
       <div className="max-w-2xl mx-auto mb-12">
         <div className="relative group">
-          <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+          <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" aria-hidden="true" />
           <Input
             type="text"
             placeholder="Search categories (e.g. Writing, Image, Coding...)"
+            aria-label="Search categories"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-14 pr-6 py-8 w-full rounded-2xl border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-lg shadow-sm"

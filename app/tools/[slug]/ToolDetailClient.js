@@ -136,8 +136,8 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                             {localizedInfo.shortDescription}
                           </p>
                         </div>
-                        <Button variant="outline" size="icon" onClick={handleShare} className="rounded-full">
-                          <Share2 className="w-5 h-5" />
+                        <Button variant="outline" size="icon" onClick={handleShare} aria-label={`Share ${tool.name}`} className="rounded-full">
+                          <Share2 className="w-5 h-5" aria-hidden="true" />
                         </Button>
                       </div>
                       <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
@@ -242,7 +242,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                   
                   {displayPricingDetails && (
                     <div className="p-5 bg-blue-50/50 rounded-xl border border-blue-100/50">
-                      <h4 className="text-sm font-bold text-blue-900 mb-2 uppercase tracking-wider">Detailed Pricing Info</h4>
+                      <h3 className="text-sm font-bold text-blue-900 mb-2 uppercase tracking-wider">Detailed Pricing Info</h3>
                       <div 
                         className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap"
                         dangerouslySetInnerHTML={{ __html: sanitizeHtml(displayPricingDetails) }}
@@ -344,7 +344,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                 <CardContent>
                   <div className="space-y-6">
                     <div>
-                      <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">{t('mainCategories')}</h4>
+                      <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">{t('mainCategories')}</h3>
                       <div className="flex flex-wrap gap-3">
                         {tool.categories?.map((cat) => (
                           <Link key={cat} href={getLangUrl(`/tools?category=${cat}`)}>
@@ -357,7 +357,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                     </div>
                     {tool.tags && tool.tags.length > 0 && (
                       <div>
-                        <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">{t('relatedTopics')}</h4>
+                        <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">{t('relatedTopics')}</h3>
                         <div className="flex flex-wrap gap-2">
                           {tool.tags.map((tag) => (
                             <Badge key={tag} variant="secondary" className="px-3 py-1 text-xs bg-gray-100 text-gray-700 hover:bg-gray-200">
@@ -707,12 +707,14 @@ function ReviewsSection({ toolId, initialRating, initialVotes }) {
                     <button
                       key={star}
                       type="button"
-                      className="focus:outline-none transition-transform active:scale-90"
+                      aria-label={`Rate ${star} star${star > 1 ? 's' : ''} out of 5`}
+                      className="focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded transition-transform active:scale-90"
                       onClick={() => setRating(star)}
                       onMouseEnter={() => setHover(star)}
                       onMouseLeave={() => setHover(0)}
                     >
                       <Star
+                        aria-hidden="true"
                         className={`w-8 h-8 ${
                           star <= (hover || rating)
                             ? 'fill-yellow-400 text-yellow-400'
@@ -725,8 +727,9 @@ function ReviewsSection({ toolId, initialRating, initialVotes }) {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Your Name (Optional)</label>
+                <label htmlFor="review-user-name" className="block text-sm font-medium text-gray-700 mb-1">Your Name (Optional)</label>
                 <input
+                  id="review-user-name"
                   type="text"
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
@@ -736,8 +739,9 @@ function ReviewsSection({ toolId, initialRating, initialVotes }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Your Feedback</label>
+                <label htmlFor="review-comment" className="block text-sm font-medium text-gray-700 mb-1">Your Feedback</label>
                 <textarea
+                  id="review-comment"
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="What was your experience with this tool?"
@@ -767,8 +771,8 @@ function ReviewsSection({ toolId, initialRating, initialVotes }) {
                     <h3 className="text-lg font-bold mb-4">Community Feedback ({safeReviews.length})</h3>
                     
                     {loading ? (
-                      <div className="flex justify-center py-12">
-                        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                      <div className="flex justify-center py-12" aria-live="polite" aria-busy="true">
+                        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" aria-label="Loading reviews"></div>
                       </div>
                     ) : safeReviews.length === 0 ? (
                       <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-200">
@@ -787,24 +791,27 @@ function ReviewsSection({ toolId, initialRating, initialVotes }) {
                                 <button
                                   key={star}
                                   type="button"
+                                  aria-label={`Rate ${star} star${star > 1 ? 's' : ''} out of 5`}
                                   onClick={() => setEditRating(star)}
+                                  className="focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
                                 >
-                                  <Star className={`w-4 h-4 ${star <= editRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
+                                  <Star aria-hidden="true" className={`w-4 h-4 ${star <= editRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
                                 </button>
                               ))}
                             </div>
                             <div className="flex gap-2">
-                              <Button type="button" variant="ghost" size="sm" onClick={cancelEditing} className="h-8 w-8 p-0">
-                                <X className="w-4 h-4" />
+                              <Button type="button" variant="ghost" size="sm" onClick={cancelEditing} aria-label="Cancel editing review" className="h-8 w-8 p-0">
+                                <X className="w-4 h-4" aria-hidden="true" />
                               </Button>
-                              <Button type="submit" variant="ghost" size="sm" className="h-8 w-8 p-0 text-green-600">
-                                <Check className="w-4 h-4" />
+                              <Button type="submit" variant="ghost" size="sm" aria-label="Save review changes" className="h-8 w-8 p-0 text-green-600">
+                                <Check className="w-4 h-4" aria-hidden="true" />
                               </Button>
                             </div>
                           </div>
                           <textarea
                             value={editComment}
                             onChange={(e) => setEditComment(e.target.value)}
+                            aria-label="Edit your review comments"
                             className="w-full p-3 text-sm border rounded-xl focus:ring-2 focus:ring-blue-100 outline-none"
                             rows={3}
                             required
@@ -816,15 +823,15 @@ function ReviewsSection({ toolId, initialRating, initialVotes }) {
                           <div className="flex justify-between items-start mb-2">
                             <div className="flex items-center gap-2">
                               {rev.userPhoto ? (
-                                <img src={rev.userPhoto} alt={rev.userName} className="w-8 h-8 rounded-full object-cover border border-gray-100 shadow-sm" />
+                                <img src={rev.userPhoto} alt={rev.userName ? `${rev.userName}'s photo` : 'Reviewer photo'} className="w-8 h-8 rounded-full object-cover border border-gray-100 shadow-sm" />
                               ) : (
-                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs uppercase">
+                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs uppercase" aria-hidden="true">
                                   {rev.userName?.charAt(0) || 'A'}
                                 </div>
                               )}
                               <div>
                                 <p className="font-bold text-gray-900 text-sm">{rev.userName || 'Anonymous'}</p>
-                                <p className="text-[10px] text-gray-400">
+                                <p className="text-[10px] text-gray-500">
                                   {isClient ? new Date(rev.createdAt).toLocaleDateString() : ''}
                                   {rev.updatedAt && rev.updatedAt !== rev.createdAt && ' (edited)'}
                                 </p>
@@ -834,15 +841,16 @@ function ReviewsSection({ toolId, initialRating, initialVotes }) {
                               {deleteConfirmId === rev._id ? (
                                 <div className="flex items-center gap-2 bg-red-50 px-2 py-1 rounded-lg">
                                   <span className="text-[10px] font-bold text-red-600">Delete?</span>
-                                  <button onClick={() => handleDelete(rev._id)} className="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded">Yes</button>
-                                  <button onClick={() => setDeleteConfirmId(null)} className="text-[10px] text-gray-500 underline">No</button>
+                                  <button type="button" onClick={() => handleDelete(rev._id)} aria-label="Confirm delete review" className="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded">Yes</button>
+                                  <button type="button" onClick={() => setDeleteConfirmId(null)} aria-label="Cancel delete review" className="text-[10px] text-gray-500 underline">No</button>
                                 </div>
                               ) : (
                                 <>
-                                  <div className="flex gap-0.5">
+                                  <div className="flex gap-0.5" aria-label={`Rating: ${rev.rating} out of 5 stars`}>
                                     {[...Array(5)].map((_, i) => (
                                       <Star 
                                         key={i} 
+                                        aria-hidden="true"
                                         className={`w-3 h-3 ${i < rev.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`} 
                                       />
                                     ))}
@@ -851,11 +859,11 @@ function ReviewsSection({ toolId, initialRating, initialVotes }) {
                                   {/* Ownership/Admin Actions */}
                                   {(isAdmin || (user && rev.userId === user.id) || getEditToken(rev._id)) && (
                                     <div className="flex gap-1">
-                                      <button onClick={() => startEditing(rev)} className="p-1 text-gray-400 hover:text-blue-600 transition-colors">
-                                        <Edit2 className="w-3.5 h-3.5" />
+                                      <button type="button" onClick={() => startEditing(rev)} aria-label="Edit review" className="p-1 text-gray-400 hover:text-blue-600 transition-colors">
+                                        <Edit2 className="w-3.5 h-3.5" aria-hidden="true" />
                                       </button>
-                                      <button onClick={() => setDeleteConfirmId(rev._id)} className="p-1 text-gray-400 hover:text-red-600 transition-colors">
-                                        <Trash2 className="w-3.5 h-3.5" />
+                                      <button type="button" onClick={() => setDeleteConfirmId(rev._id)} aria-label="Delete review" className="p-1 text-gray-400 hover:text-red-600 transition-colors">
+                                        <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                                       </button>
                                     </div>
                                   )}
