@@ -11,8 +11,12 @@
     "binding": "ASSETS"
   },
   "vars": {
+    "MONGO_URL": "mongodb+srv://parwal101_db_user:VBsJLefGyTIFcs9d@dbaitool.jz1abkr.mongodb.net/?appName=DBAITOOL",
     "DB_NAME": "ai_directory",
     "NEXTAUTH_URL": "https://www.bestaitoolsfree.com",
+    "NEXTAUTH_SECRET": "f63901b0b7e2e85871db63dd9b19e2be3a5f4c4a4570dbbfb067d2645607dc97",
+    "GOOGLE_CLIENT_ID": "104385240704-hqm0vfshe96udegfsdm92tas2db91p5q",
+    "GOOGLE_CLIENT_SECRET": "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",
     "CORS_ORIGINS": "*"
   }
 }
