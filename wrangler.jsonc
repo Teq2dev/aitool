@@ -10,5 +10,9 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
-  "keep_vars": true
+  "vars": {
+    "DB_NAME": "ai_directory",
+    "NEXTAUTH_URL": "https://bestaitoolsfree.parwal111.workers.dev",
+    "CORS_ORIGINS": "*"
+  }
 }
