@@ -23,6 +23,7 @@
   "vars": {
     "DB_NAME": "ai_directory",
     "NEXTAUTH_URL": "https://www.bestaitoolsfree.com",
-    "CORS_ORIGINS": "*"
+    "CORS_ORIGINS": "*",
+    "ADMIN_EMAILS": "parwal111@gmail.com"
   }
 }
