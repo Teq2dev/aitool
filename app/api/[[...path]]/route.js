@@ -1539,16 +1539,48 @@ export async function DELETE(request, { params }) {
       console.log('Using anonymous userId for DELETE');
     }
     
-    // Delete tool
-    if (pathname.startsWith('/api/tools/')) {
-      const id = pathname.split('/api/tools/')[1];
+    // Delete tool (Admin only)
+    if (pathname.startsWith('/api/admin/tools/') || pathname.startsWith('/api/tools/')) {
+      const admin = await isUserAdmin();
+      if (!admin) {
+        return NextResponse.json({ error: 'Unauthorized. Admin role required.' }, { status: 403 });
+      }
+
+      let id = '';
+      if (pathname.startsWith('/api/admin/tools/')) {
+        id = pathname.split('/api/admin/tools/')[1].replace(/\/$/, '');
+      } else {
+        id = pathname.split('/api/tools/')[1].replace(/\/$/, '');
+      }
+
+      if (!id) {
+        return NextResponse.json({ error: 'Tool ID is required' }, { status: 400 });
+      }
+
       const toolsCollection = await getCollection('tools');
+      let result = await toolsCollection.deleteOne({ _id: id });
       
-      await toolsCollection.deleteOne({ _id: id });
+      if (result.deletedCount === 0) {
+        try {
+          const { ObjectId } = await import('mongodb');
+          result = await toolsCollection.deleteOne({ _id: new ObjectId(id) });
+        } catch (e) {}
+      }
+
+      if (result.deletedCount === 0) {
+        result = await toolsCollection.deleteOne({ slug: id });
+      }
+
+      if (result.deletedCount === 0) {
+        return NextResponse.json({ error: 'Tool not found or already deleted' }, { status: 404 });
+      }
       
+      revalidatePath('/');
+      revalidatePath('/tools');
+      revalidatePath('/admin');
       revalidateTag('tools');
       revalidateTag('categories');
-      return NextResponse.json({ success: true });
+      return NextResponse.json({ success: true, deletedCount: result.deletedCount, id });
     }
     
     // Delete blog

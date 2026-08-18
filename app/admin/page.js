@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, useRef, Suspense } from 'react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,12 +12,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { CheckCircle, XCircle, Eye, Star, Trash2, Users, Shield, ShieldOff, Upload, FileSpreadsheet, Download, Edit, X, ShoppingBag, History, Undo2, Plus, Zap, Globe } from 'lucide-react';
 import Link from 'next/link';
 
-export default function AdminPage() {
+function AdminDashboardContent() {
   const { data: session, status } = useSession();
   const isSignedIn = status === 'authenticated';
   const isLoaded = status !== 'loading';
   const user = session?.user;
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
   const [tools, setTools] = useState([]);
   const [users, setUsers] = useState([]);
   const [blogs, setBlogs] = useState([]);
@@ -45,6 +48,30 @@ export default function AdminPage() {
   const shopFileInputRef = useRef(null);
   const [productUrl, setProductUrl] = useState('');
 
+  // Initial params from URL
+  const initialStatus = searchParams.get('status') || searchParams.get('tab') || 'pending';
+  const initialPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+  const initialSearch = searchParams.get('search') || '';
+
+  const [toolStatus, setToolStatus] = useState(initialStatus);
+  const [toolPage, setToolPage] = useState(initialPage);
+  const [toolSearch, setToolSearch] = useState(initialSearch);
+  const [toolPagination, setToolPagination] = useState({ page: initialPage, limit: 25, total: 0, totalPages: 1 });
+  const [toolCounts, setToolCounts] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
+  const [toolsLoading, setToolsLoading] = useState(false);
+  const [fetchError, setFetchError] = useState(null);
+
+  // Sync URL with current state
+  const syncUrl = (st, pg, srch) => {
+    const params = new URLSearchParams();
+    if (st && st !== 'pending') params.set('status', st);
+    if (pg && pg > 1) params.set('page', String(pg));
+    if (srch && srch.trim()) params.set('search', srch.trim());
+    const query = params.toString();
+    const newUrl = query ? `${pathname}?${query}` : pathname;
+    window.history.replaceState(null, '', newUrl);
+  };
+
   // Fetch image from URL (favicon/og:image)
   const fetchProductImage = async () => {
     if (!productUrl) {
@@ -60,7 +87,6 @@ export default function AdminPage() {
         body: JSON.stringify({ url: productUrl }),
       });
       const data = await res.json();
-      console.log('Fetch response:', data);
       
       if (data.faviconUrl || data.favicon) {
         const imageUrl = data.faviconUrl || data.favicon;
@@ -76,13 +102,51 @@ export default function AdminPage() {
       setImageFetching(false);
     }
   };
-  const [fetchError, setFetchError] = useState(null);
+
+  const fetchTools = async (status = toolStatus, page = toolPage, search = toolSearch) => {
+    setToolsLoading(true);
+    try {
+      const q = new URLSearchParams({
+        status: status || 'all',
+        page: String(page || 1),
+        limit: '25',
+        search: search || '',
+      });
+      const res = await fetch(`/api/admin/tools?${q.toString()}`);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Failed to fetch tools (HTTP ${res.status})`);
+      }
+      const data = await res.json();
+      if (data.tools && data.pagination) {
+        // Clamp to last valid page if out of bounds (e.g. page=999)
+        if (data.pagination.totalPages > 0 && page > data.pagination.totalPages) {
+          const clampedPage = data.pagination.totalPages;
+          setToolPage(clampedPage);
+          syncUrl(status, clampedPage, search);
+          return fetchTools(status, clampedPage, search);
+        }
+        setTools(Array.isArray(data.tools) ? data.tools : []);
+        setToolPagination(data.pagination);
+        if (data.counts) {
+          setToolCounts(data.counts);
+        }
+      } else if (Array.isArray(data)) {
+        setTools(data);
+      }
+    } catch (error) {
+      console.error('Error fetching tools:', error);
+      setFetchError(prev => prev || error.message);
+    } finally {
+      setToolsLoading(false);
+    }
+  };
 
   const loadAllAdminData = () => {
     setLoading(true);
     setFetchError(null);
     Promise.all([
-      fetchTools(),
+      fetchTools(toolStatus, toolPage, toolSearch),
       fetchUsers(),
       fetchBlogs(),
       fetchBulkLogs(),
@@ -103,63 +167,51 @@ export default function AdminPage() {
     }
   }, [isLoaded, isSignedIn]);
 
-  const [toolStatus, setToolStatus] = useState('pending');
-  const [toolPage, setToolPage] = useState(1);
-  const [toolSearch, setToolSearch] = useState('');
-  const [toolPagination, setToolPagination] = useState({ page: 1, limit: 25, total: 0, totalPages: 1 });
-  const [toolCounts, setToolCounts] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
-  const [toolsLoading, setToolsLoading] = useState(false);
-
-  const fetchTools = async (status = toolStatus, page = toolPage, search = toolSearch) => {
-    setToolsLoading(true);
-    try {
-      const q = new URLSearchParams({
-        status: status || 'all',
-        page: String(page || 1),
-        limit: '25',
-        search: search || '',
-      });
-      const res = await fetch(`/api/admin/tools?${q.toString()}`);
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `Failed to fetch tools (HTTP ${res.status})`);
-      }
-      const data = await res.json();
-      if (data.tools && data.pagination) {
-        setTools(Array.isArray(data.tools) ? data.tools : []);
-        setToolPagination(data.pagination);
-        if (data.counts) {
-          setToolCounts(data.counts);
-        }
-      } else if (Array.isArray(data)) {
-        setTools(data);
-      }
-    } catch (error) {
-      console.error('Error fetching tools:', error);
-      setFetchError(prev => prev || error.message);
-    } finally {
-      setToolsLoading(false);
-    }
-  };
-
-  // Re-fetch tools on filter/page change
+  // Handle browser back/forward or URL searchParams changes
   useEffect(() => {
-    if (isSignedIn) {
-      fetchTools(toolStatus, toolPage, toolSearch);
+    const urlStatus = searchParams.get('status') || searchParams.get('tab') || 'pending';
+    const urlPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+    const urlSearch = searchParams.get('search') || '';
+
+    if (urlStatus !== toolStatus || urlPage !== toolPage || urlSearch !== toolSearch) {
+      setToolStatus(urlStatus);
+      setToolPage(urlPage);
+      setToolSearch(urlSearch);
+      if (isSignedIn) {
+        fetchTools(urlStatus, urlPage, urlSearch);
+      }
     }
-  }, [toolStatus, toolPage]);
+  }, [searchParams]);
 
   // Handle status tab change
   const handleStatusChange = (newStatus) => {
     setToolStatus(newStatus);
     setToolPage(1);
+    syncUrl(newStatus, 1, toolSearch);
+    fetchTools(newStatus, 1, toolSearch);
+  };
+
+  // Handle page button click
+  const handlePageChange = (newPage) => {
+    setToolPage(newPage);
+    syncUrl(toolStatus, newPage, toolSearch);
+    fetchTools(toolStatus, newPage, toolSearch);
   };
 
   // Handle tool search submit
   const handleSearchSubmit = (e) => {
     e?.preventDefault?.();
     setToolPage(1);
+    syncUrl(toolStatus, 1, toolSearch);
     fetchTools(toolStatus, 1, toolSearch);
+  };
+
+  // Handle tool search clear
+  const handleClearSearch = () => {
+    setToolSearch('');
+    setToolPage(1);
+    syncUrl(toolStatus, 1, '');
+    fetchTools(toolStatus, 1, '');
   };
 
   const fetchUsers = async () => {
@@ -615,12 +667,31 @@ export default function AdminPage() {
   };
 
   const handleDelete = async (toolId) => {
-    if (!confirm('Are you sure you want to delete this tool?')) return;
+    if (!confirm('Are you sure you want to permanently delete this tool?')) return;
     try {
-      await fetch(`/api/tools/${toolId}`, { method: 'DELETE' });
-      fetchTools();
+      const res = await fetch(`/api/admin/tools/${toolId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || `Failed to delete tool (HTTP ${res.status})`);
+      }
+      
+      // If this was the only tool on the current page and we're on page > 1, retreat to previous page
+      const isOnlyItem = tools.length <= 1;
+      const targetPage = isOnlyItem && toolPage > 1 ? toolPage - 1 : toolPage;
+
+      if (targetPage !== toolPage) {
+        setToolPage(targetPage);
+        syncUrl(toolStatus, targetPage, toolSearch);
+        fetchTools(toolStatus, targetPage, toolSearch);
+      } else {
+        fetchTools(toolStatus, toolPage, toolSearch);
+      }
     } catch (error) {
       console.error('Error deleting tool:', error);
+      alert(`Error deleting tool: ${error.message}`);
     }
   };
 
@@ -886,13 +957,24 @@ export default function AdminPage() {
                     </TabsList>
                   </Tabs>
 
-                  <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full sm:w-72">
-                    <Input
-                      value={toolSearch}
-                      onChange={(e) => setToolSearch(e.target.value)}
-                      placeholder="Search tools by name..."
-                      className="h-9"
-                    />
+                  <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full sm:w-80">
+                    <div className="relative flex-1">
+                      <Input
+                        value={toolSearch}
+                        onChange={(e) => setToolSearch(e.target.value)}
+                        placeholder="Search tools by name..."
+                        className="h-9 pr-7"
+                      />
+                      {toolSearch && (
+                        <button
+                          type="button"
+                          onClick={handleClearSearch}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                     <Button type="submit" size="sm" variant="secondary" className="h-9">
                       Search
                     </Button>
@@ -935,7 +1017,7 @@ export default function AdminPage() {
                       variant="outline"
                       size="sm"
                       disabled={toolPagination.page <= 1 || toolsLoading}
-                      onClick={() => setToolPage(p => Math.max(1, p - 1))}
+                      onClick={() => handlePageChange(Math.max(1, toolPagination.page - 1))}
                     >
                       Previous
                     </Button>
@@ -957,7 +1039,7 @@ export default function AdminPage() {
                             key={pageNum}
                             size="sm"
                             variant={toolPagination.page === pageNum ? 'default' : 'outline'}
-                            onClick={() => setToolPage(pageNum)}
+                            onClick={() => handlePageChange(pageNum)}
                             className="w-8 h-8 p-0"
                           >
                             {pageNum}
@@ -970,7 +1052,7 @@ export default function AdminPage() {
                       variant="outline"
                       size="sm"
                       disabled={toolPagination.page >= toolPagination.totalPages || toolsLoading}
-                      onClick={() => setToolPage(p => Math.min(toolPagination.totalPages, p + 1))}
+                      onClick={() => handlePageChange(Math.min(toolPagination.totalPages, toolPagination.page + 1))}
                     >
                       Next
                     </Button>
@@ -1926,5 +2008,22 @@ function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onToggleT
         </div>
       ))}
     </div>
+  );
+}
+
+export default function AdminPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+            <p className="text-sm text-gray-500">Loading admin dashboard...</p>
+          </div>
+        </div>
+      }
+    >
+      <AdminDashboardContent />
+    </Suspense>
   );
 }
