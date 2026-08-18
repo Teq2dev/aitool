@@ -601,10 +601,20 @@ function AdminDashboardContent() {
     }
   };
 
+  const currentAdminUrl = () => {
+    const params = new URLSearchParams();
+    if (toolStatus && toolStatus !== 'pending') params.set('status', toolStatus);
+    if (toolPage && toolPage > 1) params.set('page', String(toolPage));
+    if (toolSearch && toolSearch.trim()) params.set('search', toolSearch.trim());
+    const query = params.toString();
+    return query ? `${pathname}?${query}` : pathname;
+  };
+
   // Navigate to dedicated edit page in new tab
   const openEditModal = (tool) => {
     if (tool?._id) {
-      window.open(`/admin/tools/${tool._id}/edit`, '_blank', 'noopener,noreferrer');
+      const returnTo = encodeURIComponent(currentAdminUrl());
+      window.open(`/admin/tools/${tool._id}/edit?returnTo=${returnTo}`, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -1007,6 +1017,7 @@ function AdminDashboardContent() {
                     onToggleTrending={handleToggleTrending}
                     onDelete={handleDelete}
                     onEdit={openEditModal}
+                    returnToUrl={currentAdminUrl()}
                   />
                 )}
 
@@ -1075,6 +1086,7 @@ function AdminDashboardContent() {
                   onDelete={handleDelete}
                   onEdit={openEditModal}
                   showFeatureToggle={true}
+                  returnToUrl={currentAdminUrl()}
                 />
                 <div className="mt-6 border-t pt-6">
                   <h4 className="font-medium mb-4">Add to Featured</h4>
@@ -1111,6 +1123,7 @@ function AdminDashboardContent() {
                   onDelete={handleDelete}
                   onEdit={openEditModal}
                   showTrendingToggle={true}
+                  returnToUrl={currentAdminUrl()}
                 />
                 <div className="mt-6 border-t pt-6">
                   <h4 className="font-medium mb-4">Add to Trending</h4>
@@ -1868,7 +1881,7 @@ function UsersList({ users, onMakeAdmin, onRemoveAdmin }) {
   );
 }
 
-function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onToggleTrending, onDelete, onEdit }) {
+function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onToggleTrending, onDelete, onEdit, returnToUrl = '/admin' }) {
   if (tools.length === 0) {
     return (
       <div className="text-center py-12">
@@ -1993,8 +2006,12 @@ function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onToggleT
                 Approve
               </Button>
             )}
-            {/* Edit button - always opens in new tab */}
-            <Link href={`/admin/tools/${tool._id}/edit`} target="_blank" rel="noopener noreferrer">
+            {/* Edit button - opens in new tab with returnTo */}
+            <Link
+              href={`/admin/tools/${tool._id}/edit?returnTo=${encodeURIComponent(returnToUrl || '/admin')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <Button size="sm" variant="outline" className="w-full text-blue-600 border-blue-600 hover:bg-blue-50">
                 <Edit className="w-4 h-4 mr-1" />
                 Edit

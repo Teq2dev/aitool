@@ -1,16 +1,27 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import ToolEditorForm from '@/components/ToolEditorForm';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, ArrowLeft, AlertTriangle } from 'lucide-react';
 
-export default function AdminEditToolPage() {
+function sanitizeReturnTo(url) {
+  if (!url || typeof url !== 'string') return '/admin';
+  const trimmed = url.trim();
+  // Must start with '/admin' and MUST NOT start with '//' (protocol-relative) or contain scheme/colon
+  if (trimmed.startsWith('/admin') && !trimmed.startsWith('//') && !trimmed.includes(':\\')) {
+    return trimmed;
+  }
+  return '/admin';
+}
+
+function AdminEditToolContent() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, status: authStatus } = useSession();
   const [isAdmin, setIsAdmin] = useState(null); // null = checking, true/false
   const [tool, setTool] = useState(null);
@@ -18,6 +29,8 @@ export default function AdminEditToolPage() {
   const [error, setError] = useState('');
 
   const toolId = params?.id;
+  const rawReturnTo = searchParams.get('returnTo');
+  const returnTo = sanitizeReturnTo(rawReturnTo);
 
   // 1. Check Admin Authorization
   useEffect(() => {
@@ -97,7 +110,7 @@ export default function AdminEditToolPage() {
               <h2 className="text-xl font-bold text-gray-900">Access Restricted</h2>
               <p className="text-gray-600 text-sm">{error || 'You do not have permission to access this page.'}</p>
               <div className="pt-2">
-                <Button onClick={() => router.push('/admin')} variant="outline" className="flex items-center gap-2 mx-auto">
+                <Button onClick={() => router.push(returnTo)} variant="outline" className="flex items-center gap-2 mx-auto">
                   <ArrowLeft className="w-4 h-4" /> Return to Admin Dashboard
                 </Button>
               </div>
@@ -124,8 +137,27 @@ export default function AdminEditToolPage() {
       mode="edit"
       initialData={tool}
       toolId={toolId}
-      onCancel={() => router.push('/admin')}
-      onSuccess={() => router.push('/admin')}
+      returnTo={returnTo}
+      onCancel={() => router.push(returnTo)}
+      onSuccess={() => router.push(returnTo)}
+      onDeleteSuccess={() => router.push(returnTo)}
     />
+  );
+}
+
+export default function AdminEditToolPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center space-y-3">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto" />
+            <p className="text-gray-500 text-sm">Loading editor…</p>
+          </div>
+        </div>
+      }
+    >
+      <AdminEditToolContent />
+    </Suspense>
   );
 }

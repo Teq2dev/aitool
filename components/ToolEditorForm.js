@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Upload, CheckCircle, X, Image as ImageIcon, Globe,
-  Plus, Zap, DollarSign, ThumbsUp, ThumbsDown, Tag, Layers, ArrowLeft, Shield
+  Plus, Zap, DollarSign, ThumbsUp, ThumbsDown, Tag, Layers, ArrowLeft, Shield, Trash2
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 
@@ -54,8 +54,10 @@ export default function ToolEditorForm({
   mode = 'create', // 'create' | 'edit'
   initialData = null,
   toolId = null,
+  returnTo = '/admin',
   onSuccess = null,
   onCancel = null,
+  onDeleteSuccess = null,
 }) {
   const { getLangUrl } = useLanguage();
   const router = useRouter();
@@ -273,6 +275,8 @@ export default function ToolEditorForm({
           setSuccess(true);
           if (onSuccess) {
             onSuccess(data);
+          } else if (returnTo) {
+            router.push(returnTo);
           } else {
             router.push('/admin');
           }
@@ -310,6 +314,43 @@ export default function ToolEditorForm({
       document.getElementById('form-top')?.scrollIntoView({ behavior: 'smooth' });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // Delete tool (Admin mode)
+  const [deleting, setDeleting] = useState(false);
+  const handleDeleteTool = async () => {
+    const toolName = formData.name || initialData?.name || 'this tool';
+    if (!confirm(`Are you sure you want to permanently delete "${toolName}"? This action cannot be undone.`)) {
+      return;
+    }
+    setDeleting(true);
+    setServerError('');
+    try {
+      const targetId = toolId || initialData?._id;
+      const res = await fetch(`/api/admin/tools/${targetId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || `Failed to delete tool (HTTP ${res.status})`);
+      }
+      if (onDeleteSuccess) {
+        onDeleteSuccess(data);
+      } else if (onCancel) {
+        onCancel();
+      } else if (returnTo) {
+        router.push(returnTo);
+      } else {
+        router.push('/admin');
+      }
+    } catch (err) {
+      console.error('Delete error in ToolEditorForm:', err);
+      setServerError(err.message || 'Failed to delete tool.');
+      alert(`Error deleting tool: ${err.message}`);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -360,7 +401,7 @@ export default function ToolEditorForm({
             <Button
               type="button"
               variant="outline"
-              onClick={onCancel || (() => router.push('/admin'))}
+              onClick={onCancel || (() => router.push(returnTo || '/admin'))}
               className="flex items-center gap-1.5 self-start sm:self-auto"
             >
               <ArrowLeft className="w-4 h-4" /> Cancel / Back to Admin
@@ -375,7 +416,7 @@ export default function ToolEditorForm({
               <CheckCircle className="w-5 h-5 text-green-600" />
               <span className="font-semibold text-sm">Tool updated successfully! Redirecting back to admin...</span>
             </div>
-            <Button size="sm" onClick={() => router.push('/admin')} className="bg-green-700 hover:bg-green-800">
+            <Button size="sm" onClick={() => router.push(returnTo || '/admin')} className="bg-green-700 hover:bg-green-800">
               Back to Tools
             </Button>
           </div>
@@ -850,31 +891,47 @@ export default function ToolEditorForm({
           </Card>
 
           {/* Action buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 pb-10">
-            <Button
-              type="submit"
-              disabled={submitting || uploading || fetchingFavicon}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-6 text-base font-semibold rounded-xl shadow-lg shadow-blue-100 transition-all hover:scale-[1.01]"
-            >
-              {submitting || uploading ? (
-                <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />Saving…</>
-              ) : mode === 'edit' ? (
-                <>Save Changes</>
-              ) : (
-                <>Submit Tool for Review</>
-              )}
-            </Button>
-
-            {mode === 'edit' && (
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pb-12 pt-2">
+            {mode === 'edit' ? (
               <Button
                 type="button"
-                variant="outline"
-                onClick={onCancel || (() => router.push('/admin'))}
-                className="py-6 px-8 text-base font-semibold rounded-xl"
+                variant="destructive"
+                disabled={submitting || deleting}
+                onClick={handleDeleteTool}
+                className="bg-red-600 hover:bg-red-700 text-white py-6 px-6 text-base font-semibold rounded-xl flex items-center justify-center gap-2 order-last sm:order-first shadow-sm"
               >
-                Cancel
+                <Trash2 className="w-5 h-5" />
+                {deleting ? 'Deleting Tool…' : 'Delete Tool'}
               </Button>
-            )}
+            ) : <div />}
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              {mode === 'edit' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={submitting || deleting}
+                  onClick={onCancel || (() => router.push(returnTo || '/admin'))}
+                  className="py-6 px-8 text-base font-semibold rounded-xl hover:bg-gray-100"
+                >
+                  Cancel
+                </Button>
+              )}
+
+              <Button
+                type="submit"
+                disabled={submitting || uploading || fetchingFavicon || deleting}
+                className="bg-blue-600 hover:bg-blue-700 text-white py-6 px-10 text-base font-semibold rounded-xl shadow-lg shadow-blue-100 transition-all hover:scale-[1.01]"
+              >
+                {submitting || uploading ? (
+                  <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />Saving…</>
+                ) : mode === 'edit' ? (
+                  <>Save Changes</>
+                ) : (
+                  <>Submit Tool for Review</>
+                )}
+              </Button>
+            </div>
           </div>
 
         </form>
