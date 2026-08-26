@@ -44,7 +44,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
   
   // Apply translation overrides from DB if they exist
   const translationOverride = tool.translations?.[effectiveLang] || {};
-  const displayFullDescription = translationOverride.fullDescription || tool.fullDescription || localizedInfo.description;
+  const displayFullDescription = translationOverride.fullDescription || localizedInfo.description || tool.description || tool.fullDescription || tool.shortDescription;
   const displayPricingDetails = translationOverride.pricingDetails || tool.pricingDetails;
   
   let displayFaqs = tool.faqs;
