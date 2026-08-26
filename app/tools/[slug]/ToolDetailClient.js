@@ -56,8 +56,19 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
   if (effectiveLang !== 'en' && translationOverride.features && translationOverride.features.length > 0) {
     displayFeatures = translationOverride.features;
   }
-  const prosList = getLocalizedProsList(primaryCategory, tool.rating, effectiveLang);
-  const consList = getLocalizedConsList(effectiveLang);
+  let prosList = (tool.pros && Array.isArray(tool.pros) && tool.pros.length > 0)
+    ? tool.pros
+    : getLocalizedProsList(primaryCategory, tool.rating, effectiveLang);
+  if (effectiveLang !== 'en' && translationOverride.pros && Array.isArray(translationOverride.pros) && translationOverride.pros.length > 0) {
+    prosList = translationOverride.pros;
+  }
+
+  let consList = (tool.cons && Array.isArray(tool.cons) && tool.cons.length > 0)
+    ? tool.cons
+    : getLocalizedConsList(effectiveLang);
+  if (effectiveLang !== 'en' && translationOverride.cons && Array.isArray(translationOverride.cons) && translationOverride.cons.length > 0) {
+    consList = translationOverride.cons;
+  }
   const localizedPricing = getLocalizedPricing(tool.pricing, effectiveLang);
 
   const handleShare = () => {
