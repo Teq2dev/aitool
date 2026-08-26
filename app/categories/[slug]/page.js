@@ -22,9 +22,11 @@ function stripHtml(html) {
 }
 
 export async function generateMetadata({ params, searchParams }) {
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
   const allCategories = await getCategories();
-  const category = allCategories.find(c => c.slug === params.slug);
-  const lang = searchParams?.lang || 'en';
+  const category = allCategories.find(c => c.slug === resolvedParams?.slug);
+  const lang = resolvedSearchParams?.lang || 'en';
   
   if (!category) {
     return {
@@ -88,8 +90,10 @@ export async function generateMetadata({ params, searchParams }) {
 }
 
 export default async function CategoryPage({ params, searchParams }) {
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
   const allCategories = await getCategories();
-  const category = allCategories.find(c => c.slug === params.slug);
+  const category = allCategories.find(c => c.slug === resolvedParams?.slug);
 
   if (!category) {
     notFound();

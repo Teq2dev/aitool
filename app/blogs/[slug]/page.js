@@ -3,7 +3,8 @@ import BlogDetailClient from './BlogDetailClient';
 import { notFound } from 'next/navigation';
 
 export async function generateMetadata({ params }) {
-  const blog = await getBlogBySlug(params.slug);
+  const resolvedParams = await params;
+  const blog = await getBlogBySlug(resolvedParams?.slug);
   
   if (!blog) {
     return {
@@ -49,7 +50,8 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function BlogPage({ params }) {
-  const blog = await getBlogBySlug(params.slug);
+  const resolvedParams = await params;
+  const blog = await getBlogBySlug(resolvedParams?.slug);
 
   if (!blog) {
     notFound();

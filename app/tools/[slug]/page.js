@@ -10,8 +10,10 @@ import { getLocalizedDescription } from '@/lib/languages';
 import { getTranslation } from '@/lib/translations';
 
 export async function generateMetadata({ params, searchParams }) {
-  const tool = await getToolBySlug(params.slug);
-  const lang = searchParams?.lang || 'en';
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  const tool = await getToolBySlug(resolvedParams?.slug);
+  const lang = resolvedSearchParams?.lang || 'en';
   
   if (!tool) {
     return {
@@ -81,8 +83,10 @@ export async function generateMetadata({ params, searchParams }) {
 }
 
 export default async function ToolPage({ params, searchParams }) {
-  const tool = await getToolBySlug(params.slug);
-  const lang = searchParams?.lang || 'en';
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  const tool = await getToolBySlug(resolvedParams?.slug);
+  const lang = resolvedSearchParams?.lang || 'en';
 
   if (!tool) {
     return notFound();
