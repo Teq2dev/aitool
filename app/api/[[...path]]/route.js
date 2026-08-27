@@ -508,34 +508,152 @@ export async function GET(request, { params }) {
           .limit(3)
           .toArray();
         
-        if (featured.length === 0) {
-          return NextResponse.json(blogs.filter(b => b.featured).slice(0, 3));
-        }
-        
-        return NextResponse.json(featured);
+        return NextResponse.json(featured || []);
       } catch (err) {
-        return NextResponse.json(blogs.filter(b => b.featured).slice(0, 3));
+        return NextResponse.json([]);
       }
     }
-    
-    // GET /api/my-blog-submissions - Get user's blog submissions
-    if (pathname === '/api/my-blog-submissions') {
-      const userId = await getAuthUserId();
-      
-      if (!userId) {
+
+    // GET /api/my-submissions - Get user's tool submissions
+    if (pathname === '/api/my-submissions') {
+      const authUser = await getAuthUser();
+      if (!authUser) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
       
-      const blogsCollection = await getCollection('blogs');
-      const submissions = await blogsCollection
-        .find({ $or: [{ authorId: userId }, { submittedBy: userId }] })
+      const toolsCollection = await getCollection('tools');
+      const email = authUser.email ? authUser.email.toLowerCase() : null;
+      const submissions = await toolsCollection
+        .find({
+          $or: [
+            { submittedBy: authUser.id },
+            { submittedBy: email },
+            { submitterEmail: email }
+          ]
+        })
         .sort({ createdAt: -1 })
         .toArray();
       
-      return NextResponse.json(submissions || []);
+      const { serializeData } = await import('@/lib/utils');
+      return NextResponse.json(serializeData(submissions || []));
+    }
+
+    // GET /api/admin/submissions - Central tool submission moderation list
+    if (pathname === '/api/admin/submissions') {
+      const admin = await isUserAdmin();
+      if (!admin) {
+        return NextResponse.json({ error: 'Unauthorized. Admin role required.' }, { status: 403 });
+      }
+
+      try {
+        const toolsCollection = await getCollection('tools');
+        const usersCollection = await getCollection('users');
+
+        const statusFilter = searchParams.get('status') || 'all';
+        const search = (searchParams.get('search') || '').trim();
+        const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+        const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '25', 10)));
+        const skip = (page - 1) * limit;
+
+        let query = {
+          $or: [
+            { submittedBy: { $exists: true, $ne: null } },
+            { submitterEmail: { $exists: true, $ne: null } },
+            { status: 'pending' },
+            { status: 'rejected' }
+          ]
+        };
+
+        if (statusFilter && statusFilter !== 'all') {
+          query.status = statusFilter.toLowerCase();
+        }
+
+        if (search) {
+          const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          query.$and = [
+            query,
+            {
+              $or: [
+                { name: { $regex: escaped, $options: 'i' } },
+                { submitterName: { $regex: escaped, $options: 'i' } },
+                { submitterEmail: { $regex: escaped, $options: 'i' } },
+                { website: { $regex: escaped, $options: 'i' } },
+                { slug: { $regex: escaped, $options: 'i' } }
+              ]
+            }
+          ];
+        }
+
+        const [submissions, totalCount, pendingCount, approvedCount, rejectedCount, allUsers] = await Promise.all([
+          toolsCollection.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(),
+          toolsCollection.countDocuments(query),
+          toolsCollection.countDocuments({
+            $and: [
+              { $or: [{ submittedBy: { $exists: true, $ne: null } }, { submitterEmail: { $exists: true, $ne: null } }, { status: 'pending' }] },
+              { status: 'pending' }
+            ]
+          }),
+          toolsCollection.countDocuments({
+            $and: [
+              { $or: [{ submittedBy: { $exists: true, $ne: null } }, { submitterEmail: { $exists: true, $ne: null } }] },
+              { status: 'approved' }
+            ]
+          }),
+          toolsCollection.countDocuments({
+            $and: [
+              { $or: [{ submittedBy: { $exists: true, $ne: null } }, { submitterEmail: { $exists: true, $ne: null } }, { status: 'rejected' }] },
+              { status: 'rejected' }
+            ]
+          }),
+          usersCollection.find({}).toArray()
+        ]);
+
+        const { serializeData } = await import('@/lib/utils');
+
+        // Attach submitter user profile to each submission
+        const enrichedSubmissions = submissions.map(sub => {
+          const matchedUser = allUsers.find(u => 
+            (sub.submittedBy && (u._id === sub.submittedBy || u.userId === sub.submittedBy)) ||
+            (sub.submitterEmail && u.email?.toLowerCase() === sub.submitterEmail.toLowerCase())
+          );
+
+          return {
+            ...sub,
+            submitter: {
+              userId: matchedUser?._id || matchedUser?.userId || sub.submittedBy,
+              name: matchedUser?.name || sub.submitterName || 'Community Member',
+              email: matchedUser?.email || sub.submitterEmail || 'N/A',
+              country: matchedUser?.country || sub.submitterCountry || 'N/A',
+              linkedinProfile: matchedUser?.linkedinProfile || sub.linkedinProfile || '',
+              image: matchedUser?.imageUrl || matchedUser?.image || '',
+              joinedAt: matchedUser?.createdAt || null,
+              isAdmin: Boolean(matchedUser?.isAdmin || matchedUser?.role === 'admin')
+            }
+          };
+        });
+
+        return NextResponse.json({
+          submissions: serializeData(enrichedSubmissions),
+          pagination: {
+            page,
+            limit,
+            total: totalCount,
+            totalPages: Math.ceil(totalCount / limit) || 1
+          },
+          counts: {
+            total: pendingCount + approvedCount + rejectedCount,
+            pending: pendingCount,
+            approved: approvedCount,
+            rejected: rejectedCount
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching admin submissions:', error);
+        return NextResponse.json({ error: 'Failed to fetch submissions: ' + error.message }, { status: 500 });
+      }
     }
     
-    // GET /api/admin/users - Get all users (admin only)
+    // GET /api/admin/users - Get all users with submission stats and submitted tools
     if (pathname === '/api/admin/users') {
       const admin = await isUserAdmin();
       if (!admin) {
@@ -544,9 +662,66 @@ export async function GET(request, { params }) {
       
       try {
         const usersCollection = await getCollection('users');
-        const users = await usersCollection.find({}).sort({ createdAt: -1 }).toArray();
+        const toolsCollection = await getCollection('tools');
+        
+        const [users, allSubmittedTools] = await Promise.all([
+          usersCollection.find({}).sort({ createdAt: -1 }).toArray(),
+          toolsCollection.find({
+            $or: [
+              { submittedBy: { $exists: true, $ne: null } },
+              { submitterEmail: { $exists: true, $ne: null } }
+            ]
+          }).sort({ createdAt: -1 }).toArray()
+        ]);
+
         const { serializeData } = await import('@/lib/utils');
-        return NextResponse.json(serializeData(users || []));
+
+        // Group tools by user identifiers (userId, _id, email)
+        const enrichedUsers = users.map(u => {
+          const userEmails = [u.email?.toLowerCase()].filter(Boolean);
+          const userIds = [u._id, u.userId].filter(Boolean);
+
+          const userTools = allSubmittedTools.filter(t => {
+            const tSubmitter = t.submittedBy;
+            const tEmail = t.submitterEmail?.toLowerCase();
+            return (tSubmitter && userIds.includes(tSubmitter)) ||
+                   (tSubmitter && userEmails.includes(tSubmitter.toLowerCase())) ||
+                   (tEmail && userEmails.includes(tEmail));
+          });
+
+          const total = userTools.length;
+          const approved = userTools.filter(t => (t.status || '').toLowerCase() === 'approved').length;
+          const pending = userTools.filter(t => (t.status || '').toLowerCase() === 'pending').length;
+          const rejected = userTools.filter(t => (t.status || '').toLowerCase() === 'rejected').length;
+
+          return {
+            ...u,
+            submissionStats: {
+              total,
+              approved,
+              pending,
+              rejected
+            },
+            submissions: userTools.map(t => ({
+              _id: t._id,
+              name: t.name,
+              slug: t.slug,
+              status: t.status || 'pending',
+              createdAt: t.createdAt || t.submittedAt,
+              reviewedAt: t.reviewedAt || t.rejectedAt,
+              reviewedBy: t.reviewedBy || t.rejectedBy,
+              rejectionReason: t.rejectionReason || t.rejectionComment || '',
+              logo: t.logo,
+              website: t.website || t.websiteUrl,
+              shortDescription: t.shortDescription,
+              category: Array.isArray(t.categories) ? t.categories[0] : (t.category || ''),
+              pricing: t.pricing || t.pricingModel || 'Free',
+              linkedinProfile: t.linkedinProfile || ''
+            }))
+          };
+        });
+
+        return NextResponse.json(serializeData(enrichedUsers));
       } catch (error) {
         console.error('Error fetching users:', error);
         return NextResponse.json({ error: 'Failed to fetch users: ' + error.message }, { status: 500 });
@@ -1163,59 +1338,158 @@ export async function PUT(request) {
   const { pathname } = new URL(request.url);
   
   try {
-    const parts = pathname.split('/');
-    const toolId = parts[parts.length - 1];
-    
+    // PUT /api/admin/tools/:id/approve - Approve tool submission
     if (pathname.includes('/api/admin/tools/') && pathname.includes('/approve')) {
-      const { userId } = await auth();
-      
-      if (!userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      const admin = await isUserAdmin();
+      if (!admin) {
+        return NextResponse.json({ error: 'Unauthorized. Admin role required.' }, { status: 403 });
       }
+
+      const authUser = await getAuthUser();
+      const reviewer = authUser?.email || authUser?.name || 'admin';
       
-      const id = pathname.split('/api/admin/tools/')[1].replace('/approve', '').split('/')[0];
+      const id = decodeURIComponent(pathname.split('/api/admin/tools/')[1].replace('/approve', '').split('/')[0]);
       const toolsCollection = await getCollection('tools');
       
-      await toolsCollection.updateOne(
-        { _id: id },
-        { $set: { status: 'approved' } }
-      );
+      const updateFields = {
+        status: 'approved',
+        reviewedAt: new Date(),
+        reviewedBy: reviewer,
+        rejectionComment: '',
+        rejectionReason: '',
+        updatedAt: new Date(),
+      };
+
+      let filter = { _id: id };
+      let tool = await toolsCollection.findOne(filter);
+      if (!tool) {
+        filter = { slug: id };
+        tool = await toolsCollection.findOne(filter);
+      }
+      if (!tool) {
+        try {
+          const { ObjectId } = await import('mongodb');
+          filter = { _id: new ObjectId(id) };
+          tool = await toolsCollection.findOne(filter);
+        } catch (e) {}
+      }
+
+      if (!tool) {
+        return NextResponse.json({ error: 'Tool submission not found' }, { status: 404 });
+      }
+
+      await toolsCollection.updateOne(filter, { $set: updateFields });
       
       revalidatePath('/');
       revalidatePath('/tools');
+      revalidatePath('/dashboard');
+      revalidatePath('/admin');
       revalidateTag('tools');
       revalidateTag('categories');
-      return NextResponse.json({ success: true });
+      return NextResponse.json({ success: true, message: 'Tool approved successfully' });
     }
     
+    // PUT /api/admin/tools/:id/reject - Reject tool submission
     if (pathname.includes('/api/admin/tools/') && pathname.includes('/reject')) {
-      const { userId } = await auth();
-      
-      if (!userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      const admin = await isUserAdmin();
+      if (!admin) {
+        return NextResponse.json({ error: 'Unauthorized. Admin role required.' }, { status: 403 });
       }
+
+      const authUser = await getAuthUser();
+      const reviewer = authUser?.email || authUser?.name || 'admin';
       
-      const id = pathname.split('/api/admin/tools/')[1].replace('/reject', '').split('/')[0];
-      const body = await request.json();
+      const id = decodeURIComponent(pathname.split('/api/admin/tools/')[1].replace('/reject', '').split('/')[0]);
+      const body = await request.json().catch(() => ({}));
+      const reason = (body.reason || body.rejectionReason || body.comment || body.rejectionComment || '').trim();
+
+      if (!reason) {
+        return NextResponse.json({ error: 'A rejection reason is required.' }, { status: 400 });
+      }
+
       const toolsCollection = await getCollection('tools');
       
-      await toolsCollection.updateOne(
-        { _id: id },
-        { 
-          $set: { 
-            status: 'rejected',
-            rejectionComment: body.comment || 'No reason provided',
-            rejectedAt: new Date(),
-            rejectedBy: userId
-          } 
-        }
-      );
+      const updateFields = {
+        status: 'rejected',
+        rejectionComment: reason,
+        rejectionReason: reason,
+        rejectedAt: new Date(),
+        reviewedAt: new Date(),
+        rejectedBy: reviewer,
+        reviewedBy: reviewer,
+        updatedAt: new Date(),
+      };
+
+      let filter = { _id: id };
+      let tool = await toolsCollection.findOne(filter);
+      if (!tool) {
+        filter = { slug: id };
+        tool = await toolsCollection.findOne(filter);
+      }
+      if (!tool) {
+        try {
+          const { ObjectId } = await import('mongodb');
+          filter = { _id: new ObjectId(id) };
+          tool = await toolsCollection.findOne(filter);
+        } catch (e) {}
+      }
+
+      if (!tool) {
+        return NextResponse.json({ error: 'Tool submission not found' }, { status: 404 });
+      }
+
+      await toolsCollection.updateOne(filter, { $set: updateFields });
       
       revalidatePath('/');
       revalidatePath('/tools');
+      revalidatePath('/dashboard');
+      revalidatePath('/admin');
       revalidateTag('tools');
       revalidateTag('categories');
-      return NextResponse.json({ success: true });
+      return NextResponse.json({ success: true, message: 'Tool submission rejected' });
+    }
+
+    // PUT /api/my-submissions/:id/resubmit - Edit and resubmit a rejected tool
+    if (pathname.startsWith('/api/my-submissions/') && pathname.endsWith('/resubmit')) {
+      const authUser = await getAuthUser();
+      if (!authUser) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+
+      const id = decodeURIComponent(pathname.split('/api/my-submissions/')[1].replace('/resubmit', '').replace(/\/$/, ''));
+      const body = await request.json();
+      const toolsCollection = await getCollection('tools');
+
+      const tool = await toolsCollection.findOne({
+        _id: id,
+        $or: [
+          { submittedBy: authUser.id },
+          { submittedBy: authUser.email },
+          { submitterEmail: authUser.email?.toLowerCase() }
+        ]
+      });
+
+      if (!tool) {
+        return NextResponse.json({ error: 'Submission not found or unauthorized' }, { status: 404 });
+      }
+
+      const { isValidLinkedInUrl, normalizeLinkedInUrl } = await import('@/lib/countries');
+      const rawLinkedIn = (body.linkedinProfile || tool.linkedinProfile || '').trim();
+      const normalizedLinkedIn = rawLinkedIn ? normalizeLinkedInUrl(rawLinkedIn) : '';
+
+      const updateData = {
+        ...body,
+        linkedinProfile: normalizedLinkedIn || tool.linkedinProfile || '',
+        status: 'pending',
+        rejectionComment: '',
+        rejectionReason: '',
+        updatedAt: new Date(),
+      };
+      delete updateData._id;
+
+      await toolsCollection.updateOne({ _id: id }, { $set: updateData });
+      revalidateTag('tools');
+      return NextResponse.json({ success: true, message: 'Submission updated and resubmitted for review' });
     }
     
     // PUT /api/admin/tools/:id/edit - Edit tool details
@@ -1460,54 +1734,67 @@ export async function PUT(request) {
       return NextResponse.json({ success: true });
     }
     
-    // User admin endpoints
+    // User admin endpoints - Promote to Admin
     if (pathname.includes('/api/admin/users/') && pathname.includes('/make-admin')) {
-      const { userId: currentUserId } = await auth();
-      
-      if (!currentUserId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      const admin = await isUserAdmin();
+      if (!admin) {
+        return NextResponse.json({ error: 'Unauthorized. Admin role required.' }, { status: 403 });
       }
       
-      const targetUserId = pathname.split('/api/admin/users/')[1].replace('/make-admin', '');
+      const targetUserId = decodeURIComponent(pathname.split('/api/admin/users/')[1].replace('/make-admin', '').replace(/\/$/, ''));
       const usersCollection = await getCollection('users');
       
-      // Check if target user already exists
-      const existing = await usersCollection.findOne({ userId: targetUserId });
-      
-      if (existing) {
-        await usersCollection.updateOne(
+      const filter = {
+        $or: [
+          { _id: targetUserId },
           { userId: targetUserId },
-          { $set: { role: 'admin', updatedAt: new Date() } }
-        );
-      } else {
+          { email: targetUserId.toLowerCase() }
+        ]
+      };
+
+      const result = await usersCollection.updateOne(
+        filter,
+        { $set: { role: 'admin', isAdmin: true, updatedAt: new Date() } }
+      );
+      
+      if (result.matchedCount === 0) {
+        const { v4: uuidv4 } = await import('uuid');
         await usersCollection.insertOne({
           _id: uuidv4(),
           userId: targetUserId,
+          email: targetUserId.includes('@') ? targetUserId.toLowerCase() : '',
           role: 'admin',
+          isAdmin: true,
           createdAt: new Date(),
           updatedAt: new Date(),
         });
       }
       
-      return NextResponse.json({ success: true });
+      return NextResponse.json({ success: true, message: 'User promoted to admin successfully' });
     }
     
+    // User admin endpoints - Remove Admin Access
     if (pathname.includes('/api/admin/users/') && pathname.includes('/remove-admin')) {
-      const { userId: currentUserId } = await auth();
-      
-      if (!currentUserId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      const admin = await isUserAdmin();
+      if (!admin) {
+        return NextResponse.json({ error: 'Unauthorized. Admin role required.' }, { status: 403 });
       }
       
-      const targetUserId = pathname.split('/api/admin/users/')[1].replace('/remove-admin', '');
+      const targetUserId = decodeURIComponent(pathname.split('/api/admin/users/')[1].replace('/remove-admin', '').replace(/\/$/, ''));
       const usersCollection = await getCollection('users');
       
       await usersCollection.updateOne(
-        { userId: targetUserId },
-        { $set: { role: 'user', updatedAt: new Date() } }
+        {
+          $or: [
+            { _id: targetUserId },
+            { userId: targetUserId },
+            { email: targetUserId.toLowerCase() }
+          ]
+        },
+        { $set: { role: 'user', isAdmin: false, updatedAt: new Date() } }
       );
       
-      return NextResponse.json({ success: true });
+      return NextResponse.json({ success: true, message: 'Admin access removed successfully' });
     }
     
     // PUT /api/admin/shop/:id - Update shop product

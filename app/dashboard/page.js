@@ -160,16 +160,16 @@ export default function DashboardPage() {
               </TabsList>
 
               <TabsContent value="all" className="mt-6">
-                <SubmissionList tools={safeSubmissions} />
+                <SubmissionList tools={safeSubmissions} onRefresh={fetchSubmissions} />
               </TabsContent>
               <TabsContent value="pending" className="mt-6">
-                <SubmissionList tools={pendingTools} />
+                <SubmissionList tools={pendingTools} onRefresh={fetchSubmissions} />
               </TabsContent>
               <TabsContent value="approved" className="mt-6">
-                <SubmissionList tools={approvedTools} />
+                <SubmissionList tools={approvedTools} onRefresh={fetchSubmissions} />
               </TabsContent>
               <TabsContent value="rejected" className="mt-6">
-                <SubmissionList tools={rejectedTools} />
+                <SubmissionList tools={rejectedTools} onRefresh={fetchSubmissions} />
               </TabsContent>
             </Tabs>
           </CardContent>
@@ -179,13 +179,60 @@ export default function DashboardPage() {
   );
 }
 
-function SubmissionList({ tools }) {
+function SubmissionList({ tools, onRefresh }) {
   const safeTools = Array.isArray(tools) ? tools : [];
+  const [editingTool, setEditingTool] = useState(null);
+  const [editForm, setEditForm] = useState({});
+  const [resubmitting, setResubmitting] = useState(false);
+  const [resubmitError, setResubmitError] = useState('');
+
+  const openEditModal = (tool) => {
+    setEditingTool(tool);
+    setEditForm({
+      name: tool.name || '',
+      website: tool.website || tool.websiteUrl || '',
+      shortDescription: tool.shortDescription || '',
+      description: tool.description || tool.fullDescription || '',
+      category: tool.category || (Array.isArray(tool.categories) ? tool.categories[0] : 'productivity'),
+      pricing: tool.pricing || tool.pricingModel || 'Free',
+      linkedinProfile: tool.linkedinProfile || '',
+      logo: tool.logo || '',
+    });
+    setResubmitError('');
+  };
+
+  const handleResubmit = async (e) => {
+    e.preventDefault();
+    setResubmitError('');
+    if (!editForm.name.trim() || !editForm.website.trim() || !editForm.shortDescription.trim()) {
+      setResubmitError('Please fill in Tool Name, Website, and Short Description.');
+      return;
+    }
+    setResubmitting(true);
+    try {
+      const res = await fetch(`/api/my-submissions/${editingTool._id}/resubmit`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to resubmit tool');
+      }
+      setEditingTool(null);
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      setResubmitError(err.message || 'An error occurred during resubmission.');
+    } finally {
+      setResubmitting(false);
+    }
+  };
 
   if (safeTools.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">No submissions found</p>
+        <p className="text-gray-500 font-medium">No tool submissions yet.</p>
+        <p className="text-gray-400 text-xs mt-1">Submit your AI tool to get featured in our directory.</p>
       </div>
     );
   }
@@ -193,53 +240,180 @@ function SubmissionList({ tools }) {
   return (
     <div className="space-y-4">
       {safeTools.map((tool) => (
-        <div key={tool._id || tool.slug || Math.random()} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-          <div className="flex items-center gap-4">
-            <img src={tool.logo || '/logo.jpg'} alt={tool.name || 'Tool'} className="w-16 h-16 rounded-lg object-cover" />
-            <div className="flex-1">
-              <h3 className="font-semibold text-black mb-1">{tool.name}</h3>
-              <p className="text-sm text-gray-600 mb-2">{tool.shortDescription}</p>
-              <div className="flex items-center gap-2">
+        <div key={tool._id || tool.slug || Math.random()} className="p-5 border border-slate-200/90 rounded-2xl hover:border-slate-300 transition-all bg-white shadow-2xs">
+          <div className="flex items-start gap-4">
+            <img 
+              src={tool.logo || '/logo.jpg'} 
+              alt={tool.name || 'Tool'} 
+              className="w-14 h-14 rounded-xl object-cover border border-slate-100 flex-shrink-0 bg-slate-50"
+              onError={(e) => { e.currentTarget.src = '/logo.jpg'; }}
+            />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <h3 className="font-bold text-slate-900 text-base">{tool.name}</h3>
                 <Badge
-                  variant={
+                  className={
                     tool.status === 'approved'
-                      ? 'default'
+                      ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
                       : tool.status === 'pending'
-                      ? 'secondary'
-                      : 'destructive'
+                      ? 'bg-amber-100 text-amber-800 border-amber-200'
+                      : 'bg-red-100 text-red-800 border-red-200'
                   }
                 >
-                  {tool.status}
+                  {tool.status ? tool.status.toUpperCase() : 'PENDING'}
                 </Badge>
-                <span className="text-xs text-gray-500">
-                  Submitted {tool.createdAt ? new Date(tool.createdAt).toLocaleDateString() : 'recently'}
-                </span>
+              </div>
+
+              <p className="text-sm text-slate-600 mb-3 line-clamp-2">{tool.shortDescription}</p>
+
+              {/* Status Explanation Banners */}
+              {tool.status === 'pending' && (
+                <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl p-3 mb-3 flex items-start gap-2.5 text-xs text-amber-900">
+                  <Clock className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-semibold">Under Review:</span> Your submission is currently being reviewed by our editorial team. You will see the update here once reviewed.
+                  </div>
+                </div>
+              )}
+
+              {tool.status === 'approved' && (
+                <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-3 mb-3 flex items-start gap-2.5 text-xs text-emerald-900">
+                  <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-semibold">Approved:</span> Your tool has been approved and is now live in the directory for thousands of users.
+                  </div>
+                </div>
+              )}
+
+              {tool.status === 'rejected' && (
+                <div className="bg-red-50/80 border border-red-200/80 rounded-xl p-3 mb-3 text-xs text-red-900">
+                  <div className="flex items-start gap-2.5">
+                    <XCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="font-semibold text-red-800 mb-1">Your submission was not approved:</p>
+                      <p className="text-red-700 bg-white/70 p-2 rounded-lg border border-red-100 font-medium">
+                        "{tool.rejectionReason || tool.rejectionComment || 'The submission did not meet our directory guidelines.'}"
+                      </p>
+                      {tool.rejectedAt && (
+                        <p className="text-[11px] text-red-500 mt-1">
+                          Reviewed on {new Date(tool.rejectedAt).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between flex-wrap gap-2 text-xs text-slate-500 pt-1">
+                <span>Submitted {tool.createdAt ? new Date(tool.createdAt).toLocaleDateString() : 'recently'}</span>
+                
+                <div className="flex items-center gap-2">
+                  {tool.status === 'approved' && tool.slug && (
+                    <Link href={`/tools/${tool.slug}`}>
+                      <Button variant="outline" size="sm" className="h-8 text-xs font-semibold border-slate-200 text-slate-700 hover:text-blue-600 hover:border-blue-300 cursor-pointer">
+                        <Eye className="w-3.5 h-3.5 mr-1.5" />
+                        View Live Tool
+                      </Button>
+                    </Link>
+                  )}
+
+                  {tool.status === 'rejected' && (
+                    <Button 
+                      size="sm" 
+                      onClick={() => openEditModal(tool)}
+                      className="h-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg shadow-2xs cursor-pointer"
+                    >
+                      Edit & Resubmit
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
-            {tool.status === 'approved' && (
-              <Link href={`/tools/${tool.slug}`}>
-                <Button variant="outline" size="sm">
-                  <Eye className="w-4 h-4 mr-2" />
-                  View
-                </Button>
-              </Link>
-            )}
           </div>
-          
-          {/* Show rejection reason */}
-          {tool.status === 'rejected' && tool.rejectionComment && (
-            <div className="mt-3 ml-20 bg-red-50 border border-red-200 rounded-lg p-3">
-              <p className="text-sm font-medium text-red-700 mb-1">Rejection Reason:</p>
-              <p className="text-sm text-red-600">{tool.rejectionComment}</p>
-              {tool.rejectedAt && (
-                <p className="text-xs text-red-500 mt-2">
-                  Rejected on {new Date(tool.rejectedAt).toLocaleDateString()}
-                </p>
-              )}
-            </div>
-          )}
         </div>
       ))}
+
+      {/* Edit & Resubmit Modal */}
+      {editingTool && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-slate-900 mb-1">Edit & Resubmit Tool</h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Fix the issues noted in the rejection reason and resubmit for editorial review.
+            </p>
+
+            {resubmitError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700">
+                {resubmitError}
+              </div>
+            )}
+
+            <form onSubmit={handleResubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Tool Name *</label>
+                <Input
+                  value={editForm.name}
+                  onChange={(e) => setEditForm(p => ({ ...p, name: e.target.value }))}
+                  required
+                  className="h-10 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Website URL *</label>
+                <Input
+                  type="url"
+                  value={editForm.website}
+                  onChange={(e) => setEditForm(p => ({ ...p, website: e.target.value }))}
+                  required
+                  className="h-10 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">LinkedIn Profile</label>
+                <Input
+                  type="url"
+                  value={editForm.linkedinProfile}
+                  onChange={(e) => setEditForm(p => ({ ...p, linkedinProfile: e.target.value }))}
+                  placeholder="https://www.linkedin.com/in/your-profile"
+                  className="h-10 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Short Description *</label>
+                <textarea
+                  value={editForm.shortDescription}
+                  onChange={(e) => setEditForm(p => ({ ...p, shortDescription: e.target.value }))}
+                  rows={3}
+                  required
+                  className="w-full p-2.5 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setEditingTool(null)}
+                  disabled={resubmitting}
+                  className="cursor-pointer"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={resubmitting}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold cursor-pointer"
+                >
+                  {resubmitting ? 'Resubmitting...' : 'Resubmit for Review'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

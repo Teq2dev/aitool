@@ -9,62 +9,87 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle, XCircle, Eye, Star, Trash2, Users, Shield, ShieldOff, Upload, FileSpreadsheet, Download, Edit, X, ShoppingBag, History, Undo2, Plus, Zap, Globe } from 'lucide-react';
+import {
+  CheckCircle,
+  XCircle,
+  Eye,
+  Star,
+  Trash2,
+  Users,
+  Shield,
+  ShieldOff,
+  Upload,
+  FileSpreadsheet,
+  Download,
+  Edit,
+  X,
+  ShoppingBag,
+  History,
+  Undo2,
+  Plus,
+  Zap,
+  Globe,
+  Clock,
+  ExternalLink,
+  Linkedin,
+  AlertCircle,
+  Search,
+  Check,
+  UserCheck,
+  Calendar,
+  Layers,
+  Inbox
+} from 'lucide-react';
 import Link from 'next/link';
 
 function AdminDashboardContent() {
   const { data: session, status } = useSession();
   const isSignedIn = status === 'authenticated';
   const isLoaded = status !== 'loading';
-  const user = session?.user;
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
+  // Tab & data states
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'submissions');
   const [tools, setTools] = useState([]);
   const [users, setUsers] = useState([]);
+  const [submissionsData, setSubmissionsData] = useState({ submissions: [], counts: { total: 0, pending: 0, approved: 0, rejected: 0 }, pagination: { page: 1, limit: 25, total: 0, totalPages: 1 } });
+  const [submissionsLoading, setSubmissionsLoading] = useState(false);
+  const [submissionStatus, setSubmissionStatus] = useState('pending');
+  const [submissionSearch, setSubmissionSearch] = useState('');
+  const [userSearch, setUserSearch] = useState('');
   const [blogs, setBlogs] = useState([]);
   const [bulkLogs, setBulkLogs] = useState([]);
   const [shopProducts, setShopProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('tools');
   const [bulkUploadStatus, setBulkUploadStatus] = useState(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
-  const shopImageInputRef = useRef(null);
-  
-  // Modal states
-  const [rejectModal, setRejectModal] = useState({ open: false, toolId: null, toolName: '' });
-  const [rejectComment, setRejectComment] = useState('');
-  const [shopModal, setShopModal] = useState({ open: false, product: null });
-  const [shopForm, setShopForm] = useState({});
-  const [blogModal, setBlogModal] = useState({ open: false, blog: null });
-  const [blogForm, setBlogForm] = useState({});
-  const [bulkLogTools, setBulkLogTools] = useState({ open: false, logId: null, tools: [] });
-  const [imageUploading, setImageUploading] = useState(false);
-  const [imageFetching, setImageFetching] = useState(false);
-  const [shopBulkStatus, setShopBulkStatus] = useState(null);
-  const [shopUploading, setShopUploading] = useState(false);
-  const shopFileInputRef = useRef(null);
-  const [productUrl, setProductUrl] = useState('');
 
-  // Initial params from URL
-  const initialStatus = searchParams.get('status') || searchParams.get('tab') || 'pending';
-  const initialPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
-  const initialSearch = searchParams.get('search') || '';
-
-  const [toolStatus, setToolStatus] = useState(initialStatus);
-  const [toolPage, setToolPage] = useState(initialPage);
-  const [toolSearch, setToolSearch] = useState(initialSearch);
-  const [toolPagination, setToolPagination] = useState({ page: initialPage, limit: 25, total: 0, totalPages: 1 });
+  // Catalog Tools pagination & filters
+  const initialToolStatus = searchParams.get('status') || 'all';
+  const initialToolPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+  const initialToolSearch = searchParams.get('search') || '';
+  const [toolStatus, setToolStatus] = useState(initialToolStatus);
+  const [toolPage, setToolPage] = useState(initialToolPage);
+  const [toolSearch, setToolSearch] = useState(initialToolSearch);
+  const [toolPagination, setToolPagination] = useState({ page: initialToolPage, limit: 25, total: 0, totalPages: 1 });
   const [toolCounts, setToolCounts] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
   const [toolsLoading, setToolsLoading] = useState(false);
   const [fetchError, setFetchError] = useState(null);
 
-  // Sync URL with current state
-  const syncUrl = (st, pg, srch) => {
+  // Action Modals
+  const [rejectModal, setRejectModal] = useState({ open: false, toolId: null, toolName: '', reason: '', loading: false, error: '' });
+  const [approveModal, setApproveModal] = useState({ open: false, toolId: null, toolName: '', loading: false });
+  const [adminRoleModal, setAdminRoleModal] = useState({ open: false, user: null, action: 'make', confirmText: '', loading: false, error: '' });
+  const [detailModal, setDetailModal] = useState({ open: false, submission: null });
+
+  // Sync URL query params
+  const syncUrl = (tab, st, pg, srch) => {
     const params = new URLSearchParams();
-    if (st && st !== 'pending') params.set('status', st);
+    if (tab && tab !== 'submissions') params.set('tab', tab);
+    if (st && st !== 'all' && st !== 'pending') params.set('status', st);
     if (pg && pg > 1) params.set('page', String(pg));
     if (srch && srch.trim()) params.set('search', srch.trim());
     const query = params.toString();
@@ -72,37 +97,52 @@ function AdminDashboardContent() {
     window.history.replaceState(null, '', newUrl);
   };
 
-  // Fetch image from URL (favicon/og:image)
-  const fetchProductImage = async () => {
-    if (!productUrl) {
-      alert('Please enter a website URL first');
-      return;
-    }
-    
-    setImageFetching(true);
+  const currentAdminUrl = () => {
+    if (typeof window === 'undefined') return '/admin';
+    return window.location.pathname + window.location.search;
+  };
+
+  // 1. Fetch Submissions for Moderation
+  const fetchSubmissions = async (status = submissionStatus, search = submissionSearch, page = 1) => {
+    setSubmissionsLoading(true);
     try {
-      const res = await fetch('/api/fetch-favicon', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: productUrl }),
+      const q = new URLSearchParams({
+        status: status || 'all',
+        search: search || '',
+        page: String(page || 1),
+        limit: '25'
       });
-      const data = await res.json();
-      
-      if (data.faviconUrl || data.favicon) {
-        const imageUrl = data.faviconUrl || data.favicon;
-        setShopForm(prev => ({ ...prev, image: imageUrl }));
-        alert('Image fetched successfully!');
-      } else {
-        alert('Could not fetch image from this URL. Try uploading manually.');
+      const res = await fetch(`/api/admin/submissions?${q.toString()}`);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `HTTP ${res.status}`);
       }
+      const data = await res.json();
+      setSubmissionsData(data);
     } catch (error) {
-      console.error('Fetch error:', error);
-      alert('Failed to fetch image: ' + error.message);
+      console.error('Error fetching submissions:', error);
     } finally {
-      setImageFetching(false);
+      setSubmissionsLoading(false);
     }
   };
 
+  // 2. Fetch Users
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch('/api/admin/users');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      setUsers(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setFetchError(prev => prev || error.message);
+    }
+  };
+
+  // 3. Fetch Catalog Tools
   const fetchTools = async (status = toolStatus, page = toolPage, search = toolSearch) => {
     setToolsLoading(true);
     try {
@@ -115,15 +155,14 @@ function AdminDashboardContent() {
       const res = await fetch(`/api/admin/tools?${q.toString()}`);
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `Failed to fetch tools (HTTP ${res.status})`);
+        throw new Error(errData.error || `HTTP ${res.status}`);
       }
       const data = await res.json();
       if (data.tools && data.pagination) {
-        // Clamp to last valid page if out of bounds (e.g. page=999)
         if (data.pagination.totalPages > 0 && page > data.pagination.totalPages) {
           const clampedPage = data.pagination.totalPages;
           setToolPage(clampedPage);
-          syncUrl(status, clampedPage, search);
+          syncUrl(activeTab, status, clampedPage, search);
           return fetchTools(status, clampedPage, search);
         }
         setTools(Array.isArray(data.tools) ? data.tools : []);
@@ -139,93 +178,6 @@ function AdminDashboardContent() {
       setFetchError(prev => prev || error.message);
     } finally {
       setToolsLoading(false);
-    }
-  };
-
-  const loadAllAdminData = () => {
-    setLoading(true);
-    setFetchError(null);
-    Promise.all([
-      fetchTools(toolStatus, toolPage, toolSearch),
-      fetchUsers(),
-      fetchBlogs(),
-      fetchBulkLogs(),
-      fetchShopProducts()
-    ]).finally(() => {
-      setLoading(false);
-    });
-  };
-
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      router.push('/');
-      return;
-    }
-    
-    if (isSignedIn) {
-      loadAllAdminData();
-    }
-  }, [isLoaded, isSignedIn]);
-
-  // Handle browser back/forward or URL searchParams changes
-  useEffect(() => {
-    const urlStatus = searchParams.get('status') || searchParams.get('tab') || 'pending';
-    const urlPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
-    const urlSearch = searchParams.get('search') || '';
-
-    if (urlStatus !== toolStatus || urlPage !== toolPage || urlSearch !== toolSearch) {
-      setToolStatus(urlStatus);
-      setToolPage(urlPage);
-      setToolSearch(urlSearch);
-      if (isSignedIn) {
-        fetchTools(urlStatus, urlPage, urlSearch);
-      }
-    }
-  }, [searchParams]);
-
-  // Handle status tab change
-  const handleStatusChange = (newStatus) => {
-    setToolStatus(newStatus);
-    setToolPage(1);
-    syncUrl(newStatus, 1, toolSearch);
-    fetchTools(newStatus, 1, toolSearch);
-  };
-
-  // Handle page button click
-  const handlePageChange = (newPage) => {
-    setToolPage(newPage);
-    syncUrl(toolStatus, newPage, toolSearch);
-    fetchTools(toolStatus, newPage, toolSearch);
-  };
-
-  // Handle tool search submit
-  const handleSearchSubmit = (e) => {
-    e?.preventDefault?.();
-    setToolPage(1);
-    syncUrl(toolStatus, 1, toolSearch);
-    fetchTools(toolStatus, 1, toolSearch);
-  };
-
-  // Handle tool search clear
-  const handleClearSearch = () => {
-    setToolSearch('');
-    setToolPage(1);
-    syncUrl(toolStatus, 1, '');
-    fetchTools(toolStatus, 1, '');
-  };
-
-  const fetchUsers = async () => {
-    try {
-      const res = await fetch('/api/admin/users');
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `Failed to fetch users (HTTP ${res.status})`);
-      }
-      const data = await res.json();
-      setUsers(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      setFetchError(prev => prev || error.message);
     }
   };
 
@@ -262,41 +214,212 @@ function AdminDashboardContent() {
     }
   };
 
-  const handleMakeAdmin = async (userId) => {
+  const loadAllAdminData = () => {
+    setLoading(true);
+    setFetchError(null);
+    Promise.all([
+      fetchSubmissions(submissionStatus, submissionSearch, 1),
+      fetchUsers(),
+      fetchTools(toolStatus, toolPage, toolSearch),
+      fetchBlogs(),
+      fetchBulkLogs(),
+      fetchShopProducts()
+    ]).finally(() => {
+      setLoading(false);
+    });
+  };
+
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push('/');
+      return;
+    }
+    if (isSignedIn) {
+      loadAllAdminData();
+    }
+  }, [isLoaded, isSignedIn]);
+
+  // Handle Approve Tool Flow
+  const openApproveModal = (toolId, toolName) => {
+    setApproveModal({ open: true, toolId, toolName, loading: false });
+  };
+
+  const executeApprove = async () => {
+    if (!approveModal.toolId) return;
+    setApproveModal(prev => ({ ...prev, loading: true }));
     try {
-      await fetch(`/api/admin/users/${userId}/make-admin`, { method: 'PUT' });
+      const res = await fetch(`/api/admin/tools/${approveModal.toolId}/approve`, { method: 'PUT' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to approve tool');
+      
+      setApproveModal({ open: false, toolId: null, toolName: '', loading: false });
+      if (detailModal.open && detailModal.submission?._id === approveModal.toolId) {
+        setDetailModal(prev => ({
+          ...prev,
+          submission: { ...prev.submission, status: 'approved', rejectionReason: '' }
+        }));
+      }
+      fetchSubmissions();
+      fetchTools();
       fetchUsers();
     } catch (error) {
-      console.error('Error making admin:', error);
+      alert('Error approving tool: ' + error.message);
+      setApproveModal(prev => ({ ...prev, loading: false }));
     }
   };
 
-  const handleRemoveAdmin = async (userId) => {
+  // Handle Reject Tool Flow
+  const openRejectModal = (toolId, toolName) => {
+    setRejectModal({ open: true, toolId, toolName, reason: '', loading: false, error: '' });
+  };
+
+  const executeReject = async () => {
+    if (!rejectModal.toolId) return;
+    if (!rejectModal.reason.trim()) {
+      setRejectModal(prev => ({ ...prev, error: 'Please enter a rejection reason.' }));
+      return;
+    }
+    setRejectModal(prev => ({ ...prev, loading: true, error: '' }));
     try {
-      await fetch(`/api/admin/users/${userId}/remove-admin`, { method: 'PUT' });
+      const res = await fetch(`/api/admin/tools/${rejectModal.toolId}/reject`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: rejectModal.reason.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to reject tool');
+
+      setRejectModal({ open: false, toolId: null, toolName: '', reason: '', loading: false, error: '' });
+      if (detailModal.open && detailModal.submission?._id === rejectModal.toolId) {
+        setDetailModal(prev => ({
+          ...prev,
+          submission: { ...prev.submission, status: 'rejected', rejectionReason: rejectModal.reason.trim() }
+        }));
+      }
+      fetchSubmissions();
+      fetchTools();
       fetchUsers();
     } catch (error) {
-      console.error('Error removing admin:', error);
+      setRejectModal(prev => ({ ...prev, loading: false, error: error.message }));
     }
   };
 
-  const handleApprove = async (toolId) => {
+  // Handle Admin Promotion / Demotion with YES typing requirement
+  const openAdminRoleModal = (user, action) => {
+    setAdminRoleModal({
+      open: true,
+      user,
+      action,
+      confirmText: '',
+      loading: false,
+      error: ''
+    });
+  };
+
+  const executeAdminRoleChange = async () => {
+    if (adminRoleModal.confirmText !== 'YES' || !adminRoleModal.user) return;
+    setAdminRoleModal(prev => ({ ...prev, loading: true, error: '' }));
+    const targetUserId = adminRoleModal.user._id || adminRoleModal.user.userId || adminRoleModal.user.email;
+    const endpoint = adminRoleModal.action === 'make'
+      ? `/api/admin/users/${encodeURIComponent(targetUserId)}/make-admin`
+      : `/api/admin/users/${encodeURIComponent(targetUserId)}/remove-admin`;
+
     try {
-      await fetch(`/api/admin/tools/${toolId}/approve`, { method: 'PUT' });
+      const res = await fetch(endpoint, { method: 'PUT' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update user role');
+
+      setAdminRoleModal({ open: false, user: null, action: 'make', confirmText: '', loading: false, error: '' });
+      fetchUsers();
+    } catch (error) {
+      setAdminRoleModal(prev => ({ ...prev, loading: false, error: error.message }));
+    }
+  };
+
+  // View Submission Details Modal
+  const openSubmissionDetails = (submission) => {
+    setDetailModal({ open: true, submission });
+  };
+
+  // Switch to user profile in users tab
+  const navigateToUser = (targetUserIdOrEmail) => {
+    if (detailModal.open) setDetailModal({ open: false, submission: null });
+    setActiveTab('users');
+    setUserSearch(targetUserIdOrEmail);
+  };
+
+  // Catalog tool actions
+  const handleToggleFeatured = async (toolId, currentFeatured) => {
+    try {
+      await fetch(`/api/admin/tools/${toolId}/featured`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ featured: !currentFeatured }),
+      });
       fetchTools();
     } catch (error) {
-      console.error('Error approving tool:', error);
+      console.error('Error toggling featured:', error);
     }
   };
 
-  // Bulk log handlers
-  const viewBulkLogTools = async (logId) => {
+  const handleToggleTrending = async (toolId, currentTrending) => {
     try {
-      const res = await fetch(`/api/admin/bulk-logs/${logId}/tools`);
-      const data = await res.json();
-      setBulkLogTools({ open: true, logId, tools: data });
+      await fetch(`/api/admin/tools/${toolId}/trending`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trending: !currentTrending }),
+      });
+      fetchTools();
     } catch (error) {
-      console.error('Error fetching bulk log tools:', error);
+      console.error('Error toggling trending:', error);
+    }
+  };
+
+  const handleDelete = async (toolId) => {
+    if (!confirm('Are you sure you want to delete this tool permanently?')) return;
+    try {
+      await fetch(`/api/admin/tools/${toolId}`, { method: 'DELETE' });
+      fetchTools();
+      fetchSubmissions();
+    } catch (error) {
+      console.error('Error deleting tool:', error);
+    }
+  };
+
+  // CSV bulk uploads
+  const downloadTemplate = () => {
+    const csvContent = 'Name,Website (Original),Category,Pricing,Description\nExample AI,https://example.com,Productivity,Free,An example AI tool';
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'tools_template.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleCSVUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    setBulkUploadStatus(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await fetch('/api/admin/tools/bulk', { method: 'POST', body: formData });
+      const result = await response.json();
+      if (response.ok) {
+        setBulkUploadStatus({ type: 'success', message: result.message, details: result.results });
+        fetchTools();
+        fetchBulkLogs();
+      } else {
+        setBulkUploadStatus({ type: 'error', message: result.error || 'Upload failed' });
+      }
+    } catch (error) {
+      setBulkUploadStatus({ type: 'error', message: `Error processing file: ${error.message}` });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -313,689 +436,656 @@ function AdminDashboardContent() {
     }
   };
 
-  // Shop handlers
-  const openShopModal = (product = null) => {
-    if (product) {
-      setShopForm({
-        name: product.name || '',
-        shortDescription: product.shortDescription || '',
-        description: product.description || '',
-        image: product.image || '',
-        imageAlt: product.imageAlt || '',
-        monthlyPrice: product.monthlyPrice || 0,
-        halfYearlyPrice: product.halfYearlyPrice || 0,
-        yearlyPrice: product.yearlyPrice || 0,
-        originalPrice: product.originalPrice || 0,
-        discount: product.discount || 80,
-        features: product.features?.join('\n') || '',
-        category: product.category || 'AI Tool',
-      });
-      setShopModal({ open: true, product });
-    } else {
-      setShopForm({
-        name: '', shortDescription: '', description: '', image: '', imageAlt: '',
-        monthlyPrice: 0, halfYearlyPrice: 0, yearlyPrice: 0, originalPrice: 0,
-        discount: 80, features: '', category: 'AI Tool',
-      });
-      setShopModal({ open: true, product: null });
-    }
-  };
+  // Filtered Users List
+  const filteredUsers = users.filter(u => {
+    if (!userSearch.trim()) return true;
+    const term = userSearch.toLowerCase().trim();
+    const name = (u.name || u.fullName || `${u.firstName || ''} ${u.lastName || ''}`).toLowerCase();
+    const email = (u.email || '').toLowerCase();
+    const country = (u.country || '').toLowerCase();
+    const id = (u._id || u.userId || '').toLowerCase();
+    return name.includes(term) || email.includes(term) || country.includes(term) || id.includes(term);
+  });
 
-  const saveShopProduct = async () => {
-    try {
-      const productData = {
-        ...shopForm,
-        features: shopForm.features.split('\n').filter(f => f.trim()),
-      };
-      
-      if (shopModal.product) {
-        await fetch(`/api/admin/shop/${shopModal.product._id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(productData),
-        });
-      } else {
-        await fetch('/api/admin/shop', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(productData),
-        });
-      }
-      setShopModal({ open: false, product: null });
-      fetchShopProducts();
-    } catch (error) {
-      console.error('Error saving shop product:', error);
-    }
-  };
-
-  // Shop bulk CSV upload handler
-  const handleShopCSVUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    setShopUploading(true);
-    setShopBulkStatus(null);
-    
-    try {
-      const text = await file.text();
-      const productsData = parseShopCSV(text);
-      
-      if (productsData.length === 0) {
-        setShopBulkStatus({ type: 'error', message: 'No valid data found in CSV file.' });
-        setShopUploading(false);
-        return;
-      }
-      
-      const response = await fetch('/api/admin/shop/bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ products: productsData }),
-      });
-      
-      const result = await response.json();
-      
-      if (response.ok) {
-        setShopBulkStatus({
-          type: 'success',
-          message: result.message,
-          details: result.results
-        });
-        fetchShopProducts();
-      } else {
-        setShopBulkStatus({ type: 'error', message: result.error || 'Upload failed' });
-      }
-    } catch (error) {
-      setShopBulkStatus({ type: 'error', message: `Error processing file: ${error.message}` });
-    } finally {
-      setShopUploading(false);
-      if (shopFileInputRef.current) shopFileInputRef.current.value = '';
-    }
-  };
-
-  // Parse shop CSV - pricing is mandatory
-  const parseShopCSV = (csvText) => {
-    const lines = csvText.trim().split('\n');
-    if (lines.length < 2) return [];
-    
-    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
-    const products = [];
-    
-    for (let i = 1; i < lines.length; i++) {
-      const values = [];
-      let currentValue = '';
-      let insideQuotes = false;
-      
-      for (const char of lines[i]) {
-        if (char === '"') {
-          insideQuotes = !insideQuotes;
-        } else if (char === ',' && !insideQuotes) {
-          values.push(currentValue.trim());
-          currentValue = '';
-        } else {
-          currentValue += char;
-        }
-      }
-      values.push(currentValue.trim());
-      
-      const product = {};
-      headers.forEach((header, index) => {
-        product[header] = values[index]?.replace(/^"|"$/g, '') || '';
-      });
-      
-      // Only add if pricing is provided (mandatory)
-      const price = product['price'] || product['monthlyprice'] || product['monthly_price'] || product['monthly price'];
-      if (price) {
-        products.push({
-          name: product['name'] || product['product name'] || 'Unnamed Product',
-          shortDescription: product['shortdescription'] || product['short description'] || product['description'] || '',
-          description: product['description'] || product['full description'] || '',
-          image: product['image'] || product['imageurl'] || product['image url'] || '',
-          imageAlt: product['imagealt'] || product['image alt'] || '',
-          monthlyPrice: parseFloat(price) || 0,
-          halfYearlyPrice: parseFloat(product['halfyearlyprice'] || product['6monthprice'] || product['6 month price'] || 0),
-          yearlyPrice: parseFloat(product['yearlyprice'] || product['yearly price'] || product['annual price'] || 0),
-          originalPrice: parseFloat(product['originalprice'] || product['original price'] || 0),
-          discount: parseInt(product['discount'] || product['discount %'] || 80),
-          category: product['category'] || 'AI Tool',
-          features: (product['features'] || '').split('|').filter(f => f.trim()),
-        });
-      }
-    }
-    
-    return products;
-  };
-
-  // Download shop CSV template
-  const downloadShopTemplate = () => {
-    const template = `Name,Price,Category,Short Description,Description,Yearly Price,Original Price,Discount,Features
-"AI Writing Bundle",499,"AI Tool","Complete AI writing toolkit","Full suite of AI writing tools for content creation",2999,4999,80,"Lifetime Access|All Future Updates|Priority Support"
-"Image Generator Pro",299,"Design Tool","AI image generation tool","Create stunning AI images in seconds",1799,2999,70,"Unlimited Generations|HD Export|Commercial License"`;
-    
-    const blob = new Blob([template], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'shop_products_template.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const deleteShopProduct = async (productId) => {
-    console.log('Delete called for product:', productId);
-    if (!confirm('Are you sure you want to delete this product?')) return;
-    try {
-      console.log('Sending DELETE request for:', productId);
-      const res = await fetch(`/api/admin/shop/${productId}`, { 
-        method: 'DELETE',
-        credentials: 'include'
-      });
-      const data = await res.json();
-      console.log('Delete response:', data);
-      if (res.ok) {
-        alert('Product deleted successfully!');
-        fetchShopProducts();
-      } else {
-        alert('Failed to delete: ' + (data.error || 'Unknown error'));
-      }
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      alert('Error deleting product: ' + error.message);
-    }
-  };
-
-  // Blog handlers
-  const openBlogModal = (blog = null) => {
-    if (blog) {
-      setBlogForm({
-        title: blog.title || '',
-        slug: blog.slug || '',
-        excerpt: blog.excerpt || '',
-        content: blog.content || '',
-        coverImage: blog.coverImage || '',
-        author: blog.author || '',
-        tags: blog.tags?.join(', ') || '',
-        featured: blog.featured || false,
-      });
-      setBlogModal({ open: true, blog });
-    } else {
-      setBlogForm({
-        title: '', slug: '', excerpt: '', content: '', coverImage: '', author: '', tags: '', featured: false
-      });
-      setBlogModal({ open: true, blog: null });
-    }
-  };
-
-  const handleSaveBlog = async () => {
-    try {
-      const blogData = {
-        ...blogForm,
-        tags: blogForm.tags ? blogForm.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
-      };
-
-      const url = blogModal.blog 
-        ? `/api/admin/blogs/${blogModal.blog._id}`
-        : '/api/admin/blogs';
-      
-      const res = await fetch(url, {
-        method: blogModal.blog ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(blogData),
-      });
-
-      if (res.ok) {
-        alert(blogModal.blog ? 'Blog updated!' : 'Blog created!');
-        setBlogModal({ open: false, blog: null });
-        fetchBlogs();
-      } else {
-        const data = await res.json();
-        alert('Failed: ' + (data.error || 'Unknown error'));
-      }
-    } catch (error) {
-      console.error('Error saving blog:', error);
-      alert('Error: ' + error.message);
-    }
-  };
-
-  const deleteBlog = async (blogId) => {
-    if (!confirm('Are you sure you want to delete this blog?')) return;
-    try {
-      const res = await fetch(`/api/admin/blogs/${blogId}`, { 
-        method: 'DELETE',
-        credentials: 'include'
-      });
-      if (res.ok) {
-        alert('Blog deleted!');
-        fetchBlogs();
-      } else {
-        const data = await res.json();
-        alert('Failed: ' + (data.error || 'Unknown error'));
-      }
-    } catch (error) {
-      console.error('Error deleting blog:', error);
-      alert('Error: ' + error.message);
-    }
-  };
-
-  // Open reject modal
-  const openRejectModal = (toolId, toolName) => {
-    setRejectModal({ open: true, toolId, toolName });
-    setRejectComment('');
-  };
-
-  // Submit rejection with comment
-  const handleReject = async () => {
-    if (!rejectModal.toolId) return;
-    try {
-      await fetch(`/api/admin/tools/${rejectModal.toolId}/reject`, { 
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ comment: rejectComment })
-      });
-      setRejectModal({ open: false, toolId: null, toolName: '' });
-      setRejectComment('');
-      fetchTools();
-    } catch (error) {
-      console.error('Error rejecting tool:', error);
-    }
-  };
-
-  const currentAdminUrl = () => {
-    const params = new URLSearchParams();
-    if (toolStatus && toolStatus !== 'pending') params.set('status', toolStatus);
-    if (toolPage && toolPage > 1) params.set('page', String(toolPage));
-    if (toolSearch && toolSearch.trim()) params.set('search', toolSearch.trim());
-    const query = params.toString();
-    return query ? `${pathname}?${query}` : pathname;
-  };
-
-  // Navigate to dedicated edit page in new tab
-  const openEditModal = (tool) => {
-    if (tool?._id) {
-      const returnTo = encodeURIComponent(currentAdminUrl());
-      window.open(`/admin/tools/${tool._id}/edit?returnTo=${returnTo}`, '_blank', 'noopener,noreferrer');
-    }
-  };
-
-  const handleToggleFeatured = async (toolId, currentFeatured) => {
-    // Optimistic UI update
-    const newFeatured = !currentFeatured;
-    setTools(prev => prev.map(t => t._id === toolId ? { ...t, featured: newFeatured } : t));
-
-    try {
-      const res = await fetch(`/api/admin/tools/${toolId}/featured`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ featured: newFeatured }),
-      });
-      
-      if (!res.ok) {
-        const errorData = await res.json();
-        // Rollback on error
-        setTools(prev => prev.map(t => t._id === toolId ? { ...t, featured: currentFeatured } : t));
-        alert(`Error: ${errorData.error || 'Failed to update featured status'}`);
-      } else {
-        // Success - ensure full sync
-        fetchTools();
-      }
-    } catch (error) {
-      console.error('Error toggling featured:', error);
-      // Rollback on error
-      setTools(prev => prev.map(t => t._id === toolId ? { ...t, featured: currentFeatured } : t));
-      alert('Network error while toggling featured status');
-    }
-  };
-
-  const handleToggleTrending = async (toolId, currentTrending) => {
-    // Optimistic UI update
-    const newTrending = !currentTrending;
-    setTools(prev => prev.map(t => t._id === toolId ? { ...t, trending: newTrending } : t));
-
-    try {
-      const res = await fetch(`/api/admin/tools/${toolId}/trending`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ trending: newTrending }),
-      });
-      
-      if (!res.ok) {
-        const errorData = await res.json();
-        // Rollback on error
-        setTools(prev => prev.map(t => t._id === toolId ? { ...t, trending: currentTrending } : t));
-        alert(`Error: ${errorData.error || 'Failed to update trending status'}`);
-      } else {
-        // Success - ensure full sync
-        fetchTools();
-      }
-    } catch (error) {
-      console.error('Error toggling trending:', error);
-      // Rollback on error
-      setTools(prev => prev.map(t => t._id === toolId ? { ...t, trending: currentTrending } : t));
-      alert('Network error while toggling trending status');
-    }
-  };
-
-  const handleDelete = async (toolId) => {
-    if (!confirm('Are you sure you want to permanently delete this tool?')) return;
-    try {
-      const res = await fetch(`/api/admin/tools/${toolId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.error || `Failed to delete tool (HTTP ${res.status})`);
-      }
-      
-      // If this was the only tool on the current page and we're on page > 1, retreat to previous page
-      const isOnlyItem = tools.length <= 1;
-      const targetPage = isOnlyItem && toolPage > 1 ? toolPage - 1 : toolPage;
-
-      if (targetPage !== toolPage) {
-        setToolPage(targetPage);
-        syncUrl(toolStatus, targetPage, toolSearch);
-        fetchTools(toolStatus, targetPage, toolSearch);
-      } else {
-        fetchTools(toolStatus, toolPage, toolSearch);
-      }
-    } catch (error) {
-      console.error('Error deleting tool:', error);
-      alert(`Error deleting tool: ${error.message}`);
-    }
-  };
-
-  // Parse CSV text into array of objects
-  const parseCSV = (csvText) => {
-    const lines = csvText.trim().split('\n');
-    if (lines.length < 2) return [];
-    
-    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-    const tools = [];
-    
-    for (let i = 1; i < lines.length; i++) {
-      const values = [];
-      let currentValue = '';
-      let insideQuotes = false;
-      
-      for (const char of lines[i]) {
-        if (char === '"') {
-          insideQuotes = !insideQuotes;
-        } else if (char === ',' && !insideQuotes) {
-          values.push(currentValue.trim());
-          currentValue = '';
-        } else {
-          currentValue += char;
-        }
-      }
-      values.push(currentValue.trim());
-      
-      if (values.length >= headers.length) {
-        const tool = {};
-        headers.forEach((header, index) => {
-          tool[header] = values[index]?.replace(/^"|"$/g, '') || '';
-        });
-        tools.push(tool);
-      }
-    }
-    
-    return tools;
-  };
-
-  // Handle CSV file upload
-  const handleCSVUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    setUploading(true);
-    setBulkUploadStatus(null);
-    
-    try {
-      const text = await file.text();
-      const toolsData = parseCSV(text);
-      
-      if (toolsData.length === 0) {
-        setBulkUploadStatus({ type: 'error', message: 'No valid data found in CSV file.' });
-        setUploading(false);
-        return;
-      }
-      
-      const response = await fetch('/api/admin/bulk-tools', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tools: toolsData }),
-      });
-      
-      const result = await response.json();
-      
-      if (response.ok) {
-        setBulkUploadStatus({
-          type: 'success',
-          message: result.message,
-          details: result.results
-        });
-        fetchTools(); // Refresh tools list
-      } else {
-        setBulkUploadStatus({ type: 'error', message: result.error || 'Upload failed' });
-      }
-    } catch (error) {
-      setBulkUploadStatus({ type: 'error', message: `Error processing file: ${error.message}` });
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
-  // Download sample CSV template - matches user's format
-  const downloadTemplate = () => {
-    const template = `Name,Category,Pricing,Website (Original),Description
-"WriteGenius","Blog Content","Paid","https://writegenius.com/","AI assistant for generating SEO-friendly long-form blog content and optimization."
-"Dall E 2","Text To Image","Free","https://openai.com/dall-e-2","OpenAI's system that creates realistic images and art from natural language descriptions."
-"ChatGPT","AI Chatbots","Freemium","https://chat.openai.com","Conversational AI assistant by OpenAI for various tasks."`;
-    
-    const blob = new Blob([template], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'tools_template.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  if (status === 'loading') {
+  if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Loading Admin Panel...</p>
+          <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm font-medium text-slate-600">Loading admin moderation system...</p>
         </div>
       </div>
     );
   }
-
-  if (status === 'unauthenticated') {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
-        <Card className="max-w-md w-full text-center p-6 shadow-xl border border-gray-100 rounded-2xl">
-          <CardContent className="pt-6">
-            <div className="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <ShieldOff className="w-8 h-8" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Admin Access Required</h2>
-            <p className="text-gray-600 mb-6 text-sm">
-              Please sign in with your authorized Google admin account to access the Admin Panel.
-            </p>
-            <Link href="/sign-in">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full py-2.5 font-semibold rounded-xl">
-                Sign In with Google
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  const safeTools = Array.isArray(tools) ? tools : [];
-  const safeUsers = Array.isArray(users) ? users : [];
-  const safeBlogs = Array.isArray(blogs) ? blogs : [];
-  const safeBulkLogs = Array.isArray(bulkLogs) ? bulkLogs : [];
-  const safeShopProducts = Array.isArray(shopProducts) ? shopProducts : [];
-
-  const pendingTools = safeTools.filter((t) => t?.status === 'pending');
-  const approvedTools = safeTools.filter((t) => t?.status === 'approved');
-  const rejectedTools = safeTools.filter((t) => t?.status === 'rejected');
-  const adminUsers = safeUsers.filter((u) => u?.isAdmin || u?.role === 'admin');
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
-        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Top Header Banner */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
           <div>
-            <h1 className="text-4xl font-bold text-black mb-2">Admin Dashboard</h1>
-            <p className="text-gray-600">Manage all content and users</p>
+            <div className="flex items-center gap-2 mb-1">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Admin Moderation Hub</h1>
+              <Badge className="bg-blue-600 text-white font-semibold text-xs px-2.5 py-0.5">Verified Admin</Badge>
+            </div>
+            <p className="text-sm text-slate-500">
+              Manage tool moderation submissions, user privileges, directory catalog, and editorial logs.
+            </p>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={loadAllAdminData} 
-            disabled={loading}
-            className="self-start md:self-auto"
-          >
-            {loading ? 'Refreshing...' : '↻ Refresh Data'}
-          </Button>
+          <div className="flex items-center gap-3">
+            <Link href="/dashboard">
+              <Button variant="outline" size="sm" className="font-semibold text-slate-700 border-slate-200 hover:bg-slate-50">
+                User Dashboard
+              </Button>
+            </Link>
+            <Link href="/submit">
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-xs">
+                <Plus className="w-4 h-4 mr-1.5" />
+                Submit New Tool
+              </Button>
+            </Link>
+          </div>
         </div>
 
+        {/* Global Error Alert */}
         {fetchError && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold text-red-800">Failed to load admin data</p>
-              <p className="text-xs text-red-600 mt-0.5">{fetchError}</p>
-            </div>
-            <Button size="sm" onClick={loadAllAdminData} className="bg-red-600 hover:bg-red-700 text-white">
-              Retry
-            </Button>
+          <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-sm text-red-700">
+            <AlertCircle className="w-5 h-5 flex-shrink-0 text-red-500" />
+            <span className="font-medium">{fetchError}</span>
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-center">
-                <p className="text-sm text-gray-600 mb-1">Total Tools</p>
-                <p className="text-3xl font-bold text-blue-600">{toolCounts.total || tools.length}</p>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Main Tabs Container */}
+        <Tabs value={activeTab} onValueChange={(t) => { setActiveTab(t); syncUrl(t, null, 1, null); }}>
+          <div className="overflow-x-auto pb-2">
+            <TabsList className="bg-white p-1.5 border border-slate-200/90 rounded-2xl shadow-2xs inline-flex gap-1">
+              <TabsTrigger value="submissions" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-semibold text-xs sm:text-sm px-4 py-2 rounded-xl transition-all">
+                <Inbox className="w-4 h-4 mr-1.5" />
+                Tool Submissions
+                {submissionsData.counts.pending > 0 && (
+                  <span className="ml-2 bg-amber-500 text-white font-bold text-[11px] px-2 py-0.5 rounded-full">
+                    {submissionsData.counts.pending}
+                  </span>
+                )}
+              </TabsTrigger>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-center">
-                <p className="text-sm text-gray-600 mb-1">Pending Review</p>
-                <p className="text-3xl font-bold text-orange-600">{toolCounts.pending || 0}</p>
-              </div>
-            </CardContent>
-          </Card>
+              <TabsTrigger value="users" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-semibold text-xs sm:text-sm px-4 py-2 rounded-xl transition-all">
+                <Users className="w-4 h-4 mr-1.5" />
+                User Management ({users.length})
+              </TabsTrigger>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-center">
-                <p className="text-sm text-gray-600 mb-1">Total Users</p>
-                <p className="text-3xl font-bold text-purple-600">{users.length}</p>
-              </div>
-            </CardContent>
-          </Card>
+              <TabsTrigger value="tools" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-semibold text-xs sm:text-sm px-4 py-2 rounded-xl transition-all">
+                <Layers className="w-4 h-4 mr-1.5" />
+                Catalog Tools ({toolCounts.total || tools.length})
+              </TabsTrigger>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-center">
-                <p className="text-sm text-gray-600 mb-1">Admin Users</p>
-                <p className="text-3xl font-bold text-green-600">{adminUsers.length}</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              <TabsTrigger value="featured" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-semibold text-xs sm:text-sm px-4 py-2 rounded-xl transition-all">
+                <Star className="w-4 h-4 mr-1.5" />
+                Featured
+              </TabsTrigger>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Management</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="flex flex-wrap">
-                <TabsTrigger value="tools">
-                  <Eye className="w-4 h-4 mr-2" />
-                  Tools ({toolCounts.total || tools.length})
-                </TabsTrigger>
-                <TabsTrigger value="featured">
-                  <Star className="w-4 h-4 mr-2" />
-                  Featured
-                </TabsTrigger>
-                <TabsTrigger value="trending">
-                  <Zap className="w-4 h-4 mr-2" />
-                  Trending
-                </TabsTrigger>
-                <TabsTrigger value="users">
-                  <Users className="w-4 h-4 mr-2" />
-                  Users ({users.length})
-                </TabsTrigger>
-                <TabsTrigger value="bulk">
-                  <FileSpreadsheet className="w-4 h-4 mr-2" />
-                  Bulk Upload
-                </TabsTrigger>
-                <TabsTrigger value="bulkLogs">
-                  <History className="w-4 h-4 mr-2" />
-                  Upload Logs ({bulkLogs.length})
-                </TabsTrigger>
-                <TabsTrigger value="blogs">
-                  <FileSpreadsheet className="w-4 h-4 mr-2" />
-                  Blogs ({blogs.length})
-                </TabsTrigger>
-              </TabsList>
+              <TabsTrigger value="trending" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-semibold text-xs sm:text-sm px-4 py-2 rounded-xl transition-all">
+                <Zap className="w-4 h-4 mr-1.5" />
+                Trending
+              </TabsTrigger>
 
-              <TabsContent value="tools" className="mt-6">
-                {/* Search and Status Navigation */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                  <Tabs value={toolStatus} onValueChange={handleStatusChange}>
-                    <TabsList>
-                      <TabsTrigger value="pending">Pending ({toolCounts.pending})</TabsTrigger>
-                      <TabsTrigger value="approved">Approved ({toolCounts.approved})</TabsTrigger>
-                      <TabsTrigger value="rejected">Rejected ({toolCounts.rejected})</TabsTrigger>
-                      <TabsTrigger value="all">All ({toolCounts.total})</TabsTrigger>
+              <TabsTrigger value="bulk" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-semibold text-xs sm:text-sm px-4 py-2 rounded-xl transition-all">
+                <FileSpreadsheet className="w-4 h-4 mr-1.5" />
+                Bulk CSV
+              </TabsTrigger>
+
+              <TabsTrigger value="bulkLogs" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-semibold text-xs sm:text-sm px-4 py-2 rounded-xl transition-all">
+                <History className="w-4 h-4 mr-1.5" />
+                Upload Logs ({bulkLogs.length})
+              </TabsTrigger>
+
+              <TabsTrigger value="blogs" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-semibold text-xs sm:text-sm px-4 py-2 rounded-xl transition-all">
+                <Edit className="w-4 h-4 mr-1.5" />
+                Blogs ({blogs.length})
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          {/* ========================================================================= */}
+          {/* TAB 1: TOOL SUBMISSIONS & MODERATION                                      */}
+          {/* ========================================================================= */}
+          <TabsContent value="submissions" className="space-y-6 mt-6 focus-visible:outline-none">
+            <Card className="border-slate-200/80 shadow-xs">
+              <CardHeader className="p-6 pb-4 border-b border-slate-100">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <CardTitle className="text-xl font-bold text-slate-900">Submission Moderation Queue</CardTitle>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Review community and user-submitted AI tools. Approve to publish to the public catalog or reject with feedback.
+                    </p>
+                  </div>
+
+                  {/* Submission Search Box */}
+                  <div className="relative w-full md:w-80">
+                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Input
+                      value={submissionSearch}
+                      onChange={(e) => {
+                        setSubmissionSearch(e.target.value);
+                        fetchSubmissions(submissionStatus, e.target.value, 1);
+                      }}
+                      placeholder="Search tool, submitter name or email..."
+                      className="pl-9 h-9 text-xs"
+                    />
+                    {submissionSearch && (
+                      <button
+                        onClick={() => {
+                          setSubmissionSearch('');
+                          fetchSubmissions(submissionStatus, '', 1);
+                        }}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Submissions Status Tabs */}
+                <div className="flex items-center gap-2 mt-4 pt-3 border-t border-slate-100 flex-wrap">
+                  <Button
+                    size="sm"
+                    variant={submissionStatus === 'pending' ? 'default' : 'outline'}
+                    onClick={() => {
+                      setSubmissionStatus('pending');
+                      fetchSubmissions('pending', submissionSearch, 1);
+                    }}
+                    className={`h-8 text-xs font-semibold rounded-lg ${submissionStatus === 'pending' ? 'bg-amber-500 hover:bg-amber-600 text-white' : 'text-slate-600'}`}
+                  >
+                    Pending Review ({submissionsData.counts.pending})
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant={submissionStatus === 'approved' ? 'default' : 'outline'}
+                    onClick={() => {
+                      setSubmissionStatus('approved');
+                      fetchSubmissions('approved', submissionSearch, 1);
+                    }}
+                    className={`h-8 text-xs font-semibold rounded-lg ${submissionStatus === 'approved' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'text-slate-600'}`}
+                  >
+                    Approved ({submissionsData.counts.approved})
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant={submissionStatus === 'rejected' ? 'default' : 'outline'}
+                    onClick={() => {
+                      setSubmissionStatus('rejected');
+                      fetchSubmissions('rejected', submissionSearch, 1);
+                    }}
+                    className={`h-8 text-xs font-semibold rounded-lg ${submissionStatus === 'rejected' ? 'bg-red-600 hover:bg-red-700 text-white' : 'text-slate-600'}`}
+                  >
+                    Rejected ({submissionsData.counts.rejected})
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant={submissionStatus === 'all' ? 'default' : 'outline'}
+                    onClick={() => {
+                      setSubmissionStatus('all');
+                      fetchSubmissions('all', submissionSearch, 1);
+                    }}
+                    className={`h-8 text-xs font-semibold rounded-lg ${submissionStatus === 'all' ? 'bg-slate-800 hover:bg-slate-900 text-white' : 'text-slate-600'}`}
+                  >
+                    All Submissions ({submissionsData.counts.total})
+                  </Button>
+                </div>
+              </CardHeader>
+
+              <CardContent className="p-6">
+                {submissionsLoading ? (
+                  <div className="py-16 text-center text-slate-500">
+                    <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    Loading submissions...
+                  </div>
+                ) : submissionsData.submissions.length === 0 ? (
+                  <div className="py-16 text-center">
+                    <Inbox className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+                    <h3 className="text-base font-bold text-slate-800">No {submissionStatus !== 'all' ? submissionStatus : ''} submissions found</h3>
+                    <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                      {submissionStatus === 'pending'
+                        ? 'All user tool submissions have been moderated! Great job.'
+                        : 'No submissions match your current filters.'}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {submissionsData.submissions.map((sub) => {
+                      const statusLower = (sub.status || 'pending').toLowerCase();
+                      return (
+                        <div
+                          key={sub._id}
+                          className="border border-slate-200/90 rounded-2xl p-5 hover:border-slate-300 transition-all bg-white shadow-2xs space-y-4"
+                        >
+                          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+                            {/* Left: Tool Details */}
+                            <div className="flex items-start gap-4 flex-1 min-w-0">
+                              <img
+                                src={sub.logo || '/logo.jpg'}
+                                alt={sub.name || 'Tool'}
+                                className="w-16 h-16 rounded-2xl object-cover border border-slate-100 flex-shrink-0 bg-slate-50"
+                                onError={(e) => { e.currentTarget.src = '/logo.jpg'; }}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap mb-1">
+                                  <h3 className="font-bold text-slate-900 text-lg">{sub.name}</h3>
+                                  <Badge
+                                    className={
+                                      statusLower === 'approved'
+                                        ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                                        : statusLower === 'pending'
+                                        ? 'bg-amber-100 text-amber-800 border-amber-200'
+                                        : 'bg-red-100 text-red-800 border-red-200'
+                                    }
+                                  >
+                                    {statusLower.toUpperCase()}
+                                  </Badge>
+                                  {sub.category && (
+                                    <Badge variant="outline" className="text-xs text-slate-600">
+                                      {sub.category}
+                                    </Badge>
+                                  )}
+                                  {sub.pricing && (
+                                    <Badge variant="outline" className="text-xs text-slate-600">
+                                      {sub.pricing}
+                                    </Badge>
+                                  )}
+                                </div>
+
+                                <p className="text-sm text-slate-600 line-clamp-2 mb-2">
+                                  {sub.shortDescription || 'No short description provided.'}
+                                </p>
+
+                                <div className="flex items-center gap-4 text-xs text-slate-500 flex-wrap">
+                                  {sub.website && (
+                                    <a
+                                      href={sub.website}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:underline flex items-center gap-1 font-medium"
+                                    >
+                                      <Globe className="w-3.5 h-3.5" />
+                                      {sub.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                                      <ExternalLink className="w-3 h-3 ml-0.5 opacity-70" />
+                                    </a>
+                                  )}
+                                  <span>Submitted {sub.createdAt ? new Date(sub.createdAt).toLocaleDateString() : 'N/A'}</span>
+                                  {sub.reviewedAt && (
+                                    <span>
+                                      Reviewed {new Date(sub.reviewedAt).toLocaleDateString()}
+                                      {sub.reviewedBy ? ` by ${sub.reviewedBy}` : ''}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Middle/Right: Submitter Profile Card */}
+                            <div className="bg-slate-50/90 border border-slate-200/80 rounded-xl p-3 lg:w-72 flex-shrink-0 text-xs text-slate-700 space-y-1.5">
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-slate-900 flex items-center gap-1">
+                                  <UserCheck className="w-3.5 h-3.5 text-blue-600" />
+                                  Submitter Info
+                                </span>
+                                {sub.submitter?.isAdmin && (
+                                  <Badge className="bg-green-600 text-white text-[10px] px-1.5 py-0">Admin</Badge>
+                                )}
+                              </div>
+                              <p className="font-semibold text-slate-800 truncate">
+                                {sub.submitter?.name || sub.submitterName || 'Community Member'}
+                              </p>
+                              <p className="text-slate-500 truncate">{sub.submitter?.email || sub.submitterEmail || 'N/A'}</p>
+                              <p className="text-slate-500">
+                                Country: <span className="font-medium text-slate-700">{sub.submitter?.country || sub.submitterCountry || 'N/A'}</span>
+                              </p>
+
+                              {(sub.submitter?.linkedinProfile || sub.linkedinProfile) && (
+                                <a
+                                  href={sub.submitter?.linkedinProfile || sub.linkedinProfile}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-blue-600 hover:underline font-medium pt-0.5"
+                                >
+                                  <Linkedin className="w-3.5 h-3.5" />
+                                  LinkedIn Profile
+                                  <ExternalLink className="w-2.5 h-2.5" />
+                                </a>
+                              )}
+
+                              <div className="pt-1.5 border-t border-slate-200/60 flex justify-end">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => navigateToUser(sub.submitter?.email || sub.submitter?.userId || sub.submittedBy)}
+                                  className="h-6 text-[11px] text-blue-600 hover:text-blue-700 p-0 font-medium cursor-pointer"
+                                >
+                                  View User Profile in Admin →
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Rejection alert banner if rejected */}
+                          {statusLower === 'rejected' && (sub.rejectionReason || sub.rejectionComment) && (
+                            <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-900 flex items-start gap-2">
+                              <XCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                              <div className="flex-1">
+                                <span className="font-bold text-red-800">Rejection Reason: </span>
+                                <span>{sub.rejectionReason || sub.rejectionComment}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Actions Row */}
+                          <div className="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-slate-100">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openSubmissionDetails(sub)}
+                              className="h-8 text-xs font-semibold border-slate-200 text-slate-700 hover:bg-slate-50 cursor-pointer"
+                            >
+                              <Eye className="w-3.5 h-3.5 mr-1.5" />
+                              View Full Submission Details
+                            </Button>
+
+                            <div className="flex items-center gap-2">
+                              {statusLower === 'pending' && (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => openApproveModal(sub._id, sub.name)}
+                                    className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-2xs cursor-pointer"
+                                  >
+                                    <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
+                                    Approve & Publish
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => openRejectModal(sub._id, sub.name)}
+                                    className="h-8 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-lg shadow-2xs cursor-pointer"
+                                  >
+                                    <XCircle className="w-3.5 h-3.5 mr-1.5" />
+                                    Reject Submission
+                                  </Button>
+                                </>
+                              )}
+
+                              {statusLower === 'approved' && sub.slug && (
+                                <Link href={`/tools/${sub.slug}`} target="_blank">
+                                  <Button size="sm" variant="outline" className="h-8 text-xs font-semibold text-blue-600 border-blue-200 hover:bg-blue-50 cursor-pointer">
+                                    <Globe className="w-3.5 h-3.5 mr-1.5" />
+                                    View Live Tool
+                                    <ExternalLink className="w-3 h-3 ml-1" />
+                                  </Button>
+                                </Link>
+                              )}
+
+                              {statusLower === 'rejected' && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openApproveModal(sub._id, sub.name)}
+                                  className="h-8 text-xs font-semibold text-emerald-700 border-emerald-300 hover:bg-emerald-50 cursor-pointer"
+                                >
+                                  <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
+                                  Re-evaluate & Approve
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ========================================================================= */}
+          {/* TAB 2: USER MANAGEMENT                                                    */}
+          {/* ========================================================================= */}
+          <TabsContent value="users" className="space-y-6 mt-6 focus-visible:outline-none">
+            <Card className="border-slate-200/80 shadow-xs">
+              <CardHeader className="p-6 pb-4 border-b border-slate-100">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <CardTitle className="text-xl font-bold text-slate-900">User Management</CardTitle>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      View registered members, check login and join timestamps, manage administrator roles, and view user tool submissions.
+                    </p>
+                  </div>
+
+                  {/* User Search Input */}
+                  <div className="relative w-full md:w-80">
+                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Input
+                      value={userSearch}
+                      onChange={(e) => setUserSearch(e.target.value)}
+                      placeholder="Search users by name, email, country..."
+                      className="pl-9 h-9 text-xs"
+                    />
+                    {userSearch && (
+                      <button
+                        onClick={() => setUserSearch('')}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="p-6">
+                {filteredUsers.length === 0 ? (
+                  <div className="py-16 text-center text-slate-500">
+                    <Users className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+                    <p className="font-semibold text-slate-700">No users match your search query.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {filteredUsers.map((u) => {
+                      const fullName = u.name || u.fullName || `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Community Member';
+                      const isAdmin = Boolean(u.isAdmin || u.role === 'admin');
+                      const stats = u.submissionStats || { total: 0, approved: 0, pending: 0, rejected: 0 };
+                      const userSubmissions = u.submissions || [];
+
+                      return (
+                        <div
+                          key={u._id || u.userId || u.email}
+                          className="p-5 border border-slate-200/90 rounded-2xl hover:border-slate-300 transition-all bg-white shadow-2xs space-y-4"
+                        >
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            {/* User Profile Info */}
+                            <div className="flex items-center gap-4 flex-1 min-w-0">
+                              <img
+                                src={u.imageUrl || u.image || '/logo.jpg'}
+                                alt={fullName}
+                                className="w-14 h-14 rounded-full object-cover border-2 border-slate-100 flex-shrink-0 bg-slate-100"
+                                onError={(e) => { e.currentTarget.src = '/logo.jpg'; }}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap mb-1">
+                                  <h3 className="font-bold text-slate-900 text-base">{fullName}</h3>
+                                  {isAdmin ? (
+                                    <Badge className="bg-emerald-600 text-white font-bold text-xs px-2 py-0.5">
+                                      <Shield className="w-3 h-3 mr-1" />
+                                      Admin
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="text-xs text-slate-500">
+                                      User
+                                    </Badge>
+                                  )}
+                                  {u.country && (
+                                    <Badge variant="secondary" className="text-xs text-slate-700 bg-slate-100 font-medium">
+                                      🌍 {u.country}
+                                    </Badge>
+                                  )}
+                                </div>
+
+                                <p className="text-sm text-slate-600 truncate">{u.email}</p>
+
+                                <div className="flex items-center gap-4 text-xs text-slate-500 flex-wrap mt-1">
+                                  <span>
+                                    <Calendar className="w-3 h-3 inline mr-1 text-slate-400" />
+                                    Joined: {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}
+                                  </span>
+                                  <span>
+                                    <Clock className="w-3 h-3 inline mr-1 text-slate-400" />
+                                    Last Login: {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString() : 'Never logged in'}
+                                  </span>
+                                  {u.linkedinProfile && (
+                                    <a
+                                      href={u.linkedinProfile}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:underline flex items-center gap-1"
+                                    >
+                                      <Linkedin className="w-3 h-3" />
+                                      LinkedIn
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Submissions Breakdown Badges & Make Admin Actions */}
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                              {/* Submissions Pill Container */}
+                              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-2.5 flex items-center gap-2 text-xs">
+                                <span className="font-semibold text-slate-700">Submissions ({stats.total}):</span>
+                                <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold" title="Approved">
+                                  ✓ {stats.approved}
+                                </span>
+                                <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 font-bold" title="Pending">
+                                  ⏳ {stats.pending}
+                                </span>
+                                <span className="px-2 py-0.5 rounded-md bg-red-100 text-red-800 font-bold" title="Rejected">
+                                  ✗ {stats.rejected}
+                                </span>
+                              </div>
+
+                              {/* Make Admin / Remove Admin Button */}
+                              {isAdmin ? (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openAdminRoleModal(u, 'remove')}
+                                  className="h-9 text-xs font-semibold text-red-600 border-red-200 hover:bg-red-50 cursor-pointer"
+                                >
+                                  <ShieldOff className="w-3.5 h-3.5 mr-1.5" />
+                                  Remove Admin
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  onClick={() => openAdminRoleModal(u, 'make')}
+                                  className="h-9 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow-2xs cursor-pointer"
+                                >
+                                  <Shield className="w-3.5 h-3.5 mr-1.5" />
+                                  Make Admin
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Expandable User's Submissions List */}
+                          {userSubmissions.length > 0 && (
+                            <div className="pt-3 border-t border-slate-100">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                  Tools Submitted by this User ({userSubmissions.length})
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                                {userSubmissions.map((tool) => (
+                                  <div
+                                    key={tool._id}
+                                    className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-2"
+                                  >
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      <img
+                                        src={tool.logo || '/logo.jpg'}
+                                        alt={tool.name}
+                                        className="w-7 h-7 rounded-lg object-cover bg-white border border-slate-200"
+                                        onError={(e) => { e.currentTarget.src = '/logo.jpg'; }}
+                                      />
+                                      <div className="min-w-0">
+                                        <p className="text-xs font-bold text-slate-900 truncate">{tool.name}</p>
+                                        <p className="text-[11px] text-slate-500">
+                                          {tool.status ? tool.status.toUpperCase() : 'PENDING'}
+                                        </p>
+                                      </div>
+                                    </div>
+
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => openSubmissionDetails({ ...tool, submitter: u })}
+                                      className="h-7 text-xs text-blue-600 hover:text-blue-700 font-semibold p-1.5 cursor-pointer"
+                                    >
+                                      Moderate →
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ========================================================================= */}
+          {/* TAB 3: CATALOG TOOLS                                                      */}
+          {/* ========================================================================= */}
+          <TabsContent value="tools" className="mt-6 focus-visible:outline-none">
+            <Card className="border-slate-200/80 shadow-xs">
+              <CardHeader className="p-6 pb-4 border-b border-slate-100">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <Tabs value={toolStatus} onValueChange={(st) => { setToolStatus(st); setToolPage(1); fetchTools(st, 1, toolSearch); syncUrl('tools', st, 1, toolSearch); }}>
+                    <TabsList className="bg-slate-100 p-1 rounded-xl">
+                      <TabsTrigger value="all" className="text-xs font-semibold">All ({toolCounts.total})</TabsTrigger>
+                      <TabsTrigger value="approved" className="text-xs font-semibold">Approved ({toolCounts.approved})</TabsTrigger>
+                      <TabsTrigger value="pending" className="text-xs font-semibold">Pending ({toolCounts.pending})</TabsTrigger>
+                      <TabsTrigger value="rejected" className="text-xs font-semibold">Rejected ({toolCounts.rejected})</TabsTrigger>
                     </TabsList>
                   </Tabs>
 
-                  <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full sm:w-80">
-                    <div className="relative flex-1">
-                      <Input
-                        value={toolSearch}
-                        onChange={(e) => setToolSearch(e.target.value)}
-                        placeholder="Search tools by name..."
-                        aria-label="Search tools by name"
-                        className="h-9 pr-7"
-                      />
-                      {toolSearch && (
-                        <button
-                          type="button"
-                          onClick={handleClearSearch}
-                          aria-label="Clear search input"
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
-                        >
-                          <X className="w-4 h-4" aria-hidden="true" />
-                        </button>
-                      )}
-                    </div>
-                    <Button type="submit" size="sm" variant="secondary" className="h-9">
+                  <div className="flex gap-2 w-full sm:w-80">
+                    <Input
+                      value={toolSearch}
+                      onChange={(e) => setToolSearch(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { setToolPage(1); fetchTools(toolStatus, 1, toolSearch); syncUrl('tools', toolStatus, 1, toolSearch); } }}
+                      placeholder="Search tools by name..."
+                      className="h-9 text-xs"
+                    />
+                    <Button
+                      size="sm"
+                      onClick={() => { setToolPage(1); fetchTools(toolStatus, 1, toolSearch); syncUrl('tools', toolStatus, 1, toolSearch); }}
+                      className="h-9 text-xs font-semibold"
+                    >
                       Search
                     </Button>
-                  </form>
+                  </div>
                 </div>
 
-                {/* Pagination Info */}
                 {toolPagination.total > 0 && (
-                  <div className="flex justify-between items-center text-sm text-gray-500 mb-4 pb-2 border-b">
+                  <div className="flex justify-between items-center text-xs text-slate-500 mt-4 pt-2 border-t border-slate-100">
                     <span>
                       Showing {((toolPagination.page - 1) * toolPagination.limit) + 1}–
                       {Math.min(toolPagination.page * toolPagination.limit, toolPagination.total)} of {toolPagination.total} tools
@@ -1003,824 +1093,580 @@ function AdminDashboardContent() {
                     <span>Page {toolPagination.page} of {toolPagination.totalPages}</span>
                   </div>
                 )}
+              </CardHeader>
 
-                {/* Tools List */}
+              <CardContent className="p-6">
                 {toolsLoading ? (
-                  <div className="py-16 text-center text-gray-500" aria-live="polite" aria-busy="true">
-                    <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" aria-label="Loading tools" />
-                    Loading tools...
+                  <div className="py-16 text-center text-slate-500">
+                    <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    Loading catalog tools...
                   </div>
                 ) : (
                   <AdminToolList
                     tools={tools}
-                    onApprove={handleApprove}
-                    onReject={openRejectModal}
+                    onApprove={(id) => openApproveModal(id, 'Selected Tool')}
+                    onReject={(id, name) => openRejectModal(id, name)}
                     onToggleFeatured={handleToggleFeatured}
                     onToggleTrending={handleToggleTrending}
                     onDelete={handleDelete}
-                    onEdit={openEditModal}
                     returnToUrl={currentAdminUrl()}
                   />
                 )}
 
                 {/* Pagination Controls */}
                 {toolPagination.totalPages > 1 && (
-                  <div className="flex items-center justify-between mt-8 pt-4 border-t">
+                  <div className="flex items-center justify-between mt-8 pt-4 border-t border-slate-100">
                     <Button
                       variant="outline"
                       size="sm"
                       disabled={toolPagination.page <= 1 || toolsLoading}
-                      onClick={() => handlePageChange(Math.max(1, toolPagination.page - 1))}
-                      aria-label="Go to previous page"
+                      onClick={() => {
+                        const pg = Math.max(1, toolPagination.page - 1);
+                        setToolPage(pg);
+                        fetchTools(toolStatus, pg, toolSearch);
+                      }}
+                      className="text-xs font-semibold"
                     >
                       Previous
                     </Button>
 
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: Math.min(5, toolPagination.totalPages) }, (_, i) => {
-                        let pageNum;
-                        if (toolPagination.totalPages <= 5) {
-                          pageNum = i + 1;
-                        } else if (toolPagination.page <= 3) {
-                          pageNum = i + 1;
-                        } else if (toolPagination.page >= toolPagination.totalPages - 2) {
-                          pageNum = toolPagination.totalPages - 4 + i;
-                        } else {
-                          pageNum = toolPagination.page - 2 + i;
-                        }
-                        return (
-                          <Button
-                            key={pageNum}
-                            size="sm"
-                            variant={toolPagination.page === pageNum ? 'default' : 'outline'}
-                            onClick={() => handlePageChange(pageNum)}
-                            aria-label={`Page ${pageNum}`}
-                            aria-current={toolPagination.page === pageNum ? 'page' : undefined}
-                            className="w-8 h-8 p-0"
-                          >
-                            {pageNum}
-                          </Button>
-                        );
-                      })}
-                    </div>
+                    <span className="text-xs font-medium text-slate-600">
+                      Page {toolPagination.page} of {toolPagination.totalPages}
+                    </span>
 
                     <Button
                       variant="outline"
                       size="sm"
                       disabled={toolPagination.page >= toolPagination.totalPages || toolsLoading}
-                      onClick={() => handlePageChange(Math.min(toolPagination.totalPages, toolPagination.page + 1))}
-                      aria-label="Go to next page"
+                      onClick={() => {
+                        const pg = Math.min(toolPagination.totalPages, toolPagination.page + 1);
+                        setToolPage(pg);
+                        fetchTools(toolStatus, pg, toolSearch);
+                      }}
+                      className="text-xs font-semibold"
                     >
                       Next
                     </Button>
                   </div>
                 )}
-              </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-              {/* Featured Tools Tab */}
-              <TabsContent value="featured" className="mt-6">
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold">Featured Tools</h3>
-                  <p className="text-sm text-gray-600">Manage which tools appear in the "Featured" section on the homepage</p>
-                </div>
+          {/* ========================================================================= */}
+          {/* TAB 4: FEATURED                                                           */}
+          {/* ========================================================================= */}
+          <TabsContent value="featured" className="mt-6 focus-visible:outline-none">
+            <Card className="border-slate-200/80 shadow-xs">
+              <CardHeader className="p-6 pb-4 border-b border-slate-100">
+                <CardTitle className="text-xl font-bold text-slate-900">Featured Tools</CardTitle>
+                <p className="text-xs text-slate-500">Manage tools displayed prominently on the homepage featured carousel.</p>
+              </CardHeader>
+              <CardContent className="p-6">
                 <AdminToolList
                   tools={tools.filter(t => t.featured && t.status === 'approved')}
-                  onApprove={handleApprove}
-                  onReject={openRejectModal}
+                  onApprove={(id) => openApproveModal(id, 'Selected Tool')}
+                  onReject={(id, name) => openRejectModal(id, name)}
                   onToggleFeatured={handleToggleFeatured}
                   onToggleTrending={handleToggleTrending}
                   onDelete={handleDelete}
-                  onEdit={openEditModal}
-                  showFeatureToggle={true}
                   returnToUrl={currentAdminUrl()}
                 />
-                <div className="mt-6 border-t pt-6">
-                  <h4 className="font-medium mb-4">Add to Featured</h4>
-                  <p className="text-sm text-gray-500 mb-4">Approved tools that can be featured:</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto">
-                    {tools.filter(t => !t.featured && t.status === 'approved').slice(0, 20).map(tool => (
-                      <div key={tool._id} className="flex items-center justify-between p-2 border rounded">
-                        <div className="flex items-center gap-2">
-                          <img src={tool.logo} alt="" className="w-8 h-8 rounded" />
-                          <span className="text-sm">{tool.name}</span>
-                        </div>
-                        <Button size="sm" variant="outline" onClick={() => handleToggleFeatured(tool._id, false)}>
-                          <Star className="w-4 h-4 mr-1" />
-                          Feature
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-              {/* Trending Tools Tab */}
-              <TabsContent value="trending" className="mt-6">
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold">Trending Tools</h3>
-                  <p className="text-sm text-gray-600">Manage which tools appear in the "Trending Now" section on the homepage</p>
-                </div>
+          {/* ========================================================================= */}
+          {/* TAB 5: TRENDING                                                           */}
+          {/* ========================================================================= */}
+          <TabsContent value="trending" className="mt-6 focus-visible:outline-none">
+            <Card className="border-slate-200/80 shadow-xs">
+              <CardHeader className="p-6 pb-4 border-b border-slate-100">
+                <CardTitle className="text-xl font-bold text-slate-900">Trending Tools</CardTitle>
+                <p className="text-xs text-slate-500">Manage tools with trending badges across the directory.</p>
+              </CardHeader>
+              <CardContent className="p-6">
                 <AdminToolList
                   tools={tools.filter(t => t.trending && t.status === 'approved')}
-                  onApprove={handleApprove}
-                  onReject={openRejectModal}
+                  onApprove={(id) => openApproveModal(id, 'Selected Tool')}
+                  onReject={(id, name) => openRejectModal(id, name)}
                   onToggleFeatured={handleToggleFeatured}
                   onToggleTrending={handleToggleTrending}
                   onDelete={handleDelete}
-                  onEdit={openEditModal}
-                  showTrendingToggle={true}
                   returnToUrl={currentAdminUrl()}
                 />
-                <div className="mt-6 border-t pt-6">
-                  <h4 className="font-medium mb-4">Add to Trending</h4>
-                  <p className="text-sm text-gray-500 mb-4">Approved tools that can be marked as trending:</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto">
-                    {tools.filter(t => !t.trending && t.status === 'approved').slice(0, 20).map(tool => (
-                      <div key={tool._id} className="flex items-center justify-between p-2 border rounded">
-                        <div className="flex items-center gap-2">
-                          <img src={tool.logo} alt="" className="w-8 h-8 rounded" />
-                          <span className="text-sm">{tool.name}</span>
-                        </div>
-                        <Button size="sm" variant="outline" onClick={() => handleToggleTrending(tool._id, false)}>
-                          <Zap className="w-4 h-4 mr-1" />
-                          Trend
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-              <TabsContent value="users" className="mt-6">
-                <UsersList 
-                  users={users} 
-                  onMakeAdmin={handleMakeAdmin}
-                  onRemoveAdmin={handleRemoveAdmin}
-                />
-              </TabsContent>
-
-              <TabsContent value="bulk" className="mt-6">
-                <div className="max-w-2xl mx-auto">
-                  <div className="text-center mb-8">
-                    <h3 className="text-xl font-semibold mb-2">Bulk Upload Tools via CSV</h3>
-                    <p className="text-gray-600">Upload a CSV file with multiple tools to add them all at once.</p>
-                  </div>
-
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h4 className="font-medium text-blue-800 mb-2">CSV Format:</h4>
-                    <ul className="text-sm text-blue-700 space-y-1">
-                      <li>• <strong>Required columns:</strong> Name, Website (Original)</li>
-                      <li>• <strong>Optional columns:</strong> Category, Pricing, Description</li>
-                      <li>• Favicon/logo is automatically fetched from website</li>
-                      <li>• Duplicate domains are automatically skipped</li>
-                    </ul>
-                    <div className="mt-3 bg-white/50 rounded p-2 font-mono text-xs">
-                      Name, Category, Pricing, Website (Original), Description
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4 mb-6">
-                    <Button
-                      variant="outline"
-                      onClick={downloadTemplate}
-                      className="flex-1"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Download CSV Template
-                    </Button>
-                  </div>
-
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".csv"
-                      onChange={handleCSVUpload}
-                      className="hidden"
-                      id="csv-upload"
-                    />
-                    <label htmlFor="csv-upload" className="cursor-pointer">
-                      <FileSpreadsheet className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                      <p className="text-lg font-medium text-gray-700 mb-2">
-                        {uploading ? 'Processing...' : 'Click to upload CSV file'}
-                      </p>
-                      <p className="text-sm text-gray-500">or drag and drop</p>
-                    </label>
-                  </div>
-
-                  {bulkUploadStatus && (
-                    <div className={`mt-6 p-4 rounded-lg ${bulkUploadStatus.type === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-                      <p className={`font-medium ${bulkUploadStatus.type === 'success' ? 'text-green-800' : 'text-red-800'}`}>
-                        {bulkUploadStatus.message}
-                      </p>
-                      {bulkUploadStatus.details && bulkUploadStatus.details.errors?.length > 0 && (
-                        <div className="mt-2">
-                          <p className="text-sm text-red-700 font-medium">Errors:</p>
-                          <ul className="text-sm text-red-600 mt-1">
-                            {bulkUploadStatus.details.errors.slice(0, 5).map((error, i) => (
-                              <li key={i}>• {error}</li>
-                            ))}
-                            {bulkUploadStatus.details.errors.length > 5 && (
-                              <li>• ... and {bulkUploadStatus.details.errors.length - 5} more errors</li>
-                            )}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-
-              {/* Bulk Upload Logs Tab */}
-              <TabsContent value="bulkLogs" className="mt-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Bulk Upload History</h3>
-                  {bulkLogs.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8">No bulk uploads yet</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {bulkLogs.map((log) => (
-                        <div key={log._id} className={`p-4 border rounded-lg ${log.undone ? 'bg-gray-100 opacity-60' : 'bg-white'}`}>
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-medium">
-                                {new Date(log.createdAt).toLocaleString()}
-                                {log.undone && <Badge className="ml-2 bg-gray-500">Undone</Badge>}
-                              </p>
-                              <p className="text-sm text-gray-600">
-                                <span className="text-green-600">{log.successCount} added</span>
-                                {log.skippedCount > 0 && <span className="text-yellow-600 ml-2">{log.skippedCount} skipped</span>}
-                                {log.failedCount > 0 && <span className="text-red-600 ml-2">{log.failedCount} failed</span>}
-                              </p>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button size="sm" variant="outline" onClick={() => viewBulkLogTools(log._id)}>
-                                <Eye className="w-4 h-4 mr-1" />
-                                View Tools
-                              </Button>
-                              {!log.undone && (
-                                <Button size="sm" variant="destructive" onClick={() => undoBulkUpload(log._id)}>
-                                  <Undo2 className="w-4 h-4 mr-1" />
-                                  Undo
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-
-              {/* Shop Products Tab */}
-              <TabsContent value="shop" className="mt-6">
-                <div className="space-y-6">
-                  {/* Bulk Upload Section */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 className="font-medium text-blue-800 mb-2">Bulk Upload Shop Products</h4>
-                    <p className="text-sm text-blue-700 mb-3">Upload multiple products via CSV. Only <strong>Price</strong> is mandatory.</p>
-                    <div className="flex gap-3 flex-wrap">
-                      <Button variant="outline" onClick={downloadShopTemplate} size="sm">
-                        <Download className="w-4 h-4 mr-2" />
-                        Download Template
-                      </Button>
-                      <input
-                        ref={shopFileInputRef}
-                        type="file"
-                        accept=".csv"
-                        onChange={handleShopCSVUpload}
-                        className="hidden"
-                        id="shop-csv-upload"
-                      />
-                      <Button 
-                        onClick={() => shopFileInputRef.current?.click()}
-                        disabled={shopUploading}
-                        size="sm"
-                        className="bg-blue-600 hover:bg-blue-700"
-                      >
-                        {shopUploading ? (
-                          <>
-                            <span className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                            Uploading...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="w-4 h-4 mr-2" />
-                            Upload CSV
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                    {shopBulkStatus && (
-                      <div className={`mt-3 p-3 rounded ${shopBulkStatus.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {shopBulkStatus.message}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold">Shop Products ({shopProducts.length})</h3>
-                    <Button onClick={() => openShopModal()} className="bg-blue-600 hover:bg-blue-700">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Product
-                    </Button>
-                  </div>
-                  {shopProducts.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8">No shop products yet</p>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {shopProducts.map((product) => (
-                        <div key={product._id} className="border rounded-lg p-4 bg-white">
-                          {product.image && (
-                            <img src={product.image} alt={product.name} className="w-full h-32 object-cover rounded mb-3" />
-                          )}
-                          <h4 className="font-semibold">{product.name}</h4>
-                          <p className="text-sm text-gray-600 mb-2">{product.shortDescription}</p>
-                          <div className="flex items-center gap-2 mb-3">
-                            <Badge>{product.category}</Badge>
-                            <Badge variant="outline" className="text-red-500">{product.discount}% OFF</Badge>
-                          </div>
-                          <p className="text-lg font-bold text-blue-600 mb-3">
-                            ${product.monthlyPrice}/mo | ${product.yearlyPrice}/yr
-                          </p>
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="outline" onClick={() => openShopModal(product)}>
-                              <Edit className="w-4 h-4 mr-1" />
-                              Edit
-                            </Button>
-                            <Button size="sm" variant="destructive" onClick={() => deleteShopProduct(product._id)}>
-                              <Trash2 className="w-4 h-4 mr-1" />
-                              Delete
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-
-              {/* Blogs Tab */}
-              <TabsContent value="blogs" className="mt-6">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold">All Blogs ({blogs.length})</h3>
-                    <Button onClick={() => openBlogModal()} className="bg-blue-600 hover:bg-blue-700">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Blog
-                    </Button>
-                  </div>
-                  {blogs.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8">No blogs yet</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {blogs.map((blog) => (
-                        <div key={blog._id} className="border rounded-lg p-4 bg-white flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h4 className="font-semibold">{blog.title}</h4>
-                              {blog.featured && <Badge className="bg-yellow-500">Featured</Badge>}
-                            </div>
-                            <p className="text-sm text-gray-600 line-clamp-1">{blog.excerpt}</p>
-                            <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
-                              <span>By: {blog.author || 'Unknown'}</span>
-                              <span>Views: {blog.views || 0}</span>
-                              <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
-                            </div>
-                          </div>
-                          <div className="flex gap-2 ml-4">
-                            <Link href={`/blogs/${blog.slug}`} target="_blank">
-                              <Button size="sm" variant="ghost">
-                                <Eye className="w-4 h-4" />
-                              </Button>
-                            </Link>
-                            <Button size="sm" variant="outline" onClick={() => openBlogModal(blog)}>
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button size="sm" variant="destructive" onClick={() => deleteBlog(blog._id)}>
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Blog Modal */}
-      {blogModal.open && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto py-8">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 my-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">{blogModal.blog ? 'Edit Blog' : 'Add Blog'}</h3>
-              <button onClick={() => setBlogModal({ open: false, blog: null })}>
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-              <div>
-                <label className="block text-sm font-medium mb-1">Title *</label>
-                <Input
-                  value={blogForm.title}
-                  onChange={(e) => setBlogForm({ ...blogForm, title: e.target.value })}
-                  placeholder="Blog title"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Slug</label>
-                <Input
-                  value={blogForm.slug}
-                  onChange={(e) => setBlogForm({ ...blogForm, slug: e.target.value })}
-                  placeholder="blog-url-slug (auto-generated if empty)"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Author</label>
-                <Input
-                  value={blogForm.author}
-                  onChange={(e) => setBlogForm({ ...blogForm, author: e.target.value })}
-                  placeholder="Author name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Cover Image URL</label>
-                <Input
-                  value={blogForm.coverImage}
-                  onChange={(e) => setBlogForm({ ...blogForm, coverImage: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Excerpt</label>
-                <Textarea
-                  value={blogForm.excerpt}
-                  onChange={(e) => setBlogForm({ ...blogForm, excerpt: e.target.value })}
-                  placeholder="Short description for preview"
-                  rows={2}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Content *</label>
-                <Textarea
-                  value={blogForm.content}
-                  onChange={(e) => setBlogForm({ ...blogForm, content: e.target.value })}
-                  placeholder="Full blog content (supports HTML)"
-                  rows={10}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Tags (comma-separated)</label>
-                <Input
-                  value={blogForm.tags}
-                  onChange={(e) => setBlogForm({ ...blogForm, tags: e.target.value })}
-                  placeholder="ai, tools, productivity"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="blogFeatured"
-                  checked={blogForm.featured}
-                  onChange={(e) => setBlogForm({ ...blogForm, featured: e.target.checked })}
-                  className="w-4 h-4"
-                />
-                <label htmlFor="blogFeatured" className="text-sm font-medium">Featured Blog</label>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 mt-4 pt-4 border-t">
-              <Button variant="outline" onClick={() => setBlogModal({ open: false, blog: null })}>
-                Cancel
-              </Button>
-              <Button onClick={handleSaveBlog} className="bg-blue-600 hover:bg-blue-700">
-                {blogModal.blog ? 'Update Blog' : 'Create Blog'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Reject Modal */}
-      {rejectModal.open && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="reject-tool-modal-title">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 id="reject-tool-modal-title" className="text-lg font-semibold">Reject Tool</h3>
-              <button
-                type="button"
-                onClick={() => setRejectModal({ open: false, toolId: null, toolName: '' })}
-                aria-label="Close reject modal"
-                className="cursor-pointer"
-              >
-                <X className="w-5 h-5" aria-hidden="true" />
-              </button>
-            </div>
-            <p className="text-gray-600 mb-4">
-              Rejecting: <strong>{rejectModal.toolName}</strong>
-            </p>
-            <Textarea
-              placeholder="Enter rejection reason (will be visible to the user)..."
-              aria-label="Enter rejection reason (visible to submitter)"
-              value={rejectComment}
-              onChange={(e) => setRejectComment(e.target.value)}
-              className="mb-4"
-              rows={4}
-            />
-            <div className="flex gap-3 justify-end">
-              <Button variant="outline" onClick={() => setRejectModal({ open: false, toolId: null, toolName: '' })}>
-                Cancel
-              </Button>
-              <Button variant="destructive" onClick={handleReject}>
-                Reject Tool
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-
-
-      {/* Bulk Log Tools Modal */}
-      {bulkLogTools.open && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto py-8">
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl mx-4 my-auto max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Tools from Bulk Upload</h3>
-              <button onClick={() => setBulkLogTools({ open: false, logId: null, tools: [] })}>
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <p className="text-sm text-gray-600 mb-4">Total: {bulkLogTools.tools.length} tools</p>
-            {bulkLogTools.tools.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No tools found (may have been deleted or undone)</p>
-            ) : (
-              <div className="space-y-2 max-h-[50vh] overflow-y-auto">
-                {bulkLogTools.tools.map((tool) => (
-                  <div key={tool._id} className="flex items-center gap-3 p-3 border rounded">
-                    <img src={tool.logo} alt={tool.name} className="w-10 h-10 rounded object-cover" />
-                    <div className="flex-1">
-                      <p className="font-medium">{tool.name}</p>
-                      <p className="text-xs text-gray-500">{tool.website}</p>
-                    </div>
-                    <Badge variant={tool.status === 'approved' ? 'default' : 'secondary'}>{tool.status}</Badge>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Shop Product Modal */}
-      {shopModal.open && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto py-8">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 my-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">
-                {shopModal.product ? 'Edit Product' : 'Add New Product'}
-              </h3>
-              <button onClick={() => setShopModal({ open: false, product: null })}>
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Product Name *</label>
-                  <Input
-                    value={shopForm.name}
-                    onChange={(e) => setShopForm({ ...shopForm, name: e.target.value })}
-                    placeholder="AI Tool Bundle"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Category</label>
-                  <Input
-                    value={shopForm.category}
-                    onChange={(e) => setShopForm({ ...shopForm, category: e.target.value })}
-                    placeholder="AI Tool"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Product Image</label>
-                
-                {/* Option 1: Fetch from URL */}
-                <div className="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <label className="block text-xs font-medium text-blue-800 mb-2">Option 1: Auto-fetch from Website</label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={productUrl}
-                      onChange={(e) => setProductUrl(e.target.value)}
-                      placeholder="https://example.com"
-                      className="flex-1 text-sm"
-                    />
-                    <Button 
-                      type="button" 
-                      variant="outline"
-                      size="sm"
-                      disabled={imageFetching}
-                      onClick={fetchProductImage}
-                      className="bg-blue-600 text-white hover:bg-blue-700"
-                    >
-                      {imageFetching ? (
-                        <>
-                          <span className="w-3 h-3 mr-1 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                          Fetching...
-                        </>
-                      ) : (
-                        <>
-                          <Globe className="w-3 h-3 mr-1" />
-                          Fetch Image
-                        </>
-                      )}
-                    </Button>
-                  </div>
+          {/* ========================================================================= */}
+          {/* TAB 6: BULK CSV UPLOAD                                                    */}
+          {/* ========================================================================= */}
+          <TabsContent value="bulk" className="mt-6 focus-visible:outline-none">
+            <Card className="border-slate-200/80 shadow-xs max-w-2xl mx-auto">
+              <CardHeader className="p-6 pb-4 border-b border-slate-100 text-center">
+                <CardTitle className="text-xl font-bold text-slate-900">Bulk Upload Tools via CSV</CardTitle>
+                <p className="text-xs text-slate-500">Import hundreds of curated AI tools in a single batch.</p>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-xs text-blue-800 space-y-2">
+                  <p className="font-bold">Required CSV Header Format:</p>
+                  <code className="block bg-white/70 p-2 rounded border border-blue-200 font-mono text-[11px]">
+                    Name, Website (Original), Category, Pricing, Description
+                  </code>
                 </div>
 
-                {/* Option 2: Upload from PC */}
-                <div className="mb-3 p-3 bg-green-50 rounded-lg border border-green-200">
-                  <label className="block text-xs font-medium text-green-800 mb-2">Option 2: Upload from Your PC</label>
-                  <input
-                    ref={shopImageInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={async (e) => {
-                      const file = e.target.files[0];
-                      if (!file) return;
-                      setImageUploading(true);
-                      const formData = new FormData();
-                      formData.append('file', file);
-                      try {
-                        console.log('Uploading file:', file.name, file.size);
-                        const res = await fetch('/api/upload', {
-                          method: 'POST',
-                          credentials: 'include',
-                          body: formData,
-                        });
-                        console.log('Response status:', res.status);
-                        const data = await res.json();
-                        console.log('Response data:', data);
-                        if (data.success && data.url) {
-                          setShopForm(prev => ({ ...prev, image: data.url }));
-                          alert('Image uploaded successfully!');
-                        } else {
-                          alert('Upload failed: ' + (data.error || data.details || 'Unknown error'));
-                        }
-                      } catch (error) {
-                        console.error('Upload error:', error);
-                        alert('Upload failed: ' + error.message);
-                      } finally {
-                        setImageUploading(false);
-                        if (shopImageInputRef.current) {
-                          shopImageInputRef.current.value = '';
-                        }
-                      }
-                    }}
-                  />
-                  <Button 
-                    type="button" 
-                    variant="outline"
-                    size="sm"
-                    disabled={imageUploading}
-                    onClick={() => shopImageInputRef.current?.click()}
-                    className="bg-green-600 text-white hover:bg-green-700"
-                  >
-                    {imageUploading ? (
-                      <>
-                        <span className="w-3 h-3 mr-1 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                        Uploading...
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="w-3 h-3 mr-1" />
-                        Upload from PC
-                      </>
-                    )}
+                <div className="flex gap-4">
+                  <Button variant="outline" onClick={downloadTemplate} className="w-full text-xs font-semibold">
+                    <Download className="w-4 h-4 mr-2" />
+                    Download Sample CSV Template
                   </Button>
                 </div>
 
-                {/* Option 3: Direct URL */}
-                <div className="mb-3">
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Or paste image URL directly:</label>
-                  <Input
-                    value={shopForm.image}
-                    onChange={(e) => setShopForm({ ...shopForm, image: e.target.value })}
-                    placeholder="https://example.com/image.jpg"
-                    className="text-sm"
+                <div className="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center bg-slate-50 hover:bg-slate-100/80 transition-colors">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".csv"
+                    onChange={handleCSVUpload}
+                    className="hidden"
+                    id="csv-upload"
                   />
+                  <label htmlFor="csv-upload" className="cursor-pointer block">
+                    <FileSpreadsheet className="w-12 h-12 mx-auto text-slate-400 mb-3" />
+                    <p className="text-sm font-bold text-slate-700 mb-1">
+                      {uploading ? 'Processing & Uploading CSV...' : 'Click to Choose CSV File'}
+                    </p>
+                    <p className="text-xs text-slate-500">Supports .csv files up to 10MB</p>
+                  </label>
                 </div>
 
-                {/* Image Preview */}
-                {shopForm.image && (
-                  <div className="mt-2 flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <img src={shopForm.image} alt="Preview" className="w-24 h-24 object-cover rounded border" />
-                    <div className="text-sm">
-                      <p className="text-green-600 font-medium">✓ Image loaded</p>
-                      <p className="text-gray-500 text-xs truncate max-w-[200px]">{shopForm.image}</p>
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-red-500 hover:text-red-700 mt-1 p-0 h-auto"
-                        onClick={() => setShopForm(prev => ({ ...prev, image: '' }))}
-                      >
-                        <X className="w-3 h-3 mr-1" /> Remove
-                      </Button>
-                    </div>
+                {bulkUploadStatus && (
+                  <div className={`p-4 rounded-xl text-xs ${bulkUploadStatus.type === 'success' ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : 'bg-red-50 border border-red-200 text-red-800'}`}>
+                    <p className="font-bold">{bulkUploadStatus.message}</p>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ========================================================================= */}
+          {/* TAB 7: BULK LOGS                                                          */}
+          {/* ========================================================================= */}
+          <TabsContent value="bulkLogs" className="mt-6 focus-visible:outline-none">
+            <Card className="border-slate-200/80 shadow-xs">
+              <CardHeader className="p-6 pb-4 border-b border-slate-100">
+                <CardTitle className="text-xl font-bold text-slate-900">Bulk Upload History & Rollback</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                {bulkLogs.length === 0 ? (
+                  <p className="text-xs text-slate-500 text-center py-8">No bulk uploads recorded yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {bulkLogs.map((log) => (
+                      <div key={log._id} className="p-4 border border-slate-200 rounded-xl flex items-center justify-between bg-white">
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">
+                            Uploaded {new Date(log.createdAt).toLocaleString()}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            Success: {log.successfulCount || log.successCount || 0} tools | Failed: {log.failedCount || 0}
+                          </p>
+                        </div>
+                        {!log.undone && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => undoBulkUpload(log._id)}
+                            className="text-xs text-red-600 border-red-200 hover:bg-red-50 font-semibold"
+                          >
+                            <Undo2 className="w-3.5 h-3.5 mr-1" />
+                            Undo Upload
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ========================================================================= */}
+          {/* TAB 8: BLOGS                                                              */}
+          {/* ========================================================================= */}
+          <TabsContent value="blogs" className="mt-6 focus-visible:outline-none">
+            <Card className="border-slate-200/80 shadow-xs">
+              <CardHeader className="p-6 pb-4 border-b border-slate-100 flex flex-row items-center justify-between">
+                <CardTitle className="text-xl font-bold text-slate-900">Editorial Blog Articles</CardTitle>
+                <Link href="/blog">
+                  <Button size="sm" variant="outline" className="text-xs font-semibold">
+                    View Live Blog
+                  </Button>
+                </Link>
+              </CardHeader>
+              <CardContent className="p-6">
+                {blogs.length === 0 ? (
+                  <p className="text-xs text-slate-500 text-center py-8">No blog posts available.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {blogs.map((b) => (
+                      <div key={b._id} className="p-4 border border-slate-200 rounded-xl flex items-center justify-between bg-white">
+                        <div>
+                          <h4 className="font-bold text-sm text-slate-900">{b.title}</h4>
+                          <p className="text-xs text-slate-500">{b.slug} • Published {new Date(b.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <Link href={`/blog/${b.slug}`} target="_blank">
+                          <Button size="sm" variant="outline" className="text-xs">
+                            <Eye className="w-3.5 h-3.5 mr-1" />
+                            Read
+                          </Button>
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* ACTION MODAL: MAKE ADMIN / REMOVE ADMIN (STRICT "YES" REQUIRED)            */}
+      {/* ========================================================================= */}
+      {adminRoleModal.open && adminRoleModal.user && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className={`p-3 rounded-2xl ${adminRoleModal.action === 'make' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                {adminRoleModal.action === 'make' ? <Shield className="w-6 h-6" /> : <ShieldOff className="w-6 h-6" />}
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Image Alt Text (SEO Keywords)</label>
-                <Input
-                  value={shopForm.imageAlt}
-                  onChange={(e) => setShopForm({ ...shopForm, imageAlt: e.target.value })}
-                  placeholder="Best AI directory tool, software discount, AI tool bundle"
-                />
-                <p className="text-xs text-gray-500 mt-1">Add keywords like: Best AI directory tool, software and AI tool in discount, AI tool buy</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Short Description</label>
-                <Input
-                  value={shopForm.shortDescription}
-                  onChange={(e) => setShopForm({ ...shopForm, shortDescription: e.target.value })}
-                  placeholder="Brief description for listing"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Full Description</label>
-                <Textarea
-                  value={shopForm.description}
-                  onChange={(e) => setShopForm({ ...shopForm, description: e.target.value })}
-                  rows={4}
-                  placeholder="Detailed product description"
-                />
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Monthly Price (₹)</label>
-                  <Input
-                    type="number"
-                    value={shopForm.monthlyPrice}
-                    onChange={(e) => setShopForm({ ...shopForm, monthlyPrice: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">6 Months Price (₹)</label>
-                  <Input
-                    type="number"
-                    value={shopForm.halfYearlyPrice}
-                    onChange={(e) => setShopForm({ ...shopForm, halfYearlyPrice: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Yearly Price (₹)</label>
-                  <Input
-                    type="number"
-                    value={shopForm.yearlyPrice}
-                    onChange={(e) => setShopForm({ ...shopForm, yearlyPrice: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Original Price ($)</label>
-                  <Input
-                    type="number"
-                    value={shopForm.originalPrice}
-                    onChange={(e) => setShopForm({ ...shopForm, originalPrice: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Discount % (e.g., 80)</label>
-                <Input
-                  type="number"
-                  value={shopForm.discount}
-                  onChange={(e) => setShopForm({ ...shopForm, discount: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Features (one per line)</label>
-                <Textarea
-                  value={shopForm.features}
-                  onChange={(e) => setShopForm({ ...shopForm, features: e.target.value })}
-                  rows={4}
-                  placeholder="Lifetime Access&#10;All Future Updates&#10;Priority Support"
-                />
+                <h3 className="text-lg font-bold text-slate-900">
+                  {adminRoleModal.action === 'make' ? 'Promote to Administrator?' : 'Remove Administrator Privileges?'}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Target: <strong className="text-slate-800">{adminRoleModal.user.name || adminRoleModal.user.email}</strong>
+                </p>
               </div>
             </div>
-            <div className="flex gap-3 justify-end mt-6">
-              <Button variant="outline" onClick={() => setShopModal({ open: false, product: null })}>
+
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-4 text-xs text-slate-700 space-y-2">
+              <p>
+                {adminRoleModal.action === 'make'
+                  ? 'This user will receive full permissions to moderate tools, promote or demote users, and manage the live directory.'
+                  : 'This user will be demoted to a regular member and will lose access to the admin dashboard.'}
+              </p>
+              <p className="font-semibold text-slate-900">
+                To prevent accidental changes, please type <span className="font-mono text-red-600 bg-white px-1.5 py-0.5 rounded border border-slate-300">YES</span> in all caps to confirm.
+              </p>
+            </div>
+
+            {adminRoleModal.error && (
+              <div className="p-3 mb-4 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-medium">
+                {adminRoleModal.error}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Type YES to confirm:
+                </label>
+                <Input
+                  value={adminRoleModal.confirmText}
+                  onChange={(e) => setAdminRoleModal(p => ({ ...p, confirmText: e.target.value }))}
+                  placeholder="YES"
+                  autoFocus
+                  className="h-10 text-sm font-mono tracking-widest text-center uppercase"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2.5 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setAdminRoleModal({ open: false, user: null, action: 'make', confirmText: '', loading: false, error: '' })}
+                  disabled={adminRoleModal.loading}
+                  className="cursor-pointer font-semibold text-xs"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={executeAdminRoleChange}
+                  disabled={adminRoleModal.confirmText !== 'YES' || adminRoleModal.loading}
+                  className={`font-bold text-xs shadow-xs cursor-pointer ${
+                    adminRoleModal.action === 'make'
+                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                      : 'bg-red-600 hover:bg-red-700 text-white'
+                  }`}
+                >
+                  {adminRoleModal.loading ? 'Updating...' : adminRoleModal.action === 'make' ? 'Confirm Make Admin' : 'Confirm Remove Admin'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* ACTION MODAL: APPROVE TOOL CONFIRMATION                                    */}
+      {/* ========================================================================= */}
+      {approveModal.open && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 text-center">
+            <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
+              <CheckCircle className="w-7 h-7" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 mb-1">Approve Tool Submission?</h3>
+            <p className="text-xs text-slate-600 mb-6">
+              Are you sure you want to approve <strong className="text-slate-900">"{approveModal.toolName}"</strong>? It will immediately become visible to all visitors in the directory catalog.
+            </p>
+
+            <div className="flex justify-center gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setApproveModal({ open: false, toolId: null, toolName: '', loading: false })}
+                disabled={approveModal.loading}
+                className="font-semibold text-xs cursor-pointer"
+              >
                 Cancel
               </Button>
-              <Button onClick={saveShopProduct} className="bg-blue-600 hover:bg-blue-700">
-                {shopModal.product ? 'Save Changes' : 'Add Product'}
+              <Button
+                onClick={executeApprove}
+                disabled={approveModal.loading}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs cursor-pointer"
+              >
+                {approveModal.loading ? 'Approving...' : 'Yes, Approve Tool'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* ACTION MODAL: REJECT TOOL (REQUIRED REASON TEXTAREA)                      */}
+      {/* ========================================================================= */}
+      {rejectModal.open && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-3 bg-red-100 text-red-600 rounded-2xl">
+                <XCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Reject Tool Submission</h3>
+                <p className="text-xs text-slate-500">Tool: <strong className="text-slate-800">{rejectModal.toolName}</strong></p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 mb-4">
+              Please provide a clear rejection reason. This feedback will be displayed directly to the submitting user on their dashboard so they can fix and resubmit.
+            </p>
+
+            {rejectModal.error && (
+              <div className="p-3 mb-4 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-medium">
+                {rejectModal.error}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Reason for Rejection *
+                </label>
+                <Textarea
+                  value={rejectModal.reason}
+                  onChange={(e) => setRejectModal(p => ({ ...p, reason: e.target.value }))}
+                  placeholder="e.g., Missing working website link, insufficient description, duplicate tool listing..."
+                  rows={4}
+                  required
+                  className="text-xs rounded-xl"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2.5 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setRejectModal({ open: false, toolId: null, toolName: '', reason: '', loading: false, error: '' })}
+                  disabled={rejectModal.loading}
+                  className="font-semibold text-xs cursor-pointer"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={executeReject}
+                  disabled={!rejectModal.reason.trim() || rejectModal.loading}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xs cursor-pointer"
+                >
+                  {rejectModal.loading ? 'Rejecting...' : 'Reject Submission'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL: FULL SUBMISSION DETAIL DRAWER                                      */}
+      {/* ========================================================================= */}
+      {detailModal.open && detailModal.submission && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto space-y-5">
+            <div className="flex items-start justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3">
+                <img
+                  src={detailModal.submission.logo || '/logo.jpg'}
+                  alt={detailModal.submission.name}
+                  className="w-14 h-14 rounded-2xl object-cover border border-slate-200 bg-slate-50"
+                  onError={(e) => { e.currentTarget.src = '/logo.jpg'; }}
+                />
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">{detailModal.submission.name}</h3>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <Badge
+                      className={
+                        (detailModal.submission.status || 'pending').toLowerCase() === 'approved'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : (detailModal.submission.status || 'pending').toLowerCase() === 'pending'
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-red-100 text-red-800'
+                      }
+                    >
+                      {(detailModal.submission.status || 'pending').toUpperCase()}
+                    </Badge>
+                    <span className="text-xs text-slate-500 font-mono">{detailModal.submission.slug}</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setDetailModal({ open: false, submission: null })}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Submitter Info Section */}
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                  <Users className="w-4 h-4 text-blue-600" />
+                  Submitter Information
+                </span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => navigateToUser(detailModal.submission.submitter?.email || detailModal.submission.submitter?.userId || detailModal.submission.submittedBy)}
+                  className="h-6 text-xs text-blue-600 font-semibold p-0 cursor-pointer"
+                >
+                  View User in Admin Tab →
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-700">
+                <p><strong>Name:</strong> {detailModal.submission.submitter?.name || detailModal.submission.submitterName || 'Community Member'}</p>
+                <p><strong>Email:</strong> {detailModal.submission.submitter?.email || detailModal.submission.submitterEmail || 'N/A'}</p>
+                <p><strong>Country:</strong> {detailModal.submission.submitter?.country || detailModal.submission.submitterCountry || 'N/A'}</p>
+                <p>
+                  <strong>LinkedIn:</strong>{' '}
+                  {(detailModal.submission.submitter?.linkedinProfile || detailModal.submission.linkedinProfile) ? (
+                    <a
+                      href={detailModal.submission.submitter?.linkedinProfile || detailModal.submission.linkedinProfile}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline inline-flex items-center gap-1"
+                    >
+                      Profile Link <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+                  ) : (
+                    'None'
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* Tool Data Overview */}
+            <div className="space-y-3 text-xs text-slate-700">
+              <div>
+                <strong className="block text-slate-900 mb-0.5">Website URL:</strong>
+                <a
+                  href={detailModal.submission.website || detailModal.submission.websiteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline flex items-center gap-1 font-mono"
+                >
+                  {detailModal.submission.website || detailModal.submission.websiteUrl}
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+
+              <div>
+                <strong className="block text-slate-900 mb-0.5">Short Description:</strong>
+                <p className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-slate-800">
+                  {detailModal.submission.shortDescription || 'None'}
+                </p>
+              </div>
+
+              {detailModal.submission.description && (
+                <div>
+                  <strong className="block text-slate-900 mb-0.5">Full Description:</strong>
+                  <p className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-slate-800 whitespace-pre-line">
+                    {detailModal.submission.description || detailModal.submission.fullDescription}
+                  </p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <strong className="block text-slate-900 mb-0.5">Category:</strong>
+                  <span className="font-medium text-slate-800">
+                    {detailModal.submission.category || (Array.isArray(detailModal.submission.categories) ? detailModal.submission.categories.join(', ') : 'N/A')}
+                  </span>
+                </div>
+                <div>
+                  <strong className="block text-slate-900 mb-0.5">Pricing:</strong>
+                  <span className="font-medium text-slate-800">
+                    {detailModal.submission.pricing || detailModal.submission.pricingModel || 'Free'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Rejection notice if exists */}
+              {(detailModal.submission.rejectionReason || detailModal.submission.rejectionComment) && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-red-900">
+                  <strong className="block text-red-800 mb-0.5">Existing Rejection Reason:</strong>
+                  <p>{detailModal.submission.rejectionReason || detailModal.submission.rejectionComment}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Moderation Actions */}
+            <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
+              <Button
+                variant="outline"
+                onClick={() => setDetailModal({ open: false, submission: null })}
+                className="font-semibold text-xs"
+              >
+                Close
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => openRejectModal(detailModal.submission._id, detailModal.submission.name)}
+                className="bg-red-600 hover:bg-red-700 font-bold text-xs"
+              >
+                <XCircle className="w-3.5 h-3.5 mr-1" />
+                Reject
+              </Button>
+              <Button
+                onClick={() => openApproveModal(detailModal.submission._id, detailModal.submission.name)}
+                className="bg-emerald-600 hover:bg-emerald-700 font-bold text-xs text-white"
+              >
+                <CheckCircle className="w-3.5 h-3.5 mr-1" />
+                Approve & Publish
               </Button>
             </div>
           </div>
@@ -1830,74 +1676,12 @@ function AdminDashboardContent() {
   );
 }
 
-function UsersList({ users, onMakeAdmin, onRemoveAdmin }) {
-  if (users.length === 0) {
+// Sub-component for Catalog Tools List
+function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onToggleTrending, onDelete, returnToUrl = '/admin' }) {
+  if (!tools || tools.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">No users found</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {users.map((user) => (
-        <div key={user.id} className="flex items-center gap-4 p-4 border rounded-lg bg-white">
-          <img 
-            src={user.imageUrl} 
-            alt={user.email} 
-            className="w-12 h-12 rounded-full"
-          />
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-black">
-                {user.firstName} {user.lastName}
-              </h3>
-              {user.isAdmin && (
-                <Badge className="bg-green-600 text-white">
-                  <Shield className="w-3 h-3 mr-1" />
-                  Admin
-                </Badge>
-              )}
-            </div>
-            <p className="text-sm text-gray-600">{user.email}</p>
-            <p className="text-xs text-gray-500">
-              Joined {new Date(user.createdAt).toLocaleDateString()}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            {user.isAdmin ? (
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={() => onRemoveAdmin(user.id)}
-                className="text-red-600 border-red-600 hover:bg-red-50"
-              >
-                <ShieldOff className="w-4 h-4 mr-1" />
-                Remove Admin
-              </Button>
-            ) : (
-              <Button 
-                size="sm"
-                onClick={() => onMakeAdmin(user.id)}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <Shield className="w-4 h-4 mr-1" />
-                Make Admin
-              </Button>
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onToggleTrending, onDelete, onEdit, returnToUrl = '/admin' }) {
-  if (tools.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">No tools found</p>
+        <p className="text-xs text-slate-500 font-medium">No tools found in catalog.</p>
       </div>
     );
   }
@@ -1905,132 +1689,113 @@ function AdminToolList({ tools, onApprove, onReject, onToggleFeatured, onToggleT
   return (
     <div className="space-y-4">
       {tools.map((tool) => (
-        <div key={tool._id} className="flex items-start gap-4 p-4 border rounded-lg hover:border-gray-300 transition-colors bg-white">
+        <div key={tool._id} className="flex items-start gap-4 p-4 border border-slate-200/90 rounded-2xl hover:border-slate-300 transition-colors bg-white shadow-2xs">
           <img
-            src={tool.logo || '/placeholder-tool.png'}
+            src={tool.logo || '/logo.jpg'}
             alt={tool.name}
             loading="lazy"
             decoding="async"
-            className="w-16 h-16 rounded-lg object-cover flex-shrink-0 bg-gray-100 border border-gray-100"
+            className="w-14 h-14 rounded-xl object-cover flex-shrink-0 bg-slate-50 border border-slate-100"
             onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
           />
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between mb-2">
+            <div className="flex items-start justify-between mb-1.5 gap-2">
               <div>
-                <h3 className="font-semibold text-black mb-1">{tool.name}</h3>
-                <p className="text-sm text-gray-600 mb-2">{tool.shortDescription}</p>
+                <h3 className="font-bold text-slate-900 text-base">{tool.name}</h3>
+                <p className="text-xs text-slate-600 line-clamp-2">{tool.shortDescription}</p>
               </div>
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-1.5 flex-wrap">
                 <Badge
-                  variant={
+                  className={
                     tool.status === 'approved'
-                      ? 'default'
+                      ? 'bg-emerald-100 text-emerald-800'
                       : tool.status === 'pending'
-                      ? 'secondary'
-                      : 'destructive'
+                      ? 'bg-amber-100 text-amber-800'
+                      : 'bg-red-100 text-red-800'
                   }
                 >
                   {tool.status}
                 </Badge>
-                {tool.featured && <Badge className="bg-yellow-500 text-black">Featured</Badge>}
-                {tool.trending && <Badge className="bg-orange-500 text-white">Trending</Badge>}
+                {tool.featured && <Badge className="bg-amber-400 text-slate-950 font-bold text-[10px]">Featured</Badge>}
+                {tool.trending && <Badge className="bg-orange-500 text-white font-bold text-[10px]">Trending</Badge>}
               </div>
             </div>
 
-            {/* Show rejection comment if rejected */}
-            {tool.status === 'rejected' && tool.rejectionComment && (
-              <div className="bg-red-50 border border-red-200 rounded p-2 mb-3">
-                <p className="text-xs text-red-600 font-medium">Rejection Reason:</p>
-                <p className="text-sm text-red-700">{tool.rejectionComment}</p>
-              </div>
-            )}
-
-            <div className="flex flex-wrap gap-2 mb-3">
-              {tool.categories?.slice(0, 3).map((cat) => (
-                <Badge key={cat} variant="outline" className="text-xs">
-                  {cat}
-                </Badge>
-              ))}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
-              <span>{tool.pricing}</span>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 mt-2">
+              <span className="font-medium">{tool.pricing || 'Free'}</span>
               <span>•</span>
-              <span>⭐ {tool.rating}</span>
+              <span>⭐ {tool.rating || 4.5}</span>
               <span>•</span>
-              <span>{tool.votes} votes</span>
-              <span>•</span>
-              <span>Added {new Date(tool.createdAt).toLocaleDateString()}</span>
+              <span>Added {tool.createdAt ? new Date(tool.createdAt).toLocaleDateString() : 'N/A'}</span>
               {tool.submitterEmail && (
                 <>
                   <span>•</span>
-                  <span className="text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-xs">
-                    Submitted by: {tool.submitterEmail}
+                  <span className="text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-[11px] font-medium">
+                    Submitter: {tool.submitterEmail}
                   </span>
                 </>
               )}
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            {tool.status === 'pending' && (
-              <>
-                <Button size="sm" onClick={() => onApprove(tool._id)} className="bg-green-600 hover:bg-green-700">
-                  <CheckCircle className="w-4 h-4 mr-1" />
-                  Approve
-                </Button>
-                <Button size="sm" variant="destructive" onClick={() => onReject(tool._id, tool.name)}>
-                  <XCircle className="w-4 h-4 mr-1" />
-                  Reject
-                </Button>
-              </>
-            )}
+          <div className="flex flex-col gap-1.5 flex-shrink-0">
             {tool.status === 'approved' && (
               <>
                 <Button
                   size="sm"
                   variant={tool.featured ? 'default' : 'outline'}
                   onClick={() => onToggleFeatured(tool._id, tool.featured)}
+                  className="h-7 text-xs font-semibold"
                 >
-                  <Star className="w-4 h-4 mr-1" />
+                  <Star className="w-3 h-3 mr-1" />
                   {tool.featured ? 'Unfeature' : 'Feature'}
                 </Button>
                 <Button
                   size="sm"
                   variant={tool.trending ? 'default' : 'outline'}
                   onClick={() => onToggleTrending && onToggleTrending(tool._id, tool.trending)}
-                  className={tool.trending ? 'bg-orange-500 hover:bg-orange-600' : ''}
+                  className={`h-7 text-xs font-semibold ${tool.trending ? 'bg-orange-500 hover:bg-orange-600 text-white' : ''}`}
                 >
-                  <Zap className="w-4 h-4 mr-1" />
+                  <Zap className="w-3 h-3 mr-1" />
                   {tool.trending ? 'Untrend' : 'Trend'}
                 </Button>
-                <Link href={`/tools/${tool.slug}`}>
-                  <Button size="sm" variant="outline" className="w-full">
-                    <Eye className="w-4 h-4 mr-1" />
-                    View
-                  </Button>
-                </Link>
+                {tool.slug && (
+                  <Link href={`/tools/${tool.slug}`} target="_blank">
+                    <Button size="sm" variant="outline" className="h-7 text-xs w-full">
+                      <Eye className="w-3 h-3 mr-1" />
+                      Live
+                    </Button>
+                  </Link>
+                )}
               </>
             )}
-            {tool.status === 'rejected' && (
-              <Button size="sm" onClick={() => onApprove(tool._id)} variant="outline">
-                <CheckCircle className="w-4 h-4 mr-1" />
-                Approve
-              </Button>
+
+            {tool.status === 'pending' && (
+              <>
+                <Button size="sm" onClick={() => onApprove(tool._id)} className="h-7 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Approve
+                </Button>
+                <Button size="sm" variant="destructive" onClick={() => onReject(tool._id, tool.name)} className="h-7 text-xs font-bold">
+                  <XCircle className="w-3 h-3 mr-1" />
+                  Reject
+                </Button>
+              </>
             )}
-            {/* Edit button - opens in new tab with returnTo */}
+
             <Link
               href={`/admin/tools/${tool._id}/edit?returnTo=${encodeURIComponent(returnToUrl || '/admin')}`}
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Button size="sm" variant="outline" className="w-full text-blue-600 border-blue-600 hover:bg-blue-50">
-                <Edit className="w-4 h-4 mr-1" />
+              <Button size="sm" variant="outline" className="h-7 text-xs w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                <Edit className="w-3 h-3 mr-1" />
                 Edit
               </Button>
             </Link>
-            <Button size="sm" variant="ghost" onClick={() => onDelete(tool._id)} className="text-red-600 hover:text-red-700 hover:bg-red-50">
-              <Trash2 className="w-4 h-4 mr-1" />
+
+            <Button size="sm" variant="ghost" onClick={() => onDelete(tool._id)} className="h-7 text-xs text-red-600 hover:bg-red-50">
+              <Trash2 className="w-3 h-3 mr-1" />
               Delete
             </Button>
           </div>
@@ -2044,10 +1809,10 @@ export default function AdminPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-            <p className="text-sm text-gray-500">Loading admin dashboard...</p>
+            <p className="text-xs text-slate-500">Loading admin dashboard...</p>
           </div>
         </div>
       }

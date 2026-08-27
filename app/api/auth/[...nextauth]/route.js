@@ -36,6 +36,7 @@ export const authOptions = {
           const updateFields = {
             name: user.name || existing.name || '',
             imageUrl: user.image || existing.imageUrl || existing.image || '',
+            lastLoginAt: now,
             updatedAt: now,
           };
           if (isEnvAdmin) {
@@ -58,6 +59,7 @@ export const authOptions = {
             linkedinProfile: '',
             role: isEnvAdmin ? 'admin' : 'user',
             isAdmin: isEnvAdmin,
+            lastLoginAt: now,
             createdAt: now,
             updatedAt: now,
           });
