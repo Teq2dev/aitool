@@ -12,11 +12,11 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Upload, CheckCircle, X, Image as ImageIcon, Globe,
-  Plus, Zap, DollarSign, ThumbsUp, ThumbsDown, Tag, Layers, ArrowLeft, Shield, Trash2, Linkedin
+  Plus, Zap, DollarSign, ThumbsUp, ThumbsDown, Tag, Layers, ArrowLeft, Shield, Trash2, Linkedin, HelpCircle, AlertCircle
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { isValidLinkedInUrl, normalizeLinkedInUrl } from '@/lib/countries';
-
+import Link from 'next/link';
 
 // Toggle pill (Yes / No)
 function YesNoPill({ value, onChange }) {
@@ -53,7 +53,7 @@ function SectionIcon({ icon: Icon, label }) {
 }
 
 export default function ToolEditorForm({
-  mode = 'create', // 'create' | 'edit'
+  mode = 'create', // 'create' | 'edit' | 'resubmit'
   initialData = null,
   initialUser = null,
   toolId = null,
@@ -87,14 +87,16 @@ export default function ToolEditorForm({
     // Pros & Cons
     pros: Array.isArray(initialData?.pros) ? initialData.pros : [],
     cons: Array.isArray(initialData?.cons) ? initialData.cons : [],
+    // FAQs
+    faqs: Array.isArray(initialData?.faqs) ? initialData.faqs : [],
     // Classification
-    categories: Array.isArray(initialData?.categories) ? initialData.categories : [],
+    categories: Array.isArray(initialData?.categories) ? initialData.categories : (initialData?.category ? [initialData.category] : []),
     tags: Array.isArray(initialData?.tags) ? initialData.tags : [],
     // Admin only fields
     status: initialData?.status || 'pending',
     featured: initialData?.featured || false,
     trending: initialData?.trending || false,
-    rejectionComment: initialData?.rejectionComment || '',
+    rejectionComment: initialData?.rejectionComment || initialData?.rejectionReason || '',
   });
 
   const [logoFile, setLogoFile] = useState(null);
@@ -135,12 +137,13 @@ export default function ToolEditorForm({
         pricingDetails: initialData?.pricingDetails || prev.pricingDetails || '',
         pros: Array.isArray(initialData?.pros) ? initialData.pros : prev.pros,
         cons: Array.isArray(initialData?.cons) ? initialData.cons : prev.cons,
-        categories: Array.isArray(initialData?.categories) ? initialData.categories : prev.categories,
+        faqs: Array.isArray(initialData?.faqs) ? initialData.faqs : prev.faqs,
+        categories: Array.isArray(initialData?.categories) ? initialData.categories : (initialData?.category ? [initialData.category] : prev.categories),
         tags: Array.isArray(initialData?.tags) ? initialData.tags : prev.tags,
         status: initialData?.status || prev.status || 'pending',
         featured: initialData?.featured !== undefined ? initialData.featured : prev.featured,
         trending: initialData?.trending !== undefined ? initialData.trending : prev.trending,
-        rejectionComment: initialData?.rejectionComment || prev.rejectionComment || '',
+        rejectionComment: initialData?.rejectionComment || initialData?.rejectionReason || prev.rejectionComment || '',
       }));
       if (initialData?.logo) {
         setLogoPreview(initialData.logo);
@@ -148,23 +151,33 @@ export default function ToolEditorForm({
     }
   }, [initialData, initialUser]);
 
-  // Logo handlers
+  // Handle logo file selection
   const handleLogoChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) { alert('Please upload an image file'); return; }
-    if (file.size > 2 * 1024 * 1024) { alert('Image size must be under 2 MB'); return; }
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size exceeds 2 MB limit');
+      return;
+    }
+
     setLogoFile(file);
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setLogoPreview(reader.result);
-      setFormData((p) => ({ ...p, logo: '' }));
-    };
+    reader.onload = () => setLogoPreview(reader.result);
     reader.readAsDataURL(file);
+    setErrors((prev) => ({ ...prev, logo: undefined }));
   };
 
+  // Auto-fetch favicon from website URL
   const fetchFavicon = async () => {
-    if (!formData.website) { alert('Enter the website URL first'); return; }
+    if (!formData.website) {
+      alert('Please enter a website URL first');
+      return;
+    }
     setFetchingFavicon(true);
     try {
       const res = await fetch('/api/fetch-favicon', {
@@ -173,29 +186,31 @@ export default function ToolEditorForm({
         body: JSON.stringify({ url: formData.website }),
       });
       const data = await res.json();
-      if (data.success && data.faviconUrl) {
+      if (data.faviconUrl) {
         setLogoPreview(data.faviconUrl);
         setFormData((p) => ({ ...p, logo: data.faviconUrl }));
         setLogoFile(null);
+        setErrors((prev) => ({ ...prev, logo: undefined }));
       } else {
-        alert('Failed to fetch favicon. Try uploading an image instead.');
+        alert('Could not fetch favicon automatically. Please upload an image instead.');
       }
     } catch {
-      alert('Failed to fetch favicon.');
+      alert('Failed to fetch favicon');
     } finally {
       setFetchingFavicon(false);
     }
   };
 
+  // Upload logo to Cloudinary
   const uploadLogo = async () => {
-    if (!logoFile) return null;
+    if (!logoFile) return logoPreview;
     setUploading(true);
+    const form = new FormData();
+    form.append('file', logoFile);
     try {
-      const fd = new FormData();
-      fd.append('file', logoFile);
-      const res = await fetch('/api/upload', { method: 'POST', body: fd });
-      if (!res.ok) throw new Error('Upload failed');
+      const res = await fetch('/api/upload', { method: 'POST', body: form });
       const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || 'Upload failed');
       return data.url;
     } catch {
       alert('Failed to upload logo');
@@ -219,6 +234,29 @@ export default function ToolEditorForm({
       return { ...p, [key]: arr };
     });
 
+  // FAQ specific handlers
+  const addFaq = () => {
+    setFormData((p) => ({
+      ...p,
+      faqs: [...(p.faqs || []), { question: '', answer: '' }]
+    }));
+  };
+
+  const removeFaq = (idx) => {
+    setFormData((p) => ({
+      ...p,
+      faqs: (p.faqs || []).filter((_, i) => i !== idx)
+    }));
+  };
+
+  const updateFaq = (idx, field, val) => {
+    setFormData((p) => {
+      const list = [...(p.faqs || [])];
+      list[idx] = { ...list[idx], [field]: val };
+      return { ...p, faqs: list };
+    });
+  };
+
   const toggleCategory = (slug) => {
     setFormData((p) => {
       if (p.categories.includes(slug)) return { ...p, categories: p.categories.filter((c) => c !== slug) };
@@ -235,7 +273,7 @@ export default function ToolEditorForm({
     if (formData.website && !/^https?:\/\/.+/.test(formData.website)) e.website = 'Must be a valid URL (https://...)';
     
     // LinkedIn Profile is required for create/submission
-    if (mode === 'create') {
+    if (mode === 'create' || mode === 'resubmit') {
       if (!formData.linkedinProfile?.trim()) {
         e.linkedinProfile = 'LinkedIn Profile URL is required for submitter verification';
       } else if (!isValidLinkedInUrl(formData.linkedinProfile)) {
@@ -278,9 +316,36 @@ export default function ToolEditorForm({
         cons: formData.cons.filter(Boolean),
         tags: formData.tags.filter(Boolean),
         categories: formData.categories,
+        faqs: Array.isArray(formData.faqs)
+          ? formData.faqs.filter(f => f && (f.question?.trim() || f.answer?.trim())).map(f => ({
+              question: f.question?.trim() || '',
+              answer: f.answer?.trim() || ''
+            }))
+          : [],
       };
 
-      if (mode === 'edit') {
+      if (mode === 'resubmit') {
+        const targetId = toolId || initialData?._id;
+        const res = await fetch(`/api/my-submissions/${targetId}/resubmit`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          setSuccess(true);
+          if (onSuccess) {
+            onSuccess(data);
+          } else {
+            setTimeout(() => router.push(getLangUrl('/dashboard')), 1500);
+          }
+        } else {
+          setServerError(data.error || data.message || 'Failed to resubmit tool. Please try again.');
+          document.getElementById('form-top')?.scrollIntoView({ behavior: 'smooth' });
+        }
+      } else if (mode === 'edit') {
         const targetId = toolId || initialData?._id;
         const res = await fetch(`/api/admin/tools/${targetId}/edit`, {
           method: 'PUT',
@@ -352,49 +417,62 @@ export default function ToolEditorForm({
         credentials: 'include',
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.error || `Failed to delete tool (HTTP ${res.status})`);
-      }
-      if (onDeleteSuccess) {
-        onDeleteSuccess(data);
-      } else if (onCancel) {
-        onCancel();
-      } else if (returnTo) {
-        router.push(returnTo);
+      if (res.ok) {
+        if (onDeleteSuccess) {
+          onDeleteSuccess(targetId);
+        } else {
+          router.push(returnTo || '/admin');
+        }
       } else {
-        router.push('/admin');
+        setServerError(data.error || 'Failed to delete tool.');
+        document.getElementById('form-top')?.scrollIntoView({ behavior: 'smooth' });
       }
     } catch (err) {
-      console.error('Delete error in ToolEditorForm:', err);
-      setServerError(err.message || 'Failed to delete tool.');
-      alert(`Error deleting tool: ${err.message}`);
+      setServerError('Delete error: ' + err.message);
+      document.getElementById('form-top')?.scrollIntoView({ behavior: 'smooth' });
     } finally {
       setDeleting(false);
     }
   };
 
-  if (success && mode === 'create') {
+  // Success view for create/resubmit mode
+  if (success && (mode === 'create' || mode === 'resubmit')) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Card className="max-w-md w-full mx-4 shadow-md">
-          <CardContent className="p-10 text-center">
-            <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-5">
-              <CheckCircle className="w-8 h-8 text-green-500" />
+      <div className="min-h-[70vh] flex items-center justify-center p-4">
+        <Card className="max-w-md w-full text-center p-8 shadow-xl border border-gray-100 rounded-2xl">
+          <CardContent className="pt-4 space-y-4">
+            <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle className="w-8 h-8" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Tool Submitted!</h2>
-            <p className="text-gray-500 mb-6">Your tool has been submitted for review. We will notify you once approved.</p>
-            <Button onClick={() => router.push(getLangUrl('/dashboard'))} className="bg-blue-600 hover:bg-blue-700 w-full">
-              Go to Dashboard
-            </Button>
+            <h2 className="text-2xl font-bold text-gray-900">
+              {mode === 'resubmit' ? 'Tool Resubmitted for Review!' : 'Tool Submitted for Review!'}
+            </h2>
+            <p className="text-gray-600 text-sm">
+              Thank you! Our editorial team will review your tool submission promptly. You can track the status in your Dashboard.
+            </p>
+            <div className="pt-2 flex flex-col gap-2">
+              <Link href={getLangUrl('/dashboard')}>
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 font-bold cursor-pointer">
+                  Go to My Dashboard
+                </Button>
+              </Link>
+              <Link href={getLangUrl('/tools')}>
+                <Button variant="outline" className="w-full cursor-pointer">
+                  Browse AI Tools
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>
     );
   }
 
+  const rejectionNotice = initialData?.rejectionReason || initialData?.rejectionComment;
+
   return (
-    <div className="min-h-screen bg-gray-50/50 py-8" id="form-top">
-      <div className="container mx-auto px-4 max-w-3xl">
+    <div className="min-h-screen bg-gray-50/60 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto" id="form-top">
 
         {/* Page Header */}
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -405,28 +483,51 @@ export default function ToolEditorForm({
                   <Shield className="w-3 h-3 mr-1" /> Admin Edit
                 </Badge>
               )}
+              {mode === 'resubmit' && (
+                <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-200 font-bold">
+                  🔄 Resubmission Mode
+                </Badge>
+              )}
             </div>
             <h1 className="text-3xl font-bold text-gray-900">
-              {mode === 'edit' ? 'Edit Tool' : 'Submit Your AI Tool'}
+              {mode === 'edit' ? 'Edit Tool' : mode === 'resubmit' ? 'Edit & Resubmit Tool' : 'Submit Your AI Tool'}
             </h1>
             <p className="text-gray-500 text-sm mt-1">
               {mode === 'edit'
-                ? 'Update all metadata, classification, pricing, and moderation status.'
+                ? 'Update all metadata, classification, pricing, FAQs, and moderation status.'
+                : mode === 'resubmit'
+                ? 'Address reviewer feedback, update details and FAQs, and resubmit for review.'
                 : 'Share your AI tool with thousands of users. Fields marked * are required.'}
             </p>
           </div>
 
-          {mode === 'edit' && (
+          {(mode === 'edit' || mode === 'resubmit') && (
             <Button
               type="button"
               variant="outline"
-              onClick={onCancel || (() => router.push(returnTo || '/admin'))}
-              className="flex items-center gap-1.5 self-start sm:self-auto"
+              onClick={onCancel || (() => router.push(mode === 'resubmit' ? '/dashboard' : (returnTo || '/admin')))}
+              className="flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
             >
-              <ArrowLeft className="w-4 h-4" /> Cancel / Back to Admin
+              <ArrowLeft className="w-4 h-4" /> {mode === 'resubmit' ? 'Back to Dashboard' : 'Cancel / Back to Admin'}
             </Button>
           )}
         </div>
+
+        {/* Reviewer Rejection Callout in Resubmit Mode */}
+        {rejectionNotice && (
+          <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-900 shadow-2xs space-y-1">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <strong className="text-sm font-bold text-red-800">Editorial Reviewer Feedback:</strong>
+            </div>
+            <p className="text-xs bg-white/80 p-3 rounded-xl border border-red-100 font-medium text-slate-800 mt-2">
+              "{rejectionNotice}"
+            </p>
+            <p className="text-[11px] text-red-600 mt-1">
+              Please update the fields below (such as adding FAQs or expanding the description) to address this feedback before resubmitting.
+            </p>
+          </div>
+        )}
 
         {/* Success Alert for Edit */}
         {success && mode === 'edit' && (
@@ -549,7 +650,7 @@ export default function ToolEditorForm({
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <Label htmlFor="tool-linkedin" className="font-medium text-gray-700">
-                    LinkedIn Profile {mode === 'create' && <span className="text-red-500">*</span>}
+                    LinkedIn Profile {(mode === 'create' || mode === 'resubmit') && <span className="text-red-500">*</span>}
                   </Label>
                   <span className="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
                     Required for submitter verification
@@ -600,7 +701,7 @@ export default function ToolEditorForm({
                           <button
                             type="button"
                             onClick={() => { setLogoPreview(''); setLogoFile(null); setFormData(p => ({ ...p, logo: '' })); }}
-                            className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 shadow"
+                            className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 shadow cursor-pointer"
                             aria-label="Remove logo"
                           >
                             <X className="w-3 h-3" aria-hidden="true" />
@@ -617,7 +718,7 @@ export default function ToolEditorForm({
                         type="button"
                         onClick={fetchFavicon}
                         disabled={fetchingFavicon || !formData.website}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
                       >
                         {fetchingFavicon ? (
                           <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" aria-hidden="true" />Fetching…</>
@@ -631,7 +732,7 @@ export default function ToolEditorForm({
                           <button
                             type="button"
                             onClick={() => { setLogoPreview(''); setFormData(p => ({ ...p, logo: '' })); }}
-                            className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 shadow"
+                            className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 shadow cursor-pointer"
                             aria-label="Remove favicon"
                           >
                             <X className="w-3 h-3" aria-hidden="true" />
@@ -795,7 +896,7 @@ export default function ToolEditorForm({
           <Card className="shadow-sm border border-gray-200/80">
             <CardHeader className="pb-2">
               <SectionIcon icon={ThumbsUp} label="Pros & Cons" />
-              <CardDescription className="mt-1">Optional evaluation points for buyers.</CardDescription>
+              <CardDescription className="mt-1">Optional evaluation points for users.</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
@@ -870,7 +971,62 @@ export default function ToolEditorForm({
             </CardContent>
           </Card>
 
-          {/* 5. Classification */}
+          {/* 5. Frequently Asked Questions (FAQs) */}
+          <Card className="shadow-sm border border-gray-200/80">
+            <CardHeader className="pb-2">
+              <SectionIcon icon={HelpCircle} label="Frequently Asked Questions (FAQs)" />
+              <CardDescription className="mt-1">
+                Add common questions and helpful answers about this tool (optional).
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {formData.faqs.map((faq, i) => (
+                <div key={i} className="p-4 bg-slate-50 border border-slate-200/90 rounded-2xl space-y-3 relative">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-800">FAQ Question #{i + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeFaq(i)}
+                      className="text-red-500 hover:text-red-700 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+                      title="Remove FAQ"
+                      aria-label={`Remove FAQ ${i + 1}`}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-700 mb-1 block">Question</Label>
+                    <Input
+                      value={faq.question || ''}
+                      onChange={(e) => updateFaq(i, 'question', e.target.value)}
+                      placeholder="e.g. What is this tool used for?"
+                      className="text-xs bg-white"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-700 mb-1 block">Answer</Label>
+                    <Textarea
+                      value={faq.answer || ''}
+                      onChange={(e) => updateFaq(i, 'answer', e.target.value)}
+                      rows={2}
+                      placeholder="e.g. It helps users generate content, automate workflows, and enhance productivity..."
+                      className="text-xs bg-white rounded-xl"
+                    />
+                  </div>
+                </div>
+              ))}
+
+              <button
+                type="button"
+                onClick={addFaq}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" aria-hidden="true" /> Add FAQ Question & Answer
+              </button>
+            </CardContent>
+          </Card>
+
+          {/* 6. Classification */}
           <Card className="shadow-sm border border-gray-200/80">
             <CardHeader className="pb-2">
               <SectionIcon icon={Layers} label="Classification" />
@@ -951,7 +1107,7 @@ export default function ToolEditorForm({
                 variant="destructive"
                 disabled={submitting || deleting}
                 onClick={handleDeleteTool}
-                className="bg-red-600 hover:bg-red-700 text-white py-6 px-6 text-base font-semibold rounded-xl flex items-center justify-center gap-2 order-last sm:order-first shadow-sm"
+                className="bg-red-600 hover:bg-red-700 text-white py-6 px-6 text-base font-semibold rounded-xl flex items-center justify-center gap-2 order-last sm:order-first shadow-sm cursor-pointer"
               >
                 <Trash2 className="w-5 h-5" />
                 {deleting ? 'Deleting Tool…' : 'Delete Tool'}
@@ -959,13 +1115,13 @@ export default function ToolEditorForm({
             ) : <div />}
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              {mode === 'edit' && (
+              {(mode === 'edit' || mode === 'resubmit') && (
                 <Button
                   type="button"
                   variant="outline"
                   disabled={submitting || deleting}
-                  onClick={onCancel || (() => router.push(returnTo || '/admin'))}
-                  className="py-6 px-8 text-base font-semibold rounded-xl hover:bg-gray-100"
+                  onClick={onCancel || (() => router.push(mode === 'resubmit' ? '/dashboard' : (returnTo || '/admin')))}
+                  className="py-6 px-8 text-base font-semibold rounded-xl hover:bg-gray-100 cursor-pointer"
                 >
                   Cancel
                 </Button>
@@ -974,12 +1130,14 @@ export default function ToolEditorForm({
               <Button
                 type="submit"
                 disabled={submitting || uploading || fetchingFavicon || deleting}
-                className="bg-blue-600 hover:bg-blue-700 text-white py-6 px-10 text-base font-semibold rounded-xl shadow-lg shadow-blue-100 transition-all hover:scale-[1.01]"
+                className="bg-blue-600 hover:bg-blue-700 text-white py-6 px-10 text-base font-semibold rounded-xl shadow-lg shadow-blue-100 transition-all hover:scale-[1.01] cursor-pointer"
               >
                 {submitting || uploading ? (
                   <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />Saving…</>
                 ) : mode === 'edit' ? (
                   <>Save Changes</>
+                ) : mode === 'resubmit' ? (
+                  <>Resubmit Tool for Review</>
                 ) : (
                   <>Submit Tool for Review</>
                 )}

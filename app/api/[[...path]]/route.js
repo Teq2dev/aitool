@@ -1523,6 +1523,7 @@ export async function PUT(request) {
       if (body.features !== undefined) updateFields.features = Array.isArray(body.features) ? body.features : [];
       if (body.pros !== undefined) updateFields.pros = Array.isArray(body.pros) ? body.pros : [];
       if (body.cons !== undefined) updateFields.cons = Array.isArray(body.cons) ? body.cons : [];
+      if (body.faqs !== undefined) updateFields.faqs = Array.isArray(body.faqs) ? body.faqs : [];
       if (body.status !== undefined) updateFields.status = body.status;
       if (body.rejectionComment !== undefined) updateFields.rejectionComment = body.rejectionComment;
       if (typeof body.featured === 'boolean') updateFields.featured = body.featured;

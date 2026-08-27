@@ -1803,6 +1803,23 @@ function AdminDashboardContent() {
                     </div>
                   )}
 
+                  {/* FAQs Section */}
+                  {Array.isArray(detailModal.submission.faqs) && detailModal.submission.faqs.length > 0 && (
+                    <div>
+                      <span className="font-bold text-slate-800 block mb-2 text-xs">
+                        Frequently Asked Questions ({detailModal.submission.faqs.length}):
+                      </span>
+                      <div className="space-y-2">
+                        {detailModal.submission.faqs.map((faq, i) => (
+                          <div key={i} className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                            <p className="font-bold text-slate-900 text-xs">Q: {faq.question}</p>
+                            <p className="text-slate-600 text-xs pl-3 border-l-2 border-blue-400">A: {faq.answer}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Rejection Notice if Present */}
                   {(detailModal.submission.rejectionReason || detailModal.submission.rejectionComment) && (
                     <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-red-900 space-y-1">
@@ -1940,6 +1957,21 @@ function AdminDashboardContent() {
                             </li>
                           ))}
                         </ul>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Frequently Asked Questions (Live Preview) */}
+                  {Array.isArray(detailModal.submission.faqs) && detailModal.submission.faqs.length > 0 && (
+                    <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
+                      <h3 className="text-lg font-bold text-slate-900">Frequently Asked Questions</h3>
+                      <div className="space-y-3">
+                        {detailModal.submission.faqs.map((faq, i) => (
+                          <div key={i} className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-1.5">
+                            <h4 className="font-bold text-slate-900 text-sm">{faq.question}</h4>
+                            <p className="text-xs text-slate-600 leading-relaxed">{faq.answer}</p>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
