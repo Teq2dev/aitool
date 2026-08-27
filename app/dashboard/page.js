@@ -18,11 +18,22 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/sign-in');
+      router.push('/sign-in?callbackUrl=/dashboard');
       return;
     }
     if (status === 'authenticated') {
-      fetchSubmissions();
+      fetch('/api/user/profile')
+        .then(res => res.json())
+        .then(data => {
+          if (data && !data.error && (!data.country || !data.name)) {
+            router.push('/complete-profile?callbackUrl=/dashboard');
+            return;
+          }
+          fetchSubmissions();
+        })
+        .catch(() => {
+          fetchSubmissions();
+        });
     }
   }, [status, router]);
 

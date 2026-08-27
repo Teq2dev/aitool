@@ -766,10 +766,27 @@ export async function POST(request, { params }) {
     // POST /api/tools - Submit tool
     if (pathname === '/api/tools' || pathname === '/api/tools/') {
       const authUser = await getAuthUser();
-      const userId = authUser ? authUser.id : ('anonymous-' + Date.now());
-      const submitterEmail = authUser ? authUser.email : (body.email || body.submitterEmail || null);
-      
+      if (!authUser || !authUser.email) {
+        return NextResponse.json({ 
+          error: 'Unauthorized. You must sign in with an authenticated account to submit a tool.' 
+        }, { status: 401 });
+      }
+
       const body = await request.json();
+
+      // Check required LinkedIn Profile URL
+      const rawLinkedIn = (body.linkedinProfile || '').trim();
+      const { isValidLinkedInUrl, normalizeLinkedInUrl } = await import('@/lib/countries');
+      if (!rawLinkedIn || !isValidLinkedInUrl(rawLinkedIn)) {
+        return NextResponse.json({ 
+          error: 'A valid LinkedIn profile URL is required to submit a tool (e.g. https://www.linkedin.com/in/your-profile).' 
+        }, { status: 400 });
+      }
+
+      const normalizedLinkedIn = normalizeLinkedInUrl(rawLinkedIn);
+      const userId = authUser.id;
+      const submitterEmail = authUser.email;
+      
       const toolsCollection = await getCollection('tools');
       
       // Check for duplicate domain
@@ -803,7 +820,8 @@ export async function POST(request, { params }) {
       const newTool = {
         _id: uuidv4(),
         ...body,
-        slug: body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        linkedinProfile: normalizedLinkedIn,
+        slug: body.name ? body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : uuidv4(),
         status: 'pending',
         featured: false,
         sponsored: false,
@@ -817,17 +835,30 @@ export async function POST(request, { params }) {
       
       try {
         await toolsCollection.insertOne(newTool);
+
+        // Also persist the submitter's LinkedIn profile in the users collection if missing or empty
+        try {
+          const usersCollection = await getCollection('users');
+          await usersCollection.updateOne(
+            { 
+              email: submitterEmail.toLowerCase(), 
+              $or: [{ linkedinProfile: { $exists: false } }, { linkedinProfile: '' }, { linkedinProfile: null }] 
+            },
+            { $set: { linkedinProfile: normalizedLinkedIn, updatedAt: new Date() } }
+          );
+        } catch (userErr) {
+          console.error('Error syncing user linkedinProfile:', userErr);
+        }
+
         revalidateTag('tools');
         revalidateTag('categories');
         return NextResponse.json({ success: true, tool: newTool });
       } catch (dbError) {
-        console.warn('!! DEMO MODE: Database insertion failed, but returning success for testing flow !!');
-        console.log('Submitted Tool Data (Not Saved):', newTool);
+        console.error('Database insertion error for tool submission:', dbError);
         return NextResponse.json({ 
-          success: true, 
-          message: 'Tool submitted (Demo/Fallback Mode)',
-          tool: newTool 
-        });
+          error: 'Failed to save tool submission', 
+          details: dbError.message 
+        }, { status: 500 });
       }
     }
     

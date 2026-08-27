@@ -20,7 +20,7 @@ export const authOptions = {
         const usersCollection = await getCollection('users');
         const email = user.email.toLowerCase();
         
-        const envAdmins = (process.env.ADMIN_EMAILS || '')
+        const envAdmins = (process.env.ADMIN_EMAILS || 'parwal111@gmail.com,admin@bestaitoolsfree.com')
           .split(',')
           .map(e => e.trim().toLowerCase())
           .filter(Boolean);
@@ -34,8 +34,8 @@ export const authOptions = {
         const now = new Date();
         if (existing) {
           const updateFields = {
-            name: user.name || existing.name,
-            imageUrl: user.image || existing.imageUrl || existing.image,
+            name: user.name || existing.name || '',
+            imageUrl: user.image || existing.imageUrl || existing.image || '',
             updatedAt: now,
           };
           if (isEnvAdmin) {
@@ -54,6 +54,8 @@ export const authOptions = {
             email,
             name: user.name || '',
             imageUrl: user.image || '',
+            country: '',
+            linkedinProfile: '',
             role: isEnvAdmin ? 'admin' : 'user',
             isAdmin: isEnvAdmin,
             createdAt: now,
@@ -65,24 +67,51 @@ export const authOptions = {
       }
       return true;
     },
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
+    async jwt({ token, user, trigger, session }) {
       const email = (token.email || user?.email || '').toLowerCase();
       const envAdmins = (process.env.ADMIN_EMAILS || 'parwal111@gmail.com,admin@bestaitoolsfree.com')
         .split(',')
         .map(e => e.trim().toLowerCase())
         .filter(Boolean);
-      if (email && envAdmins.includes(email)) {
-        token.role = 'admin';
-        token.isAdmin = true;
+      
+      const isEnvAdmin = Boolean(email && envAdmins.includes(email));
+
+      try {
+        const { getCollection } = await import('@/lib/db');
+        const usersCollection = await getCollection('users');
+        const dbUser = await usersCollection.findOne({
+          $or: [{ email }, { userId: token.id || token.sub }]
+        });
+
+        if (dbUser) {
+          token.id = String(dbUser._id || token.id);
+          token.name = dbUser.name || token.name || '';
+          token.country = dbUser.country || '';
+          token.linkedinProfile = dbUser.linkedinProfile || '';
+          token.isProfileComplete = Boolean(dbUser.name?.trim() && dbUser.country?.trim());
+          token.role = isEnvAdmin ? 'admin' : (dbUser.role || 'user');
+          token.isAdmin = isEnvAdmin || Boolean(dbUser.isAdmin || dbUser.role === 'admin');
+        } else {
+          token.country = '';
+          token.linkedinProfile = '';
+          token.isProfileComplete = false;
+          token.role = isEnvAdmin ? 'admin' : 'user';
+          token.isAdmin = isEnvAdmin;
+        }
+      } catch (e) {
+        token.role = isEnvAdmin ? 'admin' : 'user';
+        token.isAdmin = isEnvAdmin;
       }
+
       return token;
     },
     async session({ session, token }) {
       if (session?.user) {
         session.user.id = token.id || token.sub;
+        session.user.name = token.name || session.user.name;
+        session.user.country = token.country || '';
+        session.user.linkedinProfile = token.linkedinProfile || '';
+        session.user.isProfileComplete = token.isProfileComplete || false;
         session.user.role = token.role || 'user';
         session.user.isAdmin = token.isAdmin || token.role === 'admin';
       }
@@ -96,3 +125,4 @@ export const authOptions = {
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
+

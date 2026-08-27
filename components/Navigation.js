@@ -317,8 +317,8 @@ export default function Navigation() {
 
             {/* Submit Tool Button (Desktop primary action, compact height) */}
             <div className="hidden sm:flex items-center">
-              <Link href={getLangUrl('/submit')} prefetch={true}>
-                <Button className="h-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-3 py-1 rounded-lg shadow-xs transition-all">
+              <Link href={isSignedIn ? getLangUrl('/submit') : getLangUrl('/sign-in?callbackUrl=/submit')} prefetch={true}>
+                <Button className="h-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-3 py-1 rounded-lg shadow-xs transition-all cursor-pointer">
                   <Upload className="w-3.5 h-3.5 mr-1.5" aria-hidden="true" />
                   <span>{t('submitTool') || 'Submit Tool'}</span>
                 </Button>
@@ -550,9 +550,9 @@ export default function Navigation() {
             {/* Mobile Submit Tool Button */}
             <div className="pt-2 border-t border-slate-100">
               <Link 
-                href={getLangUrl('/submit')} 
+                href={isSignedIn ? getLangUrl('/submit') : getLangUrl('/sign-in?callbackUrl=/submit')} 
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-xs transition-all text-sm"
+                className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-xs transition-all text-sm cursor-pointer"
               >
                 <Upload className="w-4 h-4" aria-hidden="true" />
                 <span>{t('submitTool') || 'Submit Tool'}</span>

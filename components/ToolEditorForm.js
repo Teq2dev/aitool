@@ -12,9 +12,11 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Upload, CheckCircle, X, Image as ImageIcon, Globe,
-  Plus, Zap, DollarSign, ThumbsUp, ThumbsDown, Tag, Layers, ArrowLeft, Shield, Trash2
+  Plus, Zap, DollarSign, ThumbsUp, ThumbsDown, Tag, Layers, ArrowLeft, Shield, Trash2, Linkedin
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import { isValidLinkedInUrl, normalizeLinkedInUrl } from '@/lib/countries';
+
 
 // Toggle pill (Yes / No)
 function YesNoPill({ value, onChange }) {
@@ -53,6 +55,7 @@ function SectionIcon({ icon: Icon, label }) {
 export default function ToolEditorForm({
   mode = 'create', // 'create' | 'edit'
   initialData = null,
+  initialUser = null,
   toolId = null,
   returnTo = '/admin',
   onSuccess = null,
@@ -67,6 +70,7 @@ export default function ToolEditorForm({
     // Basic Information
     name: initialData?.name || '',
     website: initialData?.website || '',
+    linkedinProfile: initialData?.linkedinProfile || initialUser?.linkedinProfile || '',
     logo: initialData?.logo || '',
     shortDescription: initialData?.shortDescription || '',
     fullDescription: initialData?.fullDescription || initialData?.description || '',
@@ -110,37 +114,39 @@ export default function ToolEditorForm({
       .catch(() => {});
   }, []);
 
-  // Update form if initialData arrives after mount
+  // Update form if initialData or initialUser arrives after mount
   useEffect(() => {
-    if (initialData) {
-      setFormData({
-        name: initialData.name || '',
-        website: initialData.website || '',
-        logo: initialData.logo || '',
-        shortDescription: initialData.shortDescription || '',
-        fullDescription: initialData.fullDescription || initialData.description || '',
-        features: Array.isArray(initialData.features) ? initialData.features : [],
-        pricing: initialData.pricing || 'Free',
-        pricingModel: initialData.pricingModel || initialData.pricing || 'Free',
-        startingPrice: initialData.startingPrice || '',
-        hasFreePlan: initialData.hasFreePlan !== undefined ? initialData.hasFreePlan : null,
-        hasFreeTrial: initialData.hasFreeTrial !== undefined ? initialData.hasFreeTrial : null,
-        billingCycle: initialData.billingCycle || '',
-        pricingDetails: initialData.pricingDetails || '',
-        pros: Array.isArray(initialData.pros) ? initialData.pros : [],
-        cons: Array.isArray(initialData.cons) ? initialData.cons : [],
-        categories: Array.isArray(initialData.categories) ? initialData.categories : [],
-        tags: Array.isArray(initialData.tags) ? initialData.tags : [],
-        status: initialData.status || 'pending',
-        featured: initialData.featured || false,
-        trending: initialData.trending || false,
-        rejectionComment: initialData.rejectionComment || '',
-      });
-      if (initialData.logo) {
+    if (initialData || initialUser) {
+      setFormData((prev) => ({
+        ...prev,
+        name: initialData?.name || prev.name || '',
+        website: initialData?.website || prev.website || '',
+        linkedinProfile: initialData?.linkedinProfile || initialUser?.linkedinProfile || prev.linkedinProfile || '',
+        logo: initialData?.logo || prev.logo || '',
+        shortDescription: initialData?.shortDescription || prev.shortDescription || '',
+        fullDescription: initialData?.fullDescription || initialData?.description || prev.fullDescription || '',
+        features: Array.isArray(initialData?.features) ? initialData.features : prev.features,
+        pricing: initialData?.pricing || prev.pricing || 'Free',
+        pricingModel: initialData?.pricingModel || initialData?.pricing || prev.pricingModel || 'Free',
+        startingPrice: initialData?.startingPrice || prev.startingPrice || '',
+        hasFreePlan: initialData?.hasFreePlan !== undefined ? initialData.hasFreePlan : prev.hasFreePlan,
+        hasFreeTrial: initialData?.hasFreeTrial !== undefined ? initialData.hasFreeTrial : prev.hasFreeTrial,
+        billingCycle: initialData?.billingCycle || prev.billingCycle || '',
+        pricingDetails: initialData?.pricingDetails || prev.pricingDetails || '',
+        pros: Array.isArray(initialData?.pros) ? initialData.pros : prev.pros,
+        cons: Array.isArray(initialData?.cons) ? initialData.cons : prev.cons,
+        categories: Array.isArray(initialData?.categories) ? initialData.categories : prev.categories,
+        tags: Array.isArray(initialData?.tags) ? initialData.tags : prev.tags,
+        status: initialData?.status || prev.status || 'pending',
+        featured: initialData?.featured !== undefined ? initialData.featured : prev.featured,
+        trending: initialData?.trending !== undefined ? initialData.trending : prev.trending,
+        rejectionComment: initialData?.rejectionComment || prev.rejectionComment || '',
+      }));
+      if (initialData?.logo) {
         setLogoPreview(initialData.logo);
       }
     }
-  }, [initialData]);
+  }, [initialData, initialUser]);
 
   // Logo handlers
   const handleLogoChange = (e) => {
@@ -227,6 +233,18 @@ export default function ToolEditorForm({
     if (!formData.name.trim()) e.name = 'Tool name is required';
     if (!formData.website.trim()) e.website = 'Website URL is required';
     if (formData.website && !/^https?:\/\/.+/.test(formData.website)) e.website = 'Must be a valid URL (https://...)';
+    
+    // LinkedIn Profile is required for create/submission
+    if (mode === 'create') {
+      if (!formData.linkedinProfile?.trim()) {
+        e.linkedinProfile = 'LinkedIn Profile URL is required for submitter verification';
+      } else if (!isValidLinkedInUrl(formData.linkedinProfile)) {
+        e.linkedinProfile = 'Please enter a valid LinkedIn URL (e.g. https://www.linkedin.com/in/your-profile)';
+      }
+    } else if (formData.linkedinProfile?.trim() && !isValidLinkedInUrl(formData.linkedinProfile)) {
+      e.linkedinProfile = 'Please enter a valid LinkedIn URL (e.g. https://www.linkedin.com/in/your-profile)';
+    }
+
     if (!formData.shortDescription.trim()) e.shortDescription = 'Short description is required';
     if (!logoPreview && !formData.logo) e.logo = 'A logo is required — upload an image or fetch the favicon';
     if (formData.categories.length === 0) e.categories = 'Select at least one category';
@@ -253,6 +271,7 @@ export default function ToolEditorForm({
 
       const payload = {
         ...formData,
+        linkedinProfile: formData.linkedinProfile ? normalizeLinkedInUrl(formData.linkedinProfile) : '',
         logo: logoUrl,
         features: formData.features.filter(Boolean),
         pros: formData.pros.filter(Boolean),
@@ -524,6 +543,33 @@ export default function ToolEditorForm({
                   className={errors.website ? 'border-red-400' : ''}
                 />
                 {errors.website && <p className="text-xs text-red-500 mt-1">{errors.website}</p>}
+              </div>
+
+              {/* LinkedIn Profile (Required for Submitter Verification) */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <Label htmlFor="tool-linkedin" className="font-medium text-gray-700">
+                    LinkedIn Profile {mode === 'create' && <span className="text-red-500">*</span>}
+                  </Label>
+                  <span className="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                    Required for submitter verification
+                  </span>
+                </div>
+                <Input
+                  id="tool-linkedin"
+                  type="url"
+                  value={formData.linkedinProfile}
+                  onChange={setE('linkedinProfile')}
+                  placeholder="https://www.linkedin.com/in/your-profile"
+                  className={errors.linkedinProfile ? 'border-red-400' : ''}
+                />
+                {errors.linkedinProfile ? (
+                  <p className="text-xs text-red-500 mt-1">{errors.linkedinProfile}</p>
+                ) : (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Please provide your LinkedIn profile so we can verify the submitter and review the submission.
+                  </p>
+                )}
               </div>
 
               {/* Logo */}
