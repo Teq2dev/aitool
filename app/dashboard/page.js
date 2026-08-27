@@ -7,7 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, CheckCircle, XCircle, Eye } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Clock, CheckCircle, XCircle, Eye, Edit, AlertCircle, Sparkles, Globe, Linkedin, ThumbsUp, ThumbsDown } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DashboardPage() {
@@ -192,10 +194,14 @@ function SubmissionList({ tools, onRefresh }) {
       name: tool.name || '',
       website: tool.website || tool.websiteUrl || '',
       shortDescription: tool.shortDescription || '',
-      description: tool.description || tool.fullDescription || '',
+      fullDescription: tool.fullDescription || tool.description || '',
       category: tool.category || (Array.isArray(tool.categories) ? tool.categories[0] : 'productivity'),
       pricing: tool.pricing || tool.pricingModel || 'Free',
+      pricingDetails: tool.pricingDetails || '',
       linkedinProfile: tool.linkedinProfile || '',
+      features: Array.isArray(tool.features) ? tool.features.join('\n') : (tool.features || ''),
+      pros: Array.isArray(tool.pros) ? tool.pros.join('\n') : (tool.pros || ''),
+      cons: Array.isArray(tool.cons) ? tool.cons.join('\n') : (tool.cons || ''),
       logo: tool.logo || '',
     });
     setResubmitError('');
@@ -210,10 +216,28 @@ function SubmissionList({ tools, onRefresh }) {
     }
     setResubmitting(true);
     try {
+      const payload = {
+        name: editForm.name.trim(),
+        website: editForm.website.trim(),
+        linkedinProfile: editForm.linkedinProfile.trim(),
+        shortDescription: editForm.shortDescription.trim(),
+        fullDescription: editForm.fullDescription.trim(),
+        description: editForm.fullDescription.trim(),
+        category: editForm.category,
+        categories: [editForm.category],
+        pricing: editForm.pricing,
+        pricingModel: editForm.pricing,
+        pricingDetails: editForm.pricingDetails?.trim() || '',
+        features: editForm.features ? editForm.features.split('\n').map(s => s.trim()).filter(Boolean) : [],
+        pros: editForm.pros ? editForm.pros.split('\n').map(s => s.trim()).filter(Boolean) : [],
+        cons: editForm.cons ? editForm.cons.split('\n').map(s => s.trim()).filter(Boolean) : [],
+        logo: editForm.logo || '',
+      };
+
       const res = await fetch(`/api/my-submissions/${editingTool._id}/resubmit`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editForm),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -323,6 +347,7 @@ function SubmissionList({ tools, onRefresh }) {
                       onClick={() => openEditModal(tool)}
                       className="h-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg shadow-2xs cursor-pointer"
                     >
+                      <Edit className="w-3.5 h-3.5 mr-1.5" />
                       Edit & Resubmit
                     </Button>
                   )}
@@ -333,63 +358,140 @@ function SubmissionList({ tools, onRefresh }) {
         </div>
       ))}
 
-      {/* Edit & Resubmit Modal */}
+      {/* Comprehensive Edit & Resubmit Modal */}
       {editingTool && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-bold text-slate-900 mb-1">Edit & Resubmit Tool</h3>
-            <p className="text-xs text-slate-500 mb-4">
-              Fix the issues noted in the rejection reason and resubmit for editorial review.
-            </p>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 z-50 animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto space-y-4">
+            <div>
+              <h3 className="text-xl font-bold text-slate-900 mb-1">Edit & Resubmit Tool</h3>
+              <p className="text-xs text-slate-500">
+                Update your tool details according to reviewer feedback and resubmit for editorial review.
+              </p>
+            </div>
+
+            {/* Rejection feedback reminder banner */}
+            {(editingTool.rejectionReason || editingTool.rejectionComment) && (
+              <div className="p-3.5 bg-red-50 border border-red-200 rounded-2xl text-xs text-red-900 space-y-1">
+                <strong className="block font-bold text-red-800">Reviewer Feedback:</strong>
+                <p className="bg-white/80 p-2 rounded-xl border border-red-100 font-medium">
+                  "{editingTool.rejectionReason || editingTool.rejectionComment}"
+                </p>
+              </div>
+            )}
 
             {resubmitError && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-medium">
                 {resubmitError}
               </div>
             )}
 
-            <form onSubmit={handleResubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Tool Name *</label>
-                <Input
-                  value={editForm.name}
-                  onChange={(e) => setEditForm(p => ({ ...p, name: e.target.value }))}
-                  required
-                  className="h-10 text-sm"
-                />
+            <form onSubmit={handleResubmit} className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Tool Name *</label>
+                  <Input
+                    value={editForm.name}
+                    onChange={(e) => setEditForm(p => ({ ...p, name: e.target.value }))}
+                    required
+                    className="h-9 text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Official Website URL *</label>
+                  <Input
+                    type="url"
+                    value={editForm.website}
+                    onChange={(e) => setEditForm(p => ({ ...p, website: e.target.value }))}
+                    required
+                    className="h-9 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Pricing Model</label>
+                  <select
+                    value={editForm.pricing}
+                    onChange={(e) => setEditForm(p => ({ ...p, pricing: e.target.value }))}
+                    className="w-full h-9 px-3 border border-slate-200 rounded-xl text-xs bg-white text-slate-900 focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="Free">Free</option>
+                    <option value="Freemium">Freemium</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Free Trial">Free Trial</option>
+                    <option value="Contact for Pricing">Contact for Pricing</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Submitter LinkedIn Profile URL</label>
+                  <Input
+                    type="url"
+                    value={editForm.linkedinProfile}
+                    onChange={(e) => setEditForm(p => ({ ...p, linkedinProfile: e.target.value }))}
+                    placeholder="https://www.linkedin.com/in/your-profile"
+                    className="h-9 text-xs"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Website URL *</label>
+                <label className="block font-bold text-slate-700 mb-1">Short Description (Tagline) *</label>
                 <Input
-                  type="url"
-                  value={editForm.website}
-                  onChange={(e) => setEditForm(p => ({ ...p, website: e.target.value }))}
-                  required
-                  className="h-10 text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">LinkedIn Profile</label>
-                <Input
-                  type="url"
-                  value={editForm.linkedinProfile}
-                  onChange={(e) => setEditForm(p => ({ ...p, linkedinProfile: e.target.value }))}
-                  placeholder="https://www.linkedin.com/in/your-profile"
-                  className="h-10 text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Short Description *</label>
-                <textarea
                   value={editForm.shortDescription}
                   onChange={(e) => setEditForm(p => ({ ...p, shortDescription: e.target.value }))}
-                  rows={3}
                   required
-                  className="w-full p-2.5 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500"
+                  placeholder="One sentence summary of what this tool does"
+                  className="h-9 text-xs"
                 />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Full In-Depth Description</label>
+                <Textarea
+                  value={editForm.fullDescription}
+                  onChange={(e) => setEditForm(p => ({ ...p, fullDescription: e.target.value }))}
+                  rows={4}
+                  placeholder="Detailed overview explaining core capabilities and who it's for..."
+                  className="text-xs rounded-xl"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Key Features (One feature per line)</label>
+                <Textarea
+                  value={editForm.features}
+                  onChange={(e) => setEditForm(p => ({ ...p, features: e.target.value }))}
+                  rows={3}
+                  placeholder="AI Content Detector&#10;Multilingual Support&#10;Chrome Extension Integration"
+                  className="text-xs rounded-xl font-mono text-[11px]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-emerald-800 mb-1">Pros (One per line)</label>
+                  <Textarea
+                    value={editForm.pros}
+                    onChange={(e) => setEditForm(p => ({ ...p, pros: e.target.value }))}
+                    rows={3}
+                    placeholder="Fast processing speed&#10;Generous free tier"
+                    className="text-xs rounded-xl bg-emerald-50/40 border-emerald-200"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-amber-800 mb-1">Cons (One per line)</label>
+                  <Textarea
+                    value={editForm.cons}
+                    onChange={(e) => setEditForm(p => ({ ...p, cons: e.target.value }))}
+                    rows={3}
+                    placeholder="Occasional false positives on short text"
+                    className="text-xs rounded-xl bg-amber-50/40 border-amber-200"
+                  />
+                </div>
               </div>
 
               <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
@@ -398,14 +500,14 @@ function SubmissionList({ tools, onRefresh }) {
                   variant="outline" 
                   onClick={() => setEditingTool(null)}
                   disabled={resubmitting}
-                  className="cursor-pointer"
+                  className="cursor-pointer font-semibold text-xs"
                 >
                   Cancel
                 </Button>
                 <Button 
                   type="submit" 
                   disabled={resubmitting}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold cursor-pointer"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs cursor-pointer"
                 >
                   {resubmitting ? 'Resubmitting...' : 'Resubmit for Review'}
                 </Button>
