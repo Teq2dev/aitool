@@ -17,15 +17,20 @@ export function LanguageProvider({ children, initialLang = 'en', initialTranslat
     const segments = pathname ? pathname.split('/').filter(Boolean) : [];
     const first = segments[0];
     if (first && VALID_LANGS.includes(first)) return first;
-    return initialLang || 'en';
-  }, [pathname, initialLang]);
+    return 'en';
+  }, [pathname]);
 
-  const [currentLang, setCurrentLangState] = useState(getUrlLang);
+  const [currentLang, setCurrentLangState] = useState(() => {
+    const urlLang = getUrlLang();
+    if (urlLang !== 'en') return urlLang;
+    if (initialLang && VALID_LANGS.includes(initialLang)) return initialLang;
+    return 'en';
+  });
   
   // Cache of loaded dictionaries: { en: {...}, fr: {...} }
   const [translationsCache, setTranslationsCache] = useState(() => {
     const initial = {};
-    const effectiveLang = getUrlLang();
+    const effectiveLang = (initialLang && VALID_LANGS.includes(initialLang)) ? initialLang : getUrlLang();
     if (initialTranslations) {
       initial[effectiveLang] = initialTranslations;
     }
@@ -114,15 +119,16 @@ export function LanguageProvider({ children, initialLang = 'en', initialTranslat
     return `/${currentLang}${cleanPath === '/' ? '' : cleanPath}`;
   };
 
-  const t = (key) => {
-    const activeDict = translationsCache[currentLang];
-    if (activeDict && activeDict[key]) {
-      return activeDict[key];
+  const t = (key, params = {}) => {
+    let str = (translationsCache[currentLang] && translationsCache[currentLang][key]) ||
+              (initialTranslations && initialTranslations[key]) ||
+              key;
+    if (params && typeof params === 'object' && typeof str === 'string') {
+      Object.keys(params).forEach(p => {
+        str = str.replace(new RegExp(`\\{${p}\\}`, 'g'), params[p]);
+      });
     }
-    if (initialTranslations && initialTranslations[key]) {
-      return initialTranslations[key];
-    }
-    return key;
+    return str;
   };
 
   const langObj = LANGUAGES.find(l => l.code === currentLang) || LANGUAGES[0];

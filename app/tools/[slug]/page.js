@@ -119,6 +119,18 @@ export default async function ToolPage({ params, searchParams }) {
     displayFaqs = translationOverride.faqs;
   }
 
+  const langDict = await getTranslation(lang);
+  const getLangUrl = (path) => lang === 'en' ? path : `/${lang}${path}`;
+  const t = (key, params = {}) => {
+    let str = langDict[key] || key;
+    if (params && typeof params === 'object' && typeof str === 'string') {
+      Object.keys(params).forEach(p => {
+        str = str.replace(new RegExp(`\\{${p}\\}`, 'g'), params[p]);
+      });
+    }
+    return str;
+  };
+
   // Server-rendered Graph Schema for Rich Snippets (Star Ratings, Breadcrumbs, FAQs)
   const jsonLdGraph = {
     '@context': 'https://schema.org',
@@ -155,13 +167,13 @@ export default async function ToolPage({ params, searchParams }) {
           {
             '@type': 'ListItem',
             position: 1,
-            name: 'Home',
+            name: t('home'),
             item: baseUrl
           },
           {
             '@type': 'ListItem',
             position: 2,
-            name: 'Tools',
+            name: t('tools'),
             item: `${baseUrl}/tools`
           },
           {
@@ -190,28 +202,24 @@ export default async function ToolPage({ params, searchParams }) {
         })) : [
           {
             '@type': 'Question',
-            name: `Is ${tool.name} free to use?`,
+            name: t('faqIsFree', { name: tool.name }),
             acceptedAnswer: {
               '@type': 'Answer',
-              text: `${tool.name} is available as a ${tool.pricing || 'Free'} AI tool. Discover full pricing options, features, and user reviews on Best AI Tools Free.`
+              text: t('faqIsFreeAnswer', { name: tool.name, pricing: tool.pricing || 'Free' })
             }
           },
           {
             '@type': 'Question',
-            name: `What is ${tool.name} best used for?`,
+            name: t('faqFeatures', { name: tool.name }),
             acceptedAnswer: {
               '@type': 'Answer',
-              text: `${tool.name} is designed for ${primaryCategory.replace(/-/g, ' ')} tasks, offering automated AI workflows and intuitive features.`
+              text: t('faqFeaturesAnswer', { name: tool.name, category: primaryCategory.replace(/-/g, ' ') })
             }
           }
         ]
       }
     ]
   };
-
-  const langDict = await getTranslation(lang);
-  const getLangUrl = (path) => lang === 'en' ? path : `/${lang}${path}`;
-  const t = (key) => langDict[key] || key;
 
   const breadcrumbData = [
     { label: t('home'), href: getLangUrl('/') },

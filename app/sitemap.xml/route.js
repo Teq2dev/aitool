@@ -57,6 +57,16 @@ export async function GET() {
       { url: '/faq', priority: '0.7', changefreq: 'monthly' },
     ];
 
+    
+    const utilityPages = [
+      '/pdf-tools', '/image-tools',
+      '/merge-pdf', '/split-pdf', '/rotate-pdf', '/delete-pages', '/compress-pdf', '/edit-pdf', '/unlock-pdf',
+      '/pdf-to-word', '/pdf-to-powerpoint', '/pdf-to-excel', '/word-to-pdf', '/powerpoint-to-pdf', '/excel-to-pdf',
+      '/pdf-to-jpg', '/pdf-to-png', '/jpg-to-pdf', '/png-to-pdf',
+      '/image-compressor', '/image-resizer', '/image-cropper', '/image-rotator', '/image-converter',
+      '/jpg-to-png', '/png-to-jpg', '/jpg-to-webp', '/png-to-webp', '/webp-to-jpg', '/webp-to-png'
+    ];
+
     // Helper to format date safely
     const formatDate = (date) => {
       try {
@@ -92,6 +102,27 @@ export async function GET() {
     <xhtml:link rel="alternate" hreflang="${alt.code}" href="${formatUrl(getSubpathUrl(page.url, alt.code))}" />`;
         });
 
+        xml += `
+  </url>`;
+      });
+    });
+
+    
+    // Add Phase 2 Utility Pages for all languages
+    utilityPages.forEach(path => {
+      LANGUAGES.forEach(lang => {
+        const fullUrl = getSubpathUrl(path, lang.code);
+        xml += `
+  <url>
+    <loc>${formatUrl(fullUrl)}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>${lang.code === 'en' ? '0.95' : '0.85'}</priority>`;
+
+        LANGUAGES.forEach(alt => {
+          xml += `
+    <xhtml:link rel="alternate" hreflang="${alt.code}" href="${formatUrl(getSubpathUrl(path, alt.code))}" />`;
+        });
+        
         xml += `
   </url>`;
       });

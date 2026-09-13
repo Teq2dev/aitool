@@ -61,7 +61,7 @@ export default function CategoryDetailClient({ category, popularTools, freeTools
             {/* Buying Guide */}
             {displayBuyingGuide && (
               <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">How to Choose the Right {displayName} Tool</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('howToChoose', { name: displayName })}</h2>
                 <div 
                   className="prose prose-blue max-w-none text-gray-600 bg-white p-8 rounded-2xl border border-gray-200 shadow-sm whitespace-pre-wrap"
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(displayBuyingGuide) }}
@@ -73,7 +73,7 @@ export default function CategoryDetailClient({ category, popularTools, freeTools
             {popularTools.length > 0 && (
               <section>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">Popular {displayName} Tools</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">{t('popularToolsTitle', { name: displayName })}</h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {popularTools.map((tool) => (
@@ -87,7 +87,7 @@ export default function CategoryDetailClient({ category, popularTools, freeTools
             {freeTools.length > 0 && (
               <section>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">Best Free {displayName} Tools</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">{t('bestFreeToolsTitle', { name: displayName })}</h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {freeTools.map((tool) => (
@@ -100,7 +100,7 @@ export default function CategoryDetailClient({ category, popularTools, freeTools
             {/* FAQs */}
             {displayFaqs && displayFaqs.length > 0 && (
               <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('faqTitle')}</h2>
                 <div className="space-y-4">
                   {displayFaqs.map((faq, index) => (
                     <div key={index} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
@@ -126,7 +126,7 @@ export default function CategoryDetailClient({ category, popularTools, freeTools
           {/* Sidebar Area */}
           <div className="lg:col-span-1 space-y-8">
             <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm sticky top-24">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Latest Arrivals</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-4">{t('latestArrivals')}</h2>
               <div className="space-y-4">
                 {newTools.map((tool) => (
                   <Link href={getLangUrl(`/tools/${tool.slug}`)} key={tool._id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition">

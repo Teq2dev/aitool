@@ -139,3 +139,51 @@ code {
     @apply bg-background text-foreground;
     }
 }
+/* Background grid utility */
+.bg-grid-pattern {
+  background-image: radial-gradient(rgba(148, 163, 184, 0.25) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Checkerboard background for alpha transparency preview */
+.checkerboard-bg {
+  background-color: #f8fafc;
+  background-image: 
+    linear-gradient(45deg, #e2e8f0 25%, transparent 25%), 
+    linear-gradient(-45deg, #e2e8f0 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, #e2e8f0 75%), 
+    linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+}
+
+/* Upload zone drag-active animation */
+@keyframes pulse-border {
+  0%, 100% { border-color: rgb(37 99 235); }
+  50% { border-color: rgb(99 102 241); }
+}
+
+.upload-zone-active {
+  animation: pulse-border 1.2s ease-in-out infinite;
+}
+
+/* Progress bar striped animation */
+@keyframes stripe-move {
+  0% { background-position: 0 0; }
+  100% { background-position: 40px 0; }
+}
+
+.progress-striped {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255,255,255,.2) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255,255,255,.2) 50%,
+    rgba(255,255,255,.2) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 32px 32px;
+  animation: stripe-move 1s linear infinite;
+}

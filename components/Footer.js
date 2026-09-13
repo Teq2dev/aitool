@@ -41,6 +41,8 @@ export default function Footer({ topCategories }) {
               <li><Link href={getLangUrl('/blogs')} className="hover:text-blue-600">AI Blog & News</Link></li>
               <li><Link href={getLangUrl('/submit')} className="hover:text-blue-600">Submit Your AI Tool</Link></li>
               <li><Link href={getLangUrl('/tools?sort=trending')} className="hover:text-blue-600">Trending Tools</Link></li>
+              <li><Link href={getLangUrl('/pdf-tools')} className="hover:text-blue-600">PDF Tools</Link></li>
+              <li><Link href={getLangUrl('/image-tools')} className="hover:text-blue-600">Image Tools</Link></li>
             </ul>
           </div>
           

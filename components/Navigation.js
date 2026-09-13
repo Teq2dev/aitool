@@ -19,10 +19,14 @@ import {
   BookOpen, 
   LayoutDashboard, 
   Shield, 
-  Search 
+  Search,
+  FileText,
+  Image as ImageIcon
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import FlagIcon from '@/components/FlagIcon';
+import { PDF_TOOLS } from '@/lib/pdfConfig';
+import { IMAGE_TOOL_DATA } from '@/lib/imageToolData';
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -37,8 +41,30 @@ export default function Navigation() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [freeToolsOpen, setFreeToolsOpen] = useState(false);
+    const [freeToolsMobileOpen, setFreeToolsMobileOpen] = useState(false);
+    const freeToolsRef = useRef(null);
 
   const { currentLang, setLanguage, t, languages, getLangUrl } = useLanguage();
+
+    // Free Tools click outside & Escape
+    useEffect(() => {
+      const handleEscape = (e) => {
+        if (e.key === 'Escape') setFreeToolsOpen(false);
+      };
+      const handleClickOutside = (e) => {
+        if (freeToolsRef.current && !freeToolsRef.current.contains(e.target)) {
+          setFreeToolsOpen(false);
+        }
+      };
+      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('keydown', handleEscape);
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }, []);
+
   
   const langDropdownRef = useRef(null);
   const profileDropdownRef = useRef(null);
@@ -174,28 +200,88 @@ export default function Navigation() {
               {t('browseTools') || 'Browse Tools'}
             </Link>
 
-            {/* Task 4: Free Tools (Non-clickable, Red Pulsing Dot, Coming Soon) */}
-            <div 
-              className="relative group flex items-center gap-1.5 font-medium text-sm text-slate-700 select-none cursor-default py-1"
-              title="Free Tools - Coming Soon"
-              role="status"
-              aria-label="Free Tools - Coming Soon"
-            >
-              <span>{t('freeTools') || 'Free Tools'}</span>
+            {/* Free Tools Dropdown (Desktop Mega-Menu) */}
+            <div className="relative" ref={freeToolsRef}>
+              <button 
+                type="button"
+                onClick={() => setFreeToolsOpen(!freeToolsOpen)}
+                className={`flex items-center gap-1.5 font-medium text-sm transition-colors py-1 cursor-pointer focus:outline-none ${freeToolsOpen || pathname?.includes('/tools') ? 'text-blue-600' : 'text-slate-700 hover:text-blue-600'}`}
+                aria-expanded={freeToolsOpen}
+                aria-haspopup="true"
+              >
+                <span>{t('freeTools') || 'Free Tools'}</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${freeToolsOpen ? 'rotate-180 opacity-100 text-blue-600' : 'opacity-60'}`} aria-hidden="true" />
+              </button>
               
-              {/* Subtle pulsing red status dot */}
-              <span className="relative flex h-2 w-2" aria-hidden="true">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-60"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]"></span>
-              </span>
+              {freeToolsOpen && (
+                <div className="absolute top-[calc(100%+0.5rem)] left-1/2 -translate-x-1/2 w-[600px] bg-white rounded-2xl shadow-2xl border border-slate-200/60 transition-all duration-200 z-50 animate-in fade-in slide-in-from-top-2 overflow-hidden">
+                  <div className="grid grid-cols-2 gap-0 divide-x divide-slate-100">
+                    
+                    {/* PDF Tools Column */}
+                    <div className="p-4 bg-slate-50/30">
+                      <div className="flex items-center justify-between mb-3 px-2">
+                        <Link 
+                          href={getLangUrl('/pdf-tools')}
+                          onClick={() => setFreeToolsOpen(false)} 
+                          className="flex items-center gap-2 text-sm font-black text-slate-900 hover:text-blue-600 transition-colors group"
+                        >
+                          <div className="w-6 h-6 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center">
+                            <FileText className="w-3.5 h-3.5" />
+                          </div>
+                          PDF Tools
+                          <span className="opacity-0 group-hover:opacity-100 transition-opacity text-blue-600">→</span>
+                        </Link>
+                      </div>
+                      <div className="grid grid-cols-1 gap-0.5 max-h-[360px] overflow-y-auto pr-2 custom-scrollbar">
+                        {PDF_TOOLS.map((tool) => (
+                          <Link
+                            key={tool.slug}
+                            href={getLangUrl(`/${tool.slug}`)}
+                            onClick={() => setFreeToolsOpen(false)}
+                            className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-slate-600 hover:text-blue-600 text-[13px] font-medium"
+                          >
+                            <span className="w-1 h-1 rounded-full bg-blue-300 opacity-50"></span>
+                            {tool.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
 
-              {/* Small Coming Soon badge */}
-              <span className="inline-flex text-[10px] font-bold text-red-600 bg-red-50 border border-red-200/70 rounded-full px-1.5 py-0.5 leading-none shadow-2xs">
-                Coming Soon
-              </span>
+                    {/* Image Tools Column */}
+                    <div className="p-4 bg-white">
+                      <div className="flex items-center justify-between mb-3 px-2">
+                        <Link 
+                          href={getLangUrl('/image-tools')}
+                          onClick={() => setFreeToolsOpen(false)} 
+                          className="flex items-center gap-2 text-sm font-black text-slate-900 hover:text-emerald-600 transition-colors group"
+                        >
+                          <div className="w-6 h-6 rounded-md bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                            <ImageIcon className="w-3.5 h-3.5" />
+                          </div>
+                          Image Tools
+                          <span className="opacity-0 group-hover:opacity-100 transition-opacity text-emerald-600">→</span>
+                        </Link>
+                      </div>
+                      <div className="grid grid-cols-1 gap-0.5 max-h-[360px] overflow-y-auto pr-2 custom-scrollbar">
+                        {Object.values(IMAGE_TOOL_DATA).map((tool) => (
+                          <Link
+                            key={tool.slug}
+                            href={getLangUrl(`/${tool.slug}`)}
+                            onClick={() => setFreeToolsOpen(false)}
+                            className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-50 transition-all text-slate-600 hover:text-emerald-600 text-[13px] font-medium"
+                          >
+                            <span className="w-1 h-1 rounded-full bg-emerald-300 opacity-50"></span>
+                            {tool.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              )}
             </div>
-
-            <Link 
+<Link 
               href={getLangUrl('/categories')} 
               className={`transition-colors font-medium text-sm py-1 ${
                 pathname?.includes('/categories') ? 'text-blue-600 font-semibold' : 'text-slate-700 hover:text-blue-600'
@@ -477,25 +563,78 @@ export default function Navigation() {
                 <span>{t('browseTools') || 'Browse Tools'}</span>
               </Link>
 
-              {/* Mobile Free Tools Non-clickable Item */}
-              <div 
-                className="flex items-center justify-between px-3 py-2 rounded-xl text-sm font-semibold text-slate-700 bg-slate-50/80 select-none cursor-default"
-                role="status"
-                aria-label="Free Tools - Coming Soon"
-              >
-                <div className="flex items-center gap-3">
-                  <Sparkles className="w-4 h-4 text-red-500 flex-shrink-0" aria-hidden="true" />
-                  <span>{t('freeTools') || 'Free Tools'}</span>
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-60"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500 shadow-[0_0_4px_rgba(239,68,68,0.7)]"></span>
-                  </span>
-                </div>
-                <span className="text-[10px] font-bold text-red-600 bg-red-100/80 border border-red-200/80 rounded-full px-2 py-0.5 leading-none">
-                  Coming Soon
-                </span>
-              </div>
+              {/* Mobile Free Tools Section */}
+              <div className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => setFreeToolsMobileOpen(!freeToolsMobileOpen)}
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Sparkles className="w-4 h-4 text-blue-500" aria-hidden="true" />
+                    <span>{t('freeTools') || 'Free Tools'}</span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${freeToolsMobileOpen ? 'rotate-180 text-blue-600' : 'text-slate-400'}`} />
+                </button>
+                
+                {freeToolsMobileOpen && (
+                  <div className="pl-4 space-y-4 mt-2 mb-2 animate-in slide-in-from-top-2 fade-in duration-200 border-l-2 border-slate-100 ml-4">
+                    
+                    {/* Mobile PDF Tools */}
+                    <div>
+                      <Link 
+                        href={getLangUrl('/pdf-tools')}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-2 px-2 py-1 mb-1 text-xs font-black text-slate-900"
+                      >
+                        <div className="w-5 h-5 rounded bg-blue-50 text-blue-600 flex items-center justify-center">
+                          <FileText className="w-3 h-3" />
+                        </div>
+                        PDF Tools →
+                      </Link>
+                      <div className="grid grid-cols-1 gap-1 pl-7 max-h-48 overflow-y-auto">
+                        {PDF_TOOLS.map(tool => (
+                          <Link
+                            key={tool.slug}
+                            href={getLangUrl(`/${tool.slug}`)}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="text-[13px] font-medium text-slate-600 hover:text-blue-600 py-1"
+                          >
+                            {tool.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
 
+                    {/* Mobile Image Tools */}
+                    <div>
+                      <Link 
+                        href={getLangUrl('/image-tools')}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-2 px-2 py-1 mb-1 text-xs font-black text-slate-900"
+                      >
+                        <div className="w-5 h-5 rounded bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                          <ImageIcon className="w-3 h-3" />
+                        </div>
+                        Image Tools →
+                      </Link>
+                      <div className="grid grid-cols-1 gap-1 pl-7 max-h-48 overflow-y-auto">
+                        {Object.values(IMAGE_TOOL_DATA).map(tool => (
+                          <Link
+                            key={tool.slug}
+                            href={getLangUrl(`/${tool.slug}`)}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="text-[13px] font-medium text-slate-600 hover:text-emerald-600 py-1"
+                          >
+                            {tool.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+
+                  </div>
+                )}
+              </div>
               <Link
                 href={getLangUrl('/categories')}
                 onClick={() => setMobileMenuOpen(false)}

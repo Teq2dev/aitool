@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import { ExternalLink, Edit2, Star } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function ToolSemanticClusters({ relatedCats, relatedBlogs, strongSimilar, relatedTools, effectiveLang }) {
-  const getLangUrl = (path) => effectiveLang === 'en' ? path : `/${effectiveLang}${path}`;
+  const { t } = useLanguage();
+  const getLangUrl = (path) => (!effectiveLang || effectiveLang === 'en') ? path : `/${effectiveLang}${path}`;
 
   return (
     <div className="mt-12 space-y-8 border-t border-gray-100 pt-8">
@@ -13,7 +15,7 @@ export default function ToolSemanticClusters({ relatedCats, relatedBlogs, strong
             <span className="bg-blue-100 text-blue-700 p-1.5 rounded-lg mr-2">
               <ExternalLink className="w-5 h-5" />
             </span>
-            Related Categories
+            {t('relatedCategories')}
           </h3>
           <div className="flex flex-wrap gap-2">
             {relatedCats.map(rc => (
@@ -31,11 +33,11 @@ export default function ToolSemanticClusters({ relatedCats, relatedBlogs, strong
             <span className="bg-green-100 text-green-700 p-1.5 rounded-lg mr-2">
               <Edit2 className="w-5 h-5" />
             </span>
-            Relevant Reads
+            {t('relevantReads')}
           </h3>
           <div className="grid sm:grid-cols-2 gap-4">
             {relatedBlogs.map(rb => (
-              <Link key={rb.slug} href={`/blogs/${rb.slug}`} className="p-4 rounded-xl border border-gray-100 hover:border-green-200 hover:shadow-md transition bg-white group">
+              <Link key={rb.slug} href={getLangUrl(`/blogs/${rb.slug}`)} className="p-4 rounded-xl border border-gray-100 hover:border-green-200 hover:shadow-md transition bg-white group">
                 <h4 className="font-semibold text-gray-900 group-hover:text-green-700 transition">{rb.title}</h4>
               </Link>
             ))}
@@ -49,7 +51,7 @@ export default function ToolSemanticClusters({ relatedCats, relatedBlogs, strong
             <span className="bg-purple-100 text-purple-700 p-1.5 rounded-lg mr-2">
               <Star className="w-5 h-5" />
             </span>
-            Related AI Tools
+            {t('relatedAiTools')}
           </h3>
           <div className="grid sm:grid-cols-2 gap-4">
             {(strongSimilar || []).concat(relatedTools || []).slice(0, 10).map((st, i) => (
