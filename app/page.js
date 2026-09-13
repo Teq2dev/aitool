@@ -7,6 +7,20 @@ export const metadata = {
   description: 'Explore the most comprehensive directory of best free AI tools. Browse, compare, and discover trending AI solutions for writing, image generation, business, and more.',
   alternates: {
     canonical: 'https://www.bestaitoolsfree.com',
+    languages: {
+      'x-default': 'https://www.bestaitoolsfree.com',
+      'en': 'https://www.bestaitoolsfree.com',
+      'es': 'https://www.bestaitoolsfree.com/es',
+      'fr': 'https://www.bestaitoolsfree.com/fr',
+      'de': 'https://www.bestaitoolsfree.com/de',
+      'pt': 'https://www.bestaitoolsfree.com/pt',
+      'ar': 'https://www.bestaitoolsfree.com/ar',
+      'ru': 'https://www.bestaitoolsfree.com/ru',
+      'ja': 'https://www.bestaitoolsfree.com/ja',
+      'zh': 'https://www.bestaitoolsfree.com/zh',
+      'it': 'https://www.bestaitoolsfree.com/it',
+      'nl': 'https://www.bestaitoolsfree.com/nl',
+    }
   },
 };
 

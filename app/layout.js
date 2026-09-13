@@ -24,23 +24,6 @@ export const metadata = {
   description: 'Browse 3000+ Best Free AI Tools across multiple categories. Find the perfect AI tool for your needs. Compare AI tools, read reviews, and discover trending AI solutions.',
   keywords: 'best ai tools, free ai tools, ai tools directory, artificial intelligence tools, ai software, machine learning tools, chatgpt alternatives, ai image generators, ai writing tools',
   authors: [{ name: 'Best AI Tools Free' }],
-  alternates: {
-    canonical: '/',
-    languages: {
-      'x-default': 'https://www.bestaitoolsfree.com',
-      'en': 'https://www.bestaitoolsfree.com',
-      'es': 'https://www.bestaitoolsfree.com?lang=es',
-      'fr': 'https://www.bestaitoolsfree.com?lang=fr',
-      'de': 'https://www.bestaitoolsfree.com?lang=de',
-      'pt': 'https://www.bestaitoolsfree.com?lang=pt',
-      'ar': 'https://www.bestaitoolsfree.com?lang=ar',
-      'ru': 'https://www.bestaitoolsfree.com?lang=ru',
-      'ja': 'https://www.bestaitoolsfree.com?lang=ja',
-      'zh': 'https://www.bestaitoolsfree.com?lang=zh',
-      'it': 'https://www.bestaitoolsfree.com?lang=it',
-      'nl': 'https://www.bestaitoolsfree.com?lang=nl',
-    }
-  },
   icons: {
     icon: '/favicon.png',
     shortcut: '/favicon.png',
@@ -131,17 +114,6 @@ export default async function RootLayout({ children }) {
     <AuthProvider>
       <html lang="en">
         <head>
-          {/* Google International SEO Hreflang Tags */}
-          <link rel="alternate" href="https://www.bestaitoolsfree.com" hrefLang="x-default" />
-          {LANGUAGES.map(lang => (
-            <link 
-              key={lang.code} 
-              rel="alternate" 
-              href={`https://www.bestaitoolsfree.com${lang.code === 'en' ? '' : `/${lang.code}`}`} 
-              hrefLang={lang.code} 
-            />
-          ))}
-
           {/* Cookiebot Consent Management */}
           <Script 
             id="Cookiebot" 
