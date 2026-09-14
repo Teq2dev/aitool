@@ -152,11 +152,18 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                         </Button>
                       </div>
                       <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
-                        <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-full border border-yellow-100">
-                          <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                          <span className="text-lg font-bold text-yellow-700">{tool.rating}</span>
-                          <span className="text-gray-500 text-sm">({tool.votes} {t('reviews')})</span>
-                        </div>
+                        {tool.rating && tool.votes > 0 ? (
+                          <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-full border border-yellow-100">
+                            <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                            <span className="text-lg font-bold text-yellow-700">{tool.rating}</span>
+                            <span className="text-gray-500 text-sm">({tool.votes} {t('reviews')})</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 bg-gray-50 px-3 py-1 rounded-full border border-gray-200">
+                            <Star className="w-5 h-5 text-gray-400" />
+                            <span className="text-sm font-medium text-gray-600">No reviews yet</span>
+                          </div>
+                        )}
                         <Badge className={`text-sm px-4 py-1.5 rounded-full ${
                           tool.pricing === 'Free' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 
                           tool.pricing === 'Paid' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 
@@ -420,7 +427,9 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                     )}
                     <div className="flex items-center justify-between text-sm py-2 border-b">
                       <span className="text-gray-500">{t('globalRating')}</span>
-                      <span className="font-bold text-yellow-600">{tool.rating} / 5.0</span>
+                      <span className="font-bold text-yellow-600">
+                        {tool.rating && tool.votes > 0 ? `${tool.rating} / 5.0` : 'No reviews yet'}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between text-sm py-2 border-b">
                       <span className="text-gray-500">{t('freePlanAvailable')}</span>

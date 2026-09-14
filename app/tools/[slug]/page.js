@@ -148,13 +148,15 @@ export default async function ToolPage({ params, searchParams }) {
           priceCurrency: 'USD',
           availability: 'https://schema.org/InStock'
         },
-        aggregateRating: {
-          '@type': 'AggregateRating',
-          ratingValue: tool.rating || 4.5,
-          ratingCount: tool.votes || 12,
-          bestRating: 5,
-          worstRating: 1
-        },
+        ...(tool.rating && tool.votes > 0 ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: tool.rating,
+            ratingCount: tool.votes,
+            bestRating: 5,
+            worstRating: 1
+          }
+        } : {}),
         image: tool.logo,
         author: {
           '@type': 'Organization',
