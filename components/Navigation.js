@@ -179,9 +179,9 @@ export default function Navigation() {
             prefetch={true}
           >
             <img 
-              src="/logo.jpg" 
+              src="/logo.png" 
               alt="Best AI Tools Free" 
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-cover shadow-2xs" 
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-contain" 
             />
             <span className="font-bold text-base sm:text-lg text-slate-900 tracking-tight inline-block">
               Best AI Tools Free
