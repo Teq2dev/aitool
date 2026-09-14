@@ -18,6 +18,8 @@ const formatUrl = (url) => {
   return escapeXml(encodeURI(url));
 };
 
+export const revalidate = 86400;
+
 export async function GET() {
   const baseUrl = 'https://www.bestaitoolsfree.com';
   
@@ -101,6 +103,8 @@ export async function GET() {
           xml += `
     <xhtml:link rel="alternate" hreflang="${alt.code}" href="${formatUrl(getSubpathUrl(page.url, alt.code))}" />`;
         });
+        xml += `
+    <xhtml:link rel="alternate" hreflang="x-default" href="${formatUrl(getSubpathUrl(page.url, 'en'))}" />`;
 
         xml += `
   </url>`;
@@ -122,6 +126,8 @@ export async function GET() {
           xml += `
     <xhtml:link rel="alternate" hreflang="${alt.code}" href="${formatUrl(getSubpathUrl(path, alt.code))}" />`;
         });
+        xml += `
+    <xhtml:link rel="alternate" hreflang="x-default" href="${formatUrl(getSubpathUrl(path, 'en'))}" />`;
         
         xml += `
   </url>`;
@@ -145,6 +151,8 @@ export async function GET() {
             xml += `
     <xhtml:link rel="alternate" hreflang="${alt.code}" href="${formatUrl(getSubpathUrl(`/tools/${tool.slug}`, alt.code))}" />`;
           });
+          xml += `
+    <xhtml:link rel="alternate" hreflang="x-default" href="${formatUrl(getSubpathUrl(`/tools/${tool.slug}`, 'en'))}" />`;
 
           xml += `
   </url>`;
@@ -176,7 +184,16 @@ export async function GET() {
   <url>
     <loc>${formatUrl(fullUrl)}</loc>
     <changefreq>daily</changefreq>
-    <priority>${lang.code === 'en' ? '0.85' : '0.7'}</priority>
+    <priority>${lang.code === 'en' ? '0.85' : '0.7'}</priority>`;
+
+          LANGUAGES.forEach(alt => {
+            xml += `
+    <xhtml:link rel="alternate" hreflang="${alt.code}" href="${formatUrl(getSubpathUrl(path, alt.code))}" />`;
+          });
+          xml += `
+    <xhtml:link rel="alternate" hreflang="x-default" href="${formatUrl(getSubpathUrl(path, 'en'))}" />`;
+
+          xml += `
   </url>`;
         });
       }

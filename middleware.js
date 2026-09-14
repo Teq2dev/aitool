@@ -47,5 +47,5 @@ export default async function middleware(req) {
 }
 
 export const config = {
-  matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon\\.ico|favicon\\.png|logo\\.png|logo\\.jpg|uploads/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)).*)'],
 };

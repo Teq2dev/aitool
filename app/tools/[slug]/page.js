@@ -9,6 +9,8 @@ import { notFound } from 'next/navigation';
 import { getLocalizedDescription } from '@/lib/languages';
 import { getTranslation } from '@/lib/translations';
 
+export const revalidate = 86400;
+
 export async function generateMetadata({ params, searchParams }) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
