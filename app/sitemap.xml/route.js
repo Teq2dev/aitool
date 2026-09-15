@@ -18,8 +18,6 @@ const formatUrl = (url) => {
   return escapeXml(encodeURI(url));
 };
 
-export const revalidate = 86400;
-
 export async function GET() {
   const baseUrl = 'https://www.bestaitoolsfree.com';
   
