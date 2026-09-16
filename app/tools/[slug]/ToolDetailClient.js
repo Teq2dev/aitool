@@ -10,12 +10,12 @@ import DOMPurify from 'dompurify';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/context/LanguageContext';
-import { 
-  getLocalizedPricing, 
-  getLocalizedBadge, 
-  getLocalizedProsList, 
-  getLocalizedConsList, 
-  getLocalizedDescription 
+import {
+  getLocalizedPricing,
+  getLocalizedBadge,
+  getLocalizedProsList,
+  getLocalizedConsList,
+  getLocalizedDescription
 } from '@/lib/languages';
 import ToolSemanticClusters from '@/components/seo/ToolSemanticClusters';
 import Breadcrumbs from '@/components/seo/Breadcrumbs';
@@ -31,9 +31,9 @@ const sanitizeHtml = (html) => {
 export default function ToolDetailClient({ initialTool, initialStrongSimilar = [], initialRelatedTools = [], initialLang = 'en', relatedBlogs = [], relatedCats = [], breadcrumbData }) {
   const { data: session } = useSession();
   const user = session?.user;
-  const [tool] = useState(initialTool);
-  const [strongSimilar] = useState(initialStrongSimilar);
-  const [relatedTools] = useState(initialRelatedTools);
+  const tool = initialTool;
+  const strongSimilar = initialStrongSimilar;
+  const relatedTools = initialRelatedTools;
   const { t, currentLang, getLangUrl } = useLanguage();
 
   if (!tool) return null;
@@ -41,12 +41,12 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
   const effectiveLang = initialLang || currentLang;
   const primaryCategory = tool.categories?.[0] || 'general';
   const localizedInfo = getLocalizedDescription(tool, effectiveLang);
-  
+
   // Apply translation overrides from DB if they exist
   const translationOverride = tool.translations?.[effectiveLang] || {};
   const displayFullDescription = translationOverride.fullDescription || localizedInfo.description || tool.description || tool.fullDescription || tool.shortDescription;
   const displayPricingDetails = translationOverride.pricingDetails || tool.pricingDetails;
-  
+
   let displayFaqs = tool.faqs;
   if (effectiveLang !== 'en' && translationOverride.faqs && translationOverride.faqs.length > 0) {
     displayFaqs = translationOverride.faqs;
@@ -126,17 +126,17 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2">
-              
+
 
 
 <Card className="mb-6 overflow-hidden border-none shadow-sm">
                 <CardHeader className="bg-white pb-8">
                   <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                     <div className="w-32 h-32 rounded-2xl overflow-hidden bg-gray-100 flex-shrink-0 border-4 border-blue-50 shadow-md">
-                      <img 
-                        src={tool.logo} 
-                        alt={`${tool.name} - Free AI Tool`} 
-                        className="w-full h-full object-cover" 
+                      <img
+                        src={tool.logo}
+                        alt={`${tool.name} - Free AI Tool`}
+                        className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="flex-1 text-center md:text-left">
@@ -165,8 +165,8 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                           </div>
                         )}
                         <Badge className={`text-sm px-4 py-1.5 rounded-full ${
-                          tool.pricing === 'Free' ? 'bg-green-100 text-green-700 hover:bg-green-200' : 
-                          tool.pricing === 'Paid' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 
+                          tool.pricing === 'Free' ? 'bg-green-100 text-green-700 hover:bg-green-200' :
+                          tool.pricing === 'Paid' ? 'bg-red-100 text-red-700 hover:bg-red-200' :
                           'bg-blue-100 text-blue-700 hover:bg-blue-200'
                         }`}>
                           {localizedPricing}
@@ -189,12 +189,12 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                   <CardTitle className="text-2xl">{t('whatIs', { name: tool.name })}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div 
+                  <div
                     className="prose prose-blue max-w-none text-gray-700 text-lg leading-relaxed whitespace-pre-wrap"
                     dangerouslySetInnerHTML={{ __html: sanitizeHtml(displayFullDescription) }}
                   />
-        <ToolSemanticClusters 
-          relatedCats={relatedCats} 
+        <ToolSemanticClusters
+          relatedCats={relatedCats}
           relatedBlogs={relatedBlogs}
           strongSimilar={strongSimilar}
           relatedTools={relatedTools}
@@ -243,8 +243,8 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                     <div className="flex flex-col p-4 bg-gray-50 rounded-xl border border-gray-100">
                       <span className="text-sm font-semibold text-gray-500 mb-1 tracking-wider uppercase">{t('freePlanLabel')}</span>
                       <span className="font-bold text-gray-900 text-lg">
-                        {tool.hasFreePlan !== undefined 
-                          ? (tool.hasFreePlan ? t('yes') : t('no')) 
+                        {tool.hasFreePlan !== undefined
+                          ? (tool.hasFreePlan ? t('yes') : t('no'))
                           : (tool.pricing === 'Free' || tool.pricing === 'Freemium' ? t('yes') : '—')}
                       </span>
                     </div>
@@ -257,11 +257,11 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                       <span className="font-bold text-gray-900 text-lg">{tool.billingCycle || '—'}</span>
                     </div>
                   </div>
-                  
+
                   {displayPricingDetails && (
                     <div className="p-5 bg-blue-50/50 rounded-xl border border-blue-100/50">
                       <h3 className="text-sm font-bold text-blue-900 mb-2 uppercase tracking-wider">{t('detailedPricingInfo')}</h3>
-                      <div 
+                      <div
                         className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap"
                         dangerouslySetInnerHTML={{ __html: sanitizeHtml(displayPricingDetails) }}
                       />
@@ -328,7 +328,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                       displayFaqs.map((faq, index) => (
                         <div key={index} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
                           <h3 className="font-bold text-gray-900 mb-2 text-base">{faq.question}</h3>
-                          <div 
+                          <div
                             className="text-gray-700 text-sm leading-relaxed prose prose-sm max-w-none"
                             dangerouslySetInnerHTML={{ __html: sanitizeHtml(faq.answer) }}
                           />
@@ -598,7 +598,7 @@ function ReviewsSection({ toolId, initialRating, initialVotes }) {
     e.preventDefault();
     if (!rating) return toast.error('Please select a rating');
     if (!comment.trim()) return toast.error('Please enter a comment');
-    
+
     setSubmitting(true);
     try {
       console.log('Submitting review for:', toolId);
@@ -607,12 +607,12 @@ function ReviewsSection({ toolId, initialRating, initialVotes }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ toolId, rating, comment, userName })
       });
-      
+
       const data = await res.json();
-      
+
       if (res.ok && data.success) {
         toast.success('Thank you for your review!');
-        
+
         // Save edit token for anonymous edits
         if (data.editToken) {
           try {
@@ -623,7 +623,7 @@ function ReviewsSection({ toolId, initialRating, initialVotes }) {
             console.warn('LocalStorage error:', e);
           }
         }
-        
+
         setComment('');
         setUserName('');
         setRating(5);
@@ -648,7 +648,7 @@ function ReviewsSection({ toolId, initialRating, initialVotes }) {
         method: 'DELETE'
       });
       const data = await res.json();
-      
+
       if (res.ok && data.success) {
         toast.success('Review deleted');
         setDeleteConfirmId(null);
@@ -681,15 +681,15 @@ function ReviewsSection({ toolId, initialRating, initialVotes }) {
       const res = await fetch('/api/reviews', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          reviewId: editingId, 
-          rating: editRating, 
+        body: JSON.stringify({
+          reviewId: editingId,
+          rating: editRating,
           comment: editComment,
           editToken: editToken
         })
       });
       const data = await res.json();
-      
+
       if (res.ok && data.success) {
         toast.success('Review updated');
         setEditingId(null);
@@ -745,7 +745,7 @@ function ReviewsSection({ toolId, initialRating, initialVotes }) {
                   ))}
                 </div>
               </div>
-              
+
               <div>
                 <label htmlFor="review-user-name" className="block text-sm font-medium text-gray-700 mb-1">{t('yourNameOptional')}</label>
                 <input
@@ -771,8 +771,8 @@ function ReviewsSection({ toolId, initialRating, initialVotes }) {
                 />
               </div>
 
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={submitting}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 rounded-xl shadow-lg shadow-blue-100"
               >
@@ -789,7 +789,7 @@ function ReviewsSection({ toolId, initialRating, initialVotes }) {
                 return (
                   <>
                     <h3 className="text-lg font-bold mb-4">{t('communityFeedback')} ({safeReviews.length})</h3>
-                    
+
                     {loading ? (
                       <div className="flex justify-center py-12" aria-live="polite" aria-busy="true">
                         <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" aria-label="Loading reviews"></div>
@@ -868,14 +868,14 @@ function ReviewsSection({ toolId, initialRating, initialVotes }) {
                                 <>
                                   <div className="flex gap-0.5" aria-label={`Rating: ${rev.rating} out of 5 stars`}>
                                     {[...Array(5)].map((_, i) => (
-                                      <Star 
-                                        key={i} 
+                                      <Star
+                                        key={i}
                                         aria-hidden="true"
-                                        className={`w-3 h-3 ${i < rev.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`} 
+                                        className={`w-3 h-3 ${i < rev.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`}
                                       />
                                     ))}
                                   </div>
-                                  
+
                                   {/* Ownership/Admin Actions */}
                                   {(isAdmin || (user && rev.userId === user.id) || getEditToken(rev._id)) && (
                                     <div className="flex gap-1">

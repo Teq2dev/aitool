@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import SearchBar from '@/components/SearchBar';
@@ -11,16 +10,16 @@ import { ArrowRightIcon, SparklesIcon, TrendingUpIcon, ZapIcon, LayoutGridIcon, 
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 
-export default function HomeClient({ 
-  initialFeatured = [], 
-  initialTrending = [], 
-  initialCategories = [], 
-  initialLatest = [] 
+export default function HomeClient({
+  initialFeatured = [],
+  initialTrending = [],
+  initialCategories = [],
+  initialLatest = []
 }) {
-  const [featured] = useState(initialFeatured);
-  const [trending] = useState(initialTrending);
-  const [categories] = useState(initialCategories);
-  const [latest] = useState(initialLatest);
+  const featured = initialFeatured;
+  const trending = initialTrending;
+  const categories = initialCategories;
+  const latest = initialLatest;
   const { t, getLangUrl } = useLanguage();
 
   return (
@@ -30,20 +29,20 @@ export default function HomeClient({
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl opacity-50"></div>
         <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-indigo-200/30 rounded-full blur-3xl opacity-50"></div>
-        
+
         <div className="container mx-auto px-4 relative z-10 text-center">
           <Badge className="mb-8 bg-white/80 backdrop-blur-sm text-blue-1000 border-blue-200 px-6 py-2 text-sm rounded-full shadow-sm animate-fade-in">
             <SparklesIcon className="w-4 h-4 mr-2 inline" />
             {t('heroBadge')}
           </Badge>
-          
+
           <h1 className="text-6xl md:text-7xl font-extrabold text-gray-900 mb-8 leading-tight tracking-tight">
             {t('heroTitlePrefix')}{' '}
             <span className="block bg-gradient-to-r from-blue-600 to-indigo-1000 bg-clip-text text-transparent">
               {t('heroTitleSuffix')}
             </span>
           </h1>
-          
+
           <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed font-medium">
             {t('heroSubtitle')}
           </p>

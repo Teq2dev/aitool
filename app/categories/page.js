@@ -55,8 +55,10 @@ export default async function CategoriesPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
       />
-      <div className="min-h-screen bg-white py-12 md:py-20">
-        <CategoriesClient initialCategories={categories} />
+      <div className="min-h-screen bg-slate-50/40 py-8 sm:py-12 md:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <CategoriesClient initialCategories={categories} />
+        </div>
       </div>
     </>
   );
