@@ -5,26 +5,27 @@ import CategoryCard from '@/components/CategoryCard';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 
-export default function CategoriesClient({ initialCategories }) {
+export default function CategoriesClient({ initialCategories = [] }) {
+  const safeCategories = Array.isArray(initialCategories) ? initialCategories : [];
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredCategories = useMemo(() => {
     if (!searchQuery || searchQuery.length < 2) {
-      return initialCategories;
+      return safeCategories;
     }
     const query = searchQuery.toLowerCase();
-    return initialCategories.filter(cat => 
-      cat.name?.toLowerCase().includes(query) || 
+    return safeCategories.filter(cat =>
+      cat.name?.toLowerCase().includes(query) ||
       cat.slug?.toLowerCase().includes(query)
     );
-  }, [initialCategories, searchQuery]);
+  }, [safeCategories, searchQuery]);
 
   return (
     <div className="container mx-auto px-4">
       <div className="mb-8 text-center">
         <h1 className="text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">AI Tool Categories</h1>
         <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-          Explore {initialCategories.length} specialized categories with {initialCategories.reduce((sum, c) => sum + (c.toolCount || 0), 0)} hand-picked AI tools.
+          Explore {safeCategories.length} specialized categories with {safeCategories.reduce((sum, c) => sum + (c.toolCount || c.count || 0), 0)} hand-picked AI tools.
         </p>
       </div>
 

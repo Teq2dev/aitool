@@ -5,8 +5,9 @@ import Script from 'next/script';
 export const revalidate = 3600; // Revalidate every hour
 
 export async function generateMetadata() {
-  const categories = await getCategories();
-  
+  const rawCategories = await getCategories();
+  const categories = Array.isArray(rawCategories) ? rawCategories : [];
+
   return {
     title: 'AI Tool Categories - Best Free AI Tools Directory',
     description: `Browse ${categories.length} AI tool categories. Find the best AI tools organized by topics, tasks, and roles. Discover free AI solutions for every need.`,
@@ -22,7 +23,8 @@ export async function generateMetadata() {
 }
 
 export default async function CategoriesPage() {
-  const categories = await getCategories();
+  const rawCategories = await getCategories();
+  const categories = Array.isArray(rawCategories) ? rawCategories : [];
 
   // Schema for categories page
   const schemaData = {
@@ -58,4 +60,4 @@ export default async function CategoriesPage() {
       </div>
     </>
   );
-}
+}
