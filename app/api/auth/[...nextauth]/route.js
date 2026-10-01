@@ -8,7 +8,7 @@ export const authOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     }),
   ],
-  secret: process.env.NEXTAUTH_SECRET || 'bestaitoolsfree_super_secret_auth_key_2026',
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: 'jwt',
   },
