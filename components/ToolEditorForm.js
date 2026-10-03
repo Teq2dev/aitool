@@ -201,7 +201,7 @@ export default function ToolEditorForm({
     }
   };
 
-  // Upload logo to Cloudinary
+  // Upload logo to Google Cloud Storage via /api/upload
   const uploadLogo = async () => {
     if (!logoFile) return logoPreview;
     setUploading(true);
