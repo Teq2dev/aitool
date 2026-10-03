@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
+import { CONVERSION_SERVICE_URL, getCloudRunIdToken } from '@/lib/conversionConfig';
 
-// Development: http://127.0.0.1:8000
-// Production:  set OCR_SERVICE_URL env var to the deployed Python service URL
-const OCR_SERVICE_URL = process.env.OCR_SERVICE_URL || 'http://127.0.0.1:8000';
-const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
+const TARGET_SERVICE_URL = CONVERSION_SERVICE_URL || process.env.OCR_SERVICE_URL || 'http://127.0.0.1:8000';
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB production limit
 
 export async function POST(request) {
   try {
@@ -17,9 +16,16 @@ export async function POST(request) {
       );
     }
 
+    if (file.size === 0) {
+      return NextResponse.json(
+        { success: false, error: 'The uploaded image is empty (0 bytes).' },
+        { status: 400 }
+      );
+    }
+
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { success: false, error: 'File size exceeds 25 MB limit.' },
+        { success: false, error: `Image size (${(file.size / 1024 / 1024).toFixed(1)} MB) exceeds the 10 MB limit for AI table extraction.` },
         { status: 413 }
       );
     }
@@ -28,10 +34,17 @@ export async function POST(request) {
     const pyFormData = new FormData();
     pyFormData.append('image', file);
 
+    const headers = {};
+    const idToken = await getCloudRunIdToken(TARGET_SERVICE_URL);
+    if (idToken) {
+      headers['Authorization'] = `Bearer ${idToken}`;
+    }
+
     let pyResponse;
     try {
-      pyResponse = await fetch(`${OCR_SERVICE_URL}/extract-table`, {
+      pyResponse = await fetch(`${TARGET_SERVICE_URL}/extract-table`, {
         method: 'POST',
+        headers,
         body: pyFormData,
       });
     } catch (netErr) {

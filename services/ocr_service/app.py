@@ -21,7 +21,20 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from tatr_extractor import extract_table_tatr
 from excel_generator import generate_xlsx
 
-MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024 # 25 MB
+# Resource Limits Policy
+MAX_TABLE_IMG_SIZE_BYTES = 10 * 1024 * 1024 # 10 MB for table extraction
+MAX_TABLE_IMG_PIXELS = 50_000_000 # 50 Megapixels
+MAX_TABLE_IMG_DIM = 12000
+
+MAX_CONV_PDF_BYTES = 10 * 1024 * 1024 # 10 MB for PDF-to-X converters
+MAX_OFFICE_FILE_BYTES = 20 * 1024 * 1024 # 20 MB for Office-to-PDF / Unlock
+MAX_PPTX_CONV_PAGES = 10 # PDF -> PPTX max 10 pages
+MAX_DOCX_CONV_PAGES = 10 # PDF -> Word max 10 pages
+MAX_XLSX_CONV_PAGES = 20 # PDF -> Excel max 20 pages
+MAX_PPTX_SLIDES = 20 # PPTX -> PDF max 20 slides
+MAX_XLSX_SHEETS = 20 # Excel -> PDF max 20 sheets
+MAX_UNLOCK_PAGES = 50 # Unlock PDF max 50 pages
+
 ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/jpg", "image/webp"}
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 
@@ -99,10 +112,29 @@ async def handle_extract_table(image: UploadFile = File(...)):
             detail="Uploaded image is empty (0 bytes)."
         )
 
-    if len(contents) > MAX_FILE_SIZE_BYTES:
+    if len(contents) > MAX_TABLE_IMG_SIZE_BYTES:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"File too large ({round(len(contents)/1024/1024, 1)} MB). Max limit is 25 MB."
+            detail=f"Image size ({round(len(contents)/1024/1024, 1)} MB) exceeds the 10 MB limit for AI table extraction."
+        )
+
+    # Validate image resolution
+    try:
+        from PIL import Image
+        import io
+        with Image.open(io.BytesIO(contents)) as img:
+            w, h = img.size
+            if (w * h) > MAX_TABLE_IMG_PIXELS or w > MAX_TABLE_IMG_DIM or h > MAX_TABLE_IMG_DIM:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Image resolution ({w}x{h}, {round(w*h/1_000_000, 1)} MP) exceeds maximum allowed limit of 50 MP (12,000 x 12,000 px)."
+                )
+    except HTTPException:
+        raise
+    except Exception as img_err:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid or corrupted image: {str(img_err)}"
         )
 
     # 4. Extract Table (TATR primary -> PP-Structure fallback)
@@ -177,7 +209,14 @@ except ImportError:
 async def unlock_pdf_endpoint(file: UploadFile = File(...), password: str = Form("")):
     try:
         pdf_bytes = await file.read()
+        if len(pdf_bytes) == 0:
+            return JSONResponse({"error": "Uploaded file is empty (0 bytes)."}, status_code=400)
+        if len(pdf_bytes) > MAX_OFFICE_FILE_BYTES:
+            return JSONResponse({"error": f"PDF file size ({round(len(pdf_bytes)/1024/1024, 1)} MB) exceeds the 20 MB limit."}, status_code=413)
+
         reader = PdfReader(io.BytesIO(pdf_bytes))
+        if len(reader.pages) > MAX_UNLOCK_PAGES:
+            return JSONResponse({"error": f"PDF has {len(reader.pages)} pages, which exceeds the maximum limit of {MAX_UNLOCK_PAGES} pages for unlock."}, status_code=400)
         
         if reader.is_encrypted:
             # Try to decrypt with empty password first (owner password only)
@@ -210,6 +249,21 @@ import pdf_converters
 async def handle_pdf_to_word(file: UploadFile = File(...)):
     try:
         content = await file.read()
+        if len(content) == 0:
+            return JSONResponse({"error": "Uploaded file is empty (0 bytes)."}, status_code=400)
+        if len(content) > MAX_CONV_PDF_BYTES:
+            return JSONResponse({"error": f"PDF file size ({round(len(content)/1024/1024, 1)} MB) exceeds the 10 MB limit for Word conversion."}, status_code=413)
+
+        try:
+            import pymupdf as fitz
+            with fitz.open(stream=content, filetype="pdf") as doc:
+                if doc.page_count > MAX_DOCX_CONV_PAGES:
+                    return JSONResponse({"error": f"Document has {doc.page_count} pages, which exceeds the maximum limit of {MAX_DOCX_CONV_PAGES} pages for Word conversion."}, status_code=400)
+        except Exception as pe:
+            if "exceeds" in str(pe):
+                raise
+            return JSONResponse({"error": f"Could not read PDF structure: {str(pe)}"}, status_code=400)
+
         out_bytes = pdf_converters.pdf_to_docx(content)
         base_name = os.path.splitext(file.filename or "converted")[0]
         return Response(
@@ -224,6 +278,21 @@ async def handle_pdf_to_word(file: UploadFile = File(...)):
 async def handle_pdf_to_powerpoint(file: UploadFile = File(...)):
     try:
         content = await file.read()
+        if len(content) == 0:
+            return JSONResponse({"error": "Uploaded file is empty (0 bytes)."}, status_code=400)
+        if len(content) > MAX_CONV_PDF_BYTES:
+            return JSONResponse({"error": f"PDF file size ({round(len(content)/1024/1024, 1)} MB) exceeds the 10 MB limit for PowerPoint conversion."}, status_code=413)
+
+        try:
+            import pymupdf as fitz
+            with fitz.open(stream=content, filetype="pdf") as doc:
+                if doc.page_count > MAX_PPTX_CONV_PAGES:
+                    return JSONResponse({"error": f"Document has {doc.page_count} pages, which exceeds the maximum limit of {MAX_PPTX_CONV_PAGES} pages for PowerPoint conversion. Please split your document."}, status_code=400)
+        except Exception as pe:
+            if "exceeds" in str(pe):
+                raise
+            return JSONResponse({"error": f"Could not read PDF structure: {str(pe)}"}, status_code=400)
+
         out_bytes = pdf_converters.pdf_to_pptx(content)
         base_name = os.path.splitext(file.filename or "converted")[0]
         return Response(
@@ -238,6 +307,21 @@ async def handle_pdf_to_powerpoint(file: UploadFile = File(...)):
 async def handle_pdf_to_excel(file: UploadFile = File(...)):
     try:
         content = await file.read()
+        if len(content) == 0:
+            return JSONResponse({"error": "Uploaded file is empty (0 bytes)."}, status_code=400)
+        if len(content) > MAX_CONV_PDF_BYTES:
+            return JSONResponse({"error": f"PDF file size ({round(len(content)/1024/1024, 1)} MB) exceeds the 10 MB limit for Excel conversion."}, status_code=413)
+
+        try:
+            import pymupdf as fitz
+            with fitz.open(stream=content, filetype="pdf") as doc:
+                if doc.page_count > MAX_XLSX_CONV_PAGES:
+                    return JSONResponse({"error": f"Document has {doc.page_count} pages, which exceeds the maximum limit of {MAX_XLSX_CONV_PAGES} pages for Excel conversion."}, status_code=400)
+        except Exception as pe:
+            if "exceeds" in str(pe):
+                raise
+            return JSONResponse({"error": f"Could not read PDF structure: {str(pe)}"}, status_code=400)
+
         out_bytes = pdf_converters.pdf_to_xlsx(content)
         base_name = os.path.splitext(file.filename or "converted")[0]
         return Response(
@@ -252,6 +336,11 @@ async def handle_pdf_to_excel(file: UploadFile = File(...)):
 async def handle_word_to_pdf(file: UploadFile = File(...)):
     try:
         content = await file.read()
+        if len(content) == 0:
+            return JSONResponse({"error": "Uploaded file is empty (0 bytes)."}, status_code=400)
+        if len(content) > MAX_OFFICE_FILE_BYTES:
+            return JSONResponse({"error": f"Word document size ({round(len(content)/1024/1024, 1)} MB) exceeds the 20 MB limit for PDF conversion."}, status_code=413)
+
         out_bytes = pdf_converters.docx_to_pdf(content)
         base_name = os.path.splitext(file.filename or "converted")[0]
         return Response(
@@ -266,6 +355,21 @@ async def handle_word_to_pdf(file: UploadFile = File(...)):
 async def handle_powerpoint_to_pdf(file: UploadFile = File(...)):
     try:
         content = await file.read()
+        if len(content) == 0:
+            return JSONResponse({"error": "Uploaded file is empty (0 bytes)."}, status_code=400)
+        if len(content) > MAX_OFFICE_FILE_BYTES:
+            return JSONResponse({"error": f"Presentation size ({round(len(content)/1024/1024, 1)} MB) exceeds the 20 MB limit for PDF conversion."}, status_code=413)
+
+        try:
+            import pptx
+            prs = pptx.Presentation(io.BytesIO(content))
+            if len(prs.slides) > MAX_PPTX_SLIDES:
+                return JSONResponse({"error": f"Presentation has {len(prs.slides)} slides, which exceeds the limit of {MAX_PPTX_SLIDES} slides for PDF conversion."}, status_code=400)
+        except Exception as pe:
+            if "exceeds" in str(pe):
+                raise
+            return JSONResponse({"error": f"Could not read presentation structure: {str(pe)}"}, status_code=400)
+
         out_bytes = pdf_converters.pptx_to_pdf(content)
         base_name = os.path.splitext(file.filename or "converted")[0]
         return Response(
@@ -280,6 +384,23 @@ async def handle_powerpoint_to_pdf(file: UploadFile = File(...)):
 async def handle_excel_to_pdf(file: UploadFile = File(...)):
     try:
         content = await file.read()
+        if len(content) == 0:
+            return JSONResponse({"error": "Uploaded file is empty (0 bytes)."}, status_code=400)
+        if len(content) > MAX_OFFICE_FILE_BYTES:
+            return JSONResponse({"error": f"Spreadsheet size ({round(len(content)/1024/1024, 1)} MB) exceeds the 20 MB limit for PDF conversion."}, status_code=413)
+
+        try:
+            import openpyxl
+            wb = openpyxl.load_workbook(io.BytesIO(content), read_only=True)
+            sheet_count = len(wb.sheetnames)
+            wb.close()
+            if sheet_count > MAX_XLSX_SHEETS:
+                return JSONResponse({"error": f"Workbook contains {sheet_count} worksheets, which exceeds the limit of {MAX_XLSX_SHEETS} sheets for PDF conversion."}, status_code=400)
+        except Exception as oe:
+            if "exceeds" in str(oe):
+                raise
+            return JSONResponse({"error": f"Could not read spreadsheet structure: {str(oe)}"}, status_code=400)
+
         out_bytes = pdf_converters.xlsx_to_pdf(content)
         base_name = os.path.splitext(file.filename or "converted")[0]
         return Response(

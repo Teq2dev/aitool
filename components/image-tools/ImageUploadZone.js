@@ -5,6 +5,9 @@ import { UploadCloud, Plus, AlertCircle } from 'lucide-react';
 import { ACCEPTED_MIME_TYPES, validateImageFile } from '@/lib/imageProcessing';
 import { cn } from '@/lib/utils';
 
+const MAX_BATCH_FILES = 20;
+const MAX_BATCH_BYTES = 100 * 1024 * 1024; // 100 MB
+
 export default function ImageUploadZone({
   onFiles,
   acceptedFormats = ['JPG', 'PNG', 'WebP'],
@@ -19,6 +22,20 @@ export default function ImageUploadZone({
 
   const processFiles = useCallback((fileList) => {
     const files = Array.from(fileList);
+
+    if (files.length > MAX_BATCH_FILES) {
+      setErrors([`Too many files (${files.length}). Maximum batch upload limit is ${MAX_BATCH_FILES} images.`]);
+      setTimeout(() => setErrors([]), 6000);
+      return;
+    }
+
+    const totalBatchBytes = files.reduce((acc, f) => acc + (f.size || 0), 0);
+    if (totalBatchBytes > MAX_BATCH_BYTES) {
+      setErrors([`Total batch size (${(totalBatchBytes / 1024 / 1024).toFixed(1)} MB) exceeds maximum batch limit of 100 MB.`]);
+      setTimeout(() => setErrors([]), 6000);
+      return;
+    }
+
     const valid = [], errs = [];
     for (const file of files) {
       const { valid: ok, error } = validateImageFile(file);

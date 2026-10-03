@@ -51,13 +51,20 @@ export default function OfficeConverterClient({
   const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles?.length > 0) {
       const selected = acceptedFiles[0];
+      const maxMb = apiEndpoint.includes('pdf-to-') ? 10 : 20;
+      if (selected.size > maxMb * 1024 * 1024) {
+        const fileMb = (selected.size / 1024 / 1024).toFixed(1);
+        setErrorMsg(`File size (${fileMb} MB) exceeds the maximum limit of ${maxMb} MB.`);
+        toast.error(`File exceeds ${maxMb} MB limit.`);
+        return;
+      }
       setFile(selected);
       setErrorMsg(null);
       setDownloadUrl(null);
       setConvertedSize(null);
       setProcessingStep(0);
     }
-  }, []);
+  }, [apiEndpoint]);
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,

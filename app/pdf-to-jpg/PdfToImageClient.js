@@ -32,6 +32,14 @@ export default function PdfToImageClient({
   const handleFiles = useCallback(async (files) => {
     if (files.length === 0) return;
     const selectedFile = files[0];
+
+    // Resource limits check (10 MB limit)
+    const MAX_PDF_TO_IMG_BYTES = 10 * 1024 * 1024;
+    if (selectedFile.size > MAX_PDF_TO_IMG_BYTES) {
+      setError(`PDF file size (${(selectedFile.size / 1024 / 1024).toFixed(1)} MB) exceeds the 10 MB limit for in-browser image rendering.`);
+      return;
+    }
+
     setFile(selectedFile);
     setRenderedPages([]);
     setProgress(0);
@@ -40,13 +48,23 @@ export default function PdfToImageClient({
     try {
       const info = await getPdfInfo(selectedFile);
       setPageCount(info.pageCount);
+      const maxPages = format === 'png' ? 10 : 20;
+      if (info.pageCount > maxPages) {
+        setError(`This document contains ${info.pageCount} pages, which exceeds the limit of ${maxPages} pages for PDF to ${defaultFormatLabel} conversion. Please split your document into smaller sections.`);
+      }
     } catch {
       setPageCount(1);
     }
-  }, []);
+  }, [format, defaultFormatLabel]);
 
   const handleRender = async () => {
     if (!file) return;
+
+    const maxPages = format === 'png' ? 10 : 20;
+    if (pageCount > maxPages) {
+      setError(`This document contains ${pageCount} pages, which exceeds the limit of ${maxPages} pages for PDF to ${defaultFormatLabel} conversion.`);
+      return;
+    }
 
     setIsProcessing(true);
     setProgress(5);
@@ -136,7 +154,7 @@ export default function PdfToImageClient({
           label={`Drag & Drop PDF to Convert to ${defaultFormatLabel}`}
           sublabel={`or click to browse a PDF document`}
           privacyBadge="Client-Side Browser Processing"
-          maxSizeLabel="Max file size: 100MB"
+          maxSizeLabel="Max file size: 10MB"
         />
       ) : (
         <div className="space-y-6">

@@ -22,7 +22,7 @@ import { formatBytes } from '@/lib/utils';
 import { downloadBlob } from '@/lib/imageProcessing';
 import { cn } from '@/lib/utils';
 
-const MAX_IMAGE_SIZE = 25 * 1024 * 1024; // 25 MB
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10 MB production limit
 const ACCEPTED_TYPES = new Set(['image/jpeg', 'image/png', 'image/jpg', 'image/webp']);
 
 export default function ImageToExcelClient() {
@@ -52,7 +52,7 @@ export default function ImageToExcelClient() {
       return 'Unsupported file format. Please upload a JPG, JPEG, or PNG image.';
     }
     if (f.size > MAX_IMAGE_SIZE) {
-      return `File too large (${(f.size / 1024 / 1024).toFixed(1)} MB). Maximum allowed size is 25 MB.`;
+      return `File too large (${(f.size / 1024 / 1024).toFixed(1)} MB). Maximum allowed size is 10 MB.`;
     }
     return null;
   };
