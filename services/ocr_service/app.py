@@ -192,11 +192,7 @@ def handle_generate_excel(req: ExcelGenerateRequest):
             detail="Failed to generate Excel workbook."
         )
 
-if __name__ == "__main__":
-    import uvicorn
-    host = os.environ.get("OCR_SERVICE_HOST", "0.0.0.0")
-    port = int(os.environ.get("OCR_SERVICE_PORT", "8000"))
-    uvicorn.run(app, host=host, port=port, log_level="info")
+
 
 from fastapi import Form
 import io
