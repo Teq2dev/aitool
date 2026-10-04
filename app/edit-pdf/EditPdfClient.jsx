@@ -49,7 +49,7 @@ export default function EditPdfClient() {
       try {
         const arrayBuffer = await selected.arrayBuffer();
         const pdfjsLib = await import('pdfjs-dist/build/pdf');
-        pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.min.js';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.min.mjs';
 
         const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
         const loadedPdf = await loadingTask.promise;
@@ -57,6 +57,7 @@ export default function EditPdfClient() {
         setTotalPages(loadedPdf.numPages);
         toast.success('Loaded ' + loadedPdf.numPages + ' page(s)');
       } catch (err) {
+        console.error('PDF parse error:', err);
         toast.error('Failed to parse PDF document.');
         setFile(null);
       } finally {
