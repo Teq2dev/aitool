@@ -1,4 +1,4 @@
-﻿"""
+"""
 pdf_converters.py — Production-grade document conversion routines
 Supported Conversions:
 - PDF -> Word (.docx) via pdf2docx + PyMuPDF fallback
@@ -64,33 +64,222 @@ def pdf_to_docx(pdf_bytes: bytes) -> bytes:
             except Exception: pass
 
 def pdf_to_pptx(pdf_bytes: bytes) -> bytes:
-    """Converts PDF document pages into high-fidelity PowerPoint slides (.pptx)."""
+    """
+    Converts PDF document pages into editable hybrid PowerPoint slides (.pptx).
+    Architecture:
+      - Inspects each page for extractable text, images, and vector shapes.
+      - Scanned / image-only pages (<30 chars, no drawings) fall back to high-res full-page rendering.
+      - Hybrid pages construct:
+          1. Solid background color (detected from full-page vector canvas).
+          2. Native editable vector shapes (rectangles, rounded rectangles, divider lines).
+          3. Extracted native image objects (preserves position, size, and original resolution).
+          4. Native editable text boxes with matched font family, size, weight, italic, and RGB color.
+      - Slide dimensions match each PDF page's native aspect ratio (A4, Letter, Custom).
+    """
     import fitz
     from pptx import Presentation
-    from pptx.util import Inches
+    from pptx.util import Inches, Pt
+    from pptx.dml.color import RGBColor
+    from pptx.enum.shapes import MSO_SHAPE
+
+    def _color_to_rgb(col):
+        if not col:
+            return None
+        if len(col) == 1:
+            val = max(0, min(255, int(col[0] * 255)))
+            return RGBColor(val, val, val)
+        if len(col) >= 3:
+            r = max(0, min(255, int(col[0] * 255)))
+            g = max(0, min(255, int(col[1] * 255)))
+            b = max(0, min(255, int(col[2] * 255)))
+            return RGBColor(r, g, b)
+        return None
+
+    def _int_color_to_rgb(val):
+        if val is None or val < 0:
+            return RGBColor(0, 0, 0)
+        return RGBColor((val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF)
+
+    def _map_font_family(pdf_font):
+        if not pdf_font:
+            return "Calibri"
+        f_lower = pdf_font.lower()
+        if any(k in f_lower for k in ["times", "serif", "georgia", "garamond", "minion", "cambria"]):
+            return "Georgia"
+        if any(k in f_lower for k in ["courier", "mono", "consolas", "menlo"]):
+            return "Courier New"
+        return "Calibri"
 
     pdf_doc = fitz.open(stream=pdf_bytes, filetype="pdf")
     prs = Presentation()
     blank_layout = prs.slide_layouts[6]
-    
+
     for page in pdf_doc:
         rect = page.rect
         width_in = max(rect.width / 72.0, 4.0)
         height_in = max(rect.height / 72.0, 3.0)
         prs.slide_width = Inches(width_in)
         prs.slide_height = Inches(height_in)
-        
+
         slide = prs.slides.add_slide(blank_layout)
-        pix = page.get_pixmap(dpi=200)
-        img_bytes = pix.tobytes("png")
-        
-        slide.shapes.add_picture(
-            io.BytesIO(img_bytes),
-            Inches(0),
-            Inches(0),
-            width=Inches(width_in),
-            height=Inches(height_in)
-        )
+
+        try:
+            text_content = page.get_text("text").strip()
+            drawings = page.get_drawings()
+            img_list = page.get_images()
+
+            # Detection for scanned / image-only page (no text, no drawings)
+            is_scanned = (len(text_content) < 30 and len(img_list) > 0 and len(drawings) == 0)
+
+            if is_scanned:
+                pix = page.get_pixmap(dpi=200)
+                slide.shapes.add_picture(
+                    io.BytesIO(pix.tobytes("png")),
+                    Inches(0),
+                    Inches(0),
+                    width=Inches(width_in),
+                    height=Inches(height_in)
+                )
+                continue
+
+            # Layer 1: Background detection (full-page rectangle fill)
+            bg_color = None
+            for d in drawings:
+                dr = d["rect"]
+                if dr.width >= rect.width - 2 and dr.height >= rect.height - 2 and d.get("fill"):
+                    bg_color = _color_to_rgb(d.get("fill"))
+                    break
+            if bg_color:
+                slide.background.fill.solid()
+                slide.background.fill.fore_color.rgb = bg_color
+
+            # Layer 2: Vector Shapes & Lines
+            for d in drawings:
+                dr = d["rect"]
+                # Skip full-page background canvas already applied
+                if dr.width >= rect.width - 2 and dr.height >= rect.height - 2:
+                    continue
+                fill_c = _color_to_rgb(d.get("fill"))
+                stroke_c = _color_to_rgb(d.get("color"))
+                items = d.get("items", [])
+
+                # Horizontal divider line
+                if dr.height <= 2.5 and (stroke_c or fill_c):
+                    c = stroke_c or fill_c
+                    line_w = Pt(max(d.get("width", 1), 0.75))
+                    shp = slide.shapes.add_shape(
+                        MSO_SHAPE.RECTANGLE,
+                        Inches(dr.x0 / 72.0),
+                        Inches(dr.y0 / 72.0),
+                        Inches(dr.width / 72.0),
+                        line_w
+                    )
+                    shp.fill.solid()
+                    shp.fill.fore_color.rgb = c
+                    shp.line.fill.background()
+                # Vertical divider line
+                elif dr.width <= 2.5 and (stroke_c or fill_c):
+                    c = stroke_c or fill_c
+                    line_w = Pt(max(d.get("width", 1), 0.75))
+                    shp = slide.shapes.add_shape(
+                        MSO_SHAPE.RECTANGLE,
+                        Inches(dr.x0 / 72.0),
+                        Inches(dr.y0 / 72.0),
+                        line_w,
+                        Inches(dr.height / 72.0)
+                    )
+                    shp.fill.solid()
+                    shp.fill.fore_color.rgb = c
+                    shp.line.fill.background()
+                # Filled shapes (rectangles, rounded rectangles, cards)
+                elif fill_c:
+                    is_rounded = any(it[0] == "c" for it in items)
+                    shape_type = MSO_SHAPE.ROUNDED_RECTANGLE if is_rounded else MSO_SHAPE.RECTANGLE
+                    shp = slide.shapes.add_shape(
+                        shape_type,
+                        Inches(dr.x0 / 72.0),
+                        Inches(dr.y0 / 72.0),
+                        Inches(dr.width / 72.0),
+                        Inches(dr.height / 72.0)
+                    )
+                    shp.fill.solid()
+                    shp.fill.fore_color.rgb = fill_c
+                    if stroke_c:
+                        shp.line.color.rgb = stroke_c
+                        shp.line.width = Pt(d.get("width", 1))
+                    else:
+                        shp.line.fill.background()
+                    if is_rounded:
+                        try:
+                            shp.adjustments[0] = 0.05
+                        except Exception:
+                            pass
+
+            # Layer 3: Extracted native images
+            for img_info in img_list:
+                xref = img_info[0]
+                try:
+                    base_img = pdf_doc.extract_image(xref)
+                    img_bytes = base_img["image"]
+                    for img_rect in page.get_image_rects(xref):
+                        slide.shapes.add_picture(
+                            io.BytesIO(img_bytes),
+                            Inches(img_rect.x0 / 72.0),
+                            Inches(img_rect.y0 / 72.0),
+                            width=Inches(img_rect.width / 72.0),
+                            height=Inches(img_rect.height / 72.0)
+                        )
+                except Exception:
+                    pass
+
+            # Layer 4: Native Editable Text Boxes
+            text_dict = page.get_text("dict")
+            for b in text_dict.get("blocks", []):
+                if "lines" not in b:
+                    continue
+                for l in b["lines"]:
+                    spans = l["spans"]
+                    if not spans:
+                        continue
+                    lx0, ly0 = l["bbox"][0], l["bbox"][1]
+                    lw = max(l["bbox"][2] - lx0, 10)
+                    lh = max(l["bbox"][3] - ly0, 10)
+
+                    tb = slide.shapes.add_textbox(
+                        Inches(lx0 / 72.0),
+                        Inches(ly0 / 72.0),
+                        Inches(lw / 72.0 + 0.15),
+                        Inches(lh / 72.0)
+                    )
+                    tf = tb.text_frame
+                    tf.word_wrap = False
+                    tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = 0
+                    p = tf.paragraphs[0]
+
+                    for s in spans:
+                        raw_text = s.get("text", "")
+                        if not raw_text:
+                            continue
+                        r = p.add_run()
+                        r.text = raw_text
+                        r.font.size = Pt(s.get("size", 11))
+                        r.font.color.rgb = _int_color_to_rgb(s.get("color"))
+                        flags = s.get("flags", 0)
+                        font_name = s.get("font", "")
+                        r.font.bold = bool(flags & 2) or ("bold" in font_name.lower())
+                        r.font.italic = bool(flags & 1) or ("italic" in font_name.lower() or "oblique" in font_name.lower())
+                        r.font.name = _map_font_family(font_name)
+
+        except Exception as page_err:
+            # Fallback to full-page raster if structured reconstruction encounters an anomaly
+            pix = page.get_pixmap(dpi=200)
+            slide.shapes.add_picture(
+                io.BytesIO(pix.tobytes("png")),
+                Inches(0),
+                Inches(0),
+                width=Inches(width_in),
+                height=Inches(height_in)
+            )
 
     out_stream = io.BytesIO()
     prs.save(out_stream)
