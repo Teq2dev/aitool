@@ -370,38 +370,131 @@ export default function EditPdfClient() {
           page.getTextContent().then((textContent) => {
             if (isCancelled) return;
 
-            const extracted = [];
-            for (let i = 0; i < textContent.items.length; i++) {
-              const item = textContent.items[i];
-              if (!item.str || !item.str.trim()) continue;
-
-              const [scaleX, skewY, skewX, scaleY, tx, ty] = item.transform;
+            // Filter non-empty items
+            const rawItems = textContent.items.filter((it) => it.str && it.str.trim());
+            const itemsWithMetrics = rawItems.map((it) => {
+              const [scaleX, skewY, skewX, scaleY, tx, ty] = it.transform;
               const fSize = Math.max(6, Math.hypot(scaleX, skewY));
+              const width = Math.max(8, it.width || (it.str.length * fSize * 0.5));
+              const height = Math.max(fSize * 1.15, it.height || fSize);
+              return {
+                str: it.str,
+                tx,
+                ty,
+                width,
+                height,
+                fontSize: Math.round(fSize * 10) / 10,
+                transform: it.transform,
+              };
+            });
 
-              // Convert PDF bottom-left baseline (tx, ty) to top-left PDF points
-              const normX = tx;
-              const normY = Math.max(0, pHeight - ty - fSize * 0.85);
-              const normWidth = Math.max(10, item.width || item.str.length * fSize * 0.5);
-              const normHeight = Math.max(fSize * 1.15, item.height || fSize);
+            // Sort top-to-bottom (ty descending), then left-to-right (tx ascending)
+            itemsWithMetrics.sort((a, b) => {
+              if (Math.abs(b.ty - a.ty) > Math.max(3, a.fontSize * 0.25)) {
+                return b.ty - a.ty;
+              }
+              return a.tx - b.tx;
+            });
 
-              extracted.push({
-                id: `ext-${currentPage}-${i}`,
-                origText: item.str,
-                currentText: item.str,
+            // Group horizontally adjacent spans on the same visual line
+            const grouped = [];
+            for (const it of itemsWithMetrics) {
+              let attached = false;
+              for (const g of grouped) {
+                const sameLine = Math.abs(g.pdfTy - it.ty) < Math.max(3, it.fontSize * 0.25);
+                const sameSize = Math.abs(g.fontSize - it.fontSize) < 2.5;
+                if (sameLine && sameSize) {
+                  const gapRight = it.tx - g.rightTx;
+                  const gapLeft = g.leftTx - (it.tx + it.width);
+                  const maxGap = Math.max(14, it.fontSize * 1.5);
+
+                  if (gapRight >= -2 && gapRight <= maxGap) {
+                    const spaceNeeded = gapRight > it.fontSize * 0.15 ? ' ' : '';
+                    g.text += spaceNeeded + it.str;
+                    g.rightTx = it.tx + it.width;
+                    g.pdfWidth = g.rightTx - g.leftTx;
+                    g.boxes.push({
+                      pdfTx: it.tx,
+                      pdfTy: it.ty,
+                      pdfWidth: it.width,
+                      pdfHeight: it.height,
+                      fontSize: it.fontSize,
+                    });
+                    attached = true;
+                    break;
+                  } else if (gapLeft >= -2 && gapLeft <= maxGap) {
+                    const spaceNeeded = gapLeft > it.fontSize * 0.15 ? ' ' : '';
+                    g.text = it.str + spaceNeeded + g.text;
+                    g.leftTx = it.tx;
+                    g.pdfTx = g.leftTx;
+                    g.pdfWidth = g.rightTx - g.leftTx;
+                    g.boxes.unshift({
+                      pdfTx: it.tx,
+                      pdfTy: it.ty,
+                      pdfWidth: it.width,
+                      pdfHeight: it.height,
+                      fontSize: it.fontSize,
+                    });
+                    attached = true;
+                    break;
+                  }
+                }
+              }
+
+              if (!attached) {
+                grouped.push({
+                  text: it.str,
+                  pdfTx: it.tx,
+                  pdfTy: it.ty,
+                  leftTx: it.tx,
+                  rightTx: it.tx + it.width,
+                  pdfWidth: it.width,
+                  pdfHeight: it.height,
+                  fontSize: it.fontSize,
+                  boxes: [{
+                    pdfTx: it.tx,
+                    pdfTy: it.ty,
+                    pdfWidth: it.width,
+                    pdfHeight: it.height,
+                    fontSize: it.fontSize,
+                  }],
+                });
+              }
+            }
+
+            const extracted = grouped.map((g, idx) => {
+              const normX = g.leftTx;
+              const normY = Math.max(0, pHeight - g.pdfTy - g.fontSize * 0.85);
+              const normWidth = g.pdfWidth;
+              const normHeight = Math.max(g.fontSize * 1.15, g.pdfHeight);
+
+              // Precalculate DOM coordinates for each constituent box
+              const boxesWithCoords = g.boxes.map((b) => ({
+                ...b,
+                normX: b.pdfTx,
+                normY: Math.max(0, pHeight - b.pdfTy - b.fontSize * 0.85),
+                normWidth: b.pdfWidth,
+                normHeight: Math.max(b.fontSize * 1.15, b.pdfHeight),
+              }));
+
+              return {
+                id: `ext-${currentPage}-${idx}`,
+                origText: g.text,
+                currentText: g.text,
                 x: normX,
                 y: normY,
                 width: normWidth,
                 height: normHeight,
-                pdfTx: tx,
-                pdfTy: ty,
-                pdfWidth: item.width || normWidth,
-                pdfHeight: item.height || normHeight,
+                pdfTx: g.leftTx,
+                pdfTy: g.pdfTy,
+                pdfWidth: g.pdfWidth,
+                pdfHeight: g.pdfHeight,
                 origX: normX,
                 origY: normY,
                 origWidth: normWidth,
                 origHeight: normHeight,
-                origFontSize: Math.round(fSize * 10) / 10,
-                fontSize: Math.round(fSize * 10) / 10,
+                origFontSize: g.fontSize,
+                fontSize: g.fontSize,
                 fontFamily: 'Helvetica',
                 color: '#0f172a',
                 bold: false,
@@ -410,15 +503,13 @@ export default function EditPdfClient() {
                 isEdited: false,
                 isDeleted: false,
                 isMoved: false,
-              });
-            }
+                boxes: boxesWithCoords,
+                isBgSampled: false,
+                bgColorUserOverride: false,
+              };
+            });
 
-            // Initialize items with sampling flags (sampling is performed after page renders)
-            const initialExtracted = extracted.map((t) => ({
-              ...t,
-              isBgSampled: false,
-              bgColorUserOverride: false,
-            }));
+            const initialExtracted = extracted;
 
             setAnnotations((current) => {
               const curPage = current[currentPage] || {
@@ -938,6 +1029,10 @@ export default function EditPdfClient() {
         historyIdxRef.current = newIdx;
         setHistory(nextHist);
         setHistoryIdx(newIdx);
+      } else if (Math.hypot(e.clientX - drag.startPointerX, e.clientY - drag.startPointerY) < 4) {
+        if (drag.type === 'existingText' || drag.type === 'addedText') {
+          setEditingTextId(drag.id);
+        }
       }
     };
 
@@ -1381,18 +1476,32 @@ export default function EditPdfClient() {
         // 1. Process Existing Texts (Edited, Deleted, or Moved)
         for (const item of pageData.existingTexts || []) {
           if (item.isEdited || item.isDeleted || item.isMoved) {
-            // A. Draw background cover over the ORIGINAL text position
+            // A. Draw background cover over the ORIGINAL text position(s)
             const bgRgb = hexToRgb(item.bgColor || '#ffffff') || rgb(1, 1, 1);
             const fSize = item.origFontSize || item.fontSize || 12;
-            const coverMarginX = 1.5;
-            const coverMarginY = 1.0;
-            page.drawRectangle({
-              x: item.pdfTx - coverMarginX,
-              y: item.pdfTy - (fSize * 0.24) - coverMarginY,
-              width: item.pdfWidth + (coverMarginX * 2),
-              height: (fSize * 1.15) + (coverMarginY * 2),
-              color: rgb(bgRgb.r, bgRgb.g, bgRgb.b),
-            });
+
+            const boxesToCover = (item.boxes && item.boxes.length > 0)
+              ? item.boxes
+              : [{
+                  pdfTx: item.pdfTx,
+                  pdfTy: item.pdfTy,
+                  pdfWidth: item.pdfWidth,
+                  pdfHeight: item.pdfHeight,
+                  fontSize: fSize,
+                }];
+
+            for (const b of boxesToCover) {
+              const bFSize = b.fontSize || fSize;
+              const marginY = Math.max(0.75, bFSize * 0.08);
+              const marginX = Math.max(1.5, bFSize * 0.10);
+              page.drawRectangle({
+                x: b.pdfTx - marginX,
+                y: b.pdfTy - (bFSize * 0.32) - marginY,
+                width: b.pdfWidth + (marginX * 2),
+                height: (bFSize * 1.28) + (marginY * 2),
+                color: rgb(bgRgb.r, bgRgb.g, bgRgb.b),
+              });
+            }
 
             // B. If not deleted, draw replacement / updated text
             if (!item.isDeleted && item.currentText) {
@@ -1404,14 +1513,20 @@ export default function EditPdfClient() {
               }
               const font = getFont(item.fontFamily, item.bold, item.italic);
               const txtRgb = hexToRgb(item.color || '#000000') || rgb(0, 0, 0);
+              const curFSize = item.fontSize || item.origFontSize || 12;
 
-              page.drawText(item.currentText, {
-                x: drawX,
-                y: drawY,
-                size: item.fontSize || item.origFontSize || 12,
-                font: font,
-                color: rgb(txtRgb.r, txtRgb.g, txtRgb.b),
-              });
+              const lines = item.currentText.split('\n');
+              const lineH = curFSize * 1.25;
+              for (let li = 0; li < lines.length; li++) {
+                if (!lines[li]) continue;
+                page.drawText(lines[li], {
+                  x: drawX,
+                  y: drawY - li * lineH,
+                  size: curFSize,
+                  font: font,
+                  color: rgb(txtRgb.r, txtRgb.g, txtRgb.b),
+                });
+              }
             }
           }
         }
@@ -2398,21 +2513,46 @@ export default function EditPdfClient() {
                 {curPageData.existingTexts.map((it) => {
                   const isSelected = selectedObj?.id === it.id;
                   const isEditing = editingTextId === it.id;
+                  const pHeight = pageDimensions[currentPage]?.height || 842;
+                  const fSize = it.origFontSize || it.fontSize || 12;
+                  const boxesToCover = (it.boxes && it.boxes.length > 0)
+                    ? it.boxes
+                    : [{
+                        pdfTx: it.pdfTx,
+                        pdfTy: it.pdfTy,
+                        pdfWidth: it.pdfWidth,
+                        pdfHeight: it.pdfHeight,
+                        fontSize: fSize,
+                      }];
 
                   // Deleted item: render background patch over original location so text does NOT show underneath
                   if (it.isDeleted) {
                     return (
-                      <div
-                        key={it.id}
-                        style={{
-                          left: `${toPx(it.origX - 1.5)}px`,
-                          top: `${toPx(it.origY - 1.0)}px`,
-                          width: `${toPx(it.origWidth + 3.0)}px`,
-                          height: `${toPx(it.origHeight + 2.0)}px`,
-                          backgroundColor: it.bgColor || '#ffffff',
-                        }}
-                        className="absolute pointer-events-none"
-                      />
+                      <React.Fragment key={it.id}>
+                        {boxesToCover.map((b, bIdx) => {
+                          const bFSize = b.fontSize || fSize;
+                          const marginY = Math.max(0.75, bFSize * 0.08);
+                          const marginX = Math.max(1.5, bFSize * 0.10);
+                          const boxTop = pHeight - b.pdfTy - (bFSize * 0.96) - marginY;
+                          const boxLeft = b.pdfTx - marginX;
+                          const boxWidth = b.pdfWidth + (marginX * 2);
+                          const boxHeight = (bFSize * 1.28) + (marginY * 2);
+
+                          return (
+                            <div
+                              key={`del-cov-${bIdx}`}
+                              style={{
+                                left: `${toPx(boxLeft)}px`,
+                                top: `${toPx(boxTop)}px`,
+                                width: `${toPx(boxWidth)}px`,
+                                height: `${toPx(boxHeight)}px`,
+                                backgroundColor: it.bgColor || '#ffffff',
+                              }}
+                              className="absolute pointer-events-none z-10"
+                            />
+                          );
+                        })}
+                      </React.Fragment>
                     );
                   }
 
@@ -2420,28 +2560,41 @@ export default function EditPdfClient() {
                   if (it.isEdited || it.isMoved || isEditing) {
                     return (
                       <React.Fragment key={it.id}>
-                        {/* Always cover original position with background patch */}
-                        <div
-                          style={{
-                            left: `${toPx(it.origX - 1.5)}px`,
-                            top: `${toPx(it.origY - 1.0)}px`,
-                            width: `${toPx(it.origWidth + 3.0)}px`,
-                            height: `${toPx(it.origHeight + 2.0)}px`,
-                            backgroundColor: it.bgColor || '#ffffff',
-                          }}
-                          className="absolute pointer-events-none z-10"
-                        />
+                        {/* Always cover original position(s) with background patch */}
+                        {boxesToCover.map((b, bIdx) => {
+                          const bFSize = b.fontSize || fSize;
+                          const marginY = Math.max(0.75, bFSize * 0.08);
+                          const marginX = Math.max(1.5, bFSize * 0.10);
+                          const boxTop = pHeight - b.pdfTy - (bFSize * 0.96) - marginY;
+                          const boxLeft = b.pdfTx - marginX;
+                          const boxWidth = b.pdfWidth + (marginX * 2);
+                          const boxHeight = (bFSize * 1.28) + (marginY * 2);
+
+                          return (
+                            <div
+                              key={`cov-${bIdx}`}
+                              style={{
+                                left: `${toPx(boxLeft)}px`,
+                                top: `${toPx(boxTop)}px`,
+                                width: `${toPx(boxWidth)}px`,
+                                height: `${toPx(boxHeight)}px`,
+                                backgroundColor: it.bgColor || '#ffffff',
+                              }}
+                              className="absolute pointer-events-none z-10"
+                            />
+                          );
+                        })}
 
                         {/* Render active or modified replacement text box */}
                         <div
                           onPointerDown={(e) => handleObjectPointerDown(e, 'existingText', it.id)}
                           style={{
-                            left: `${toPx(it.x - 2)}px`,
-                            top: `${toPx(it.y - 2)}px`,
-                            minWidth: `${toPx(it.width + 4)}px`,
-                            backgroundColor: it.bgColor || '#ffffff',
+                            left: `${toPx(it.x)}px`,
+                            top: `${toPx(it.y)}px`,
+                            backgroundColor: it.isMoved ? (it.bgColor || '#ffffff') : 'transparent',
+                            lineHeight: 1.15,
                           }}
-                          className={`absolute pointer-events-auto rounded px-1 py-0.5 transition-shadow touch-none cursor-move ${
+                          className={`absolute pointer-events-auto rounded px-0.5 py-0 transition-shadow touch-none cursor-move ${
                             isSelected ? 'ring-2 ring-blue-500 shadow-md z-30' : 'z-20'
                           }`}
                         >
@@ -2466,43 +2619,82 @@ export default function EditPdfClient() {
                                   Done ✓
                                 </button>
                               </div>
-                              <input
-                                type="text"
-                                data-pdf-editor="inline-text-input"
-                                value={it.currentText}
-                                onPointerDown={(e) => e.stopPropagation()}
-                                onMouseDown={(e) => e.stopPropagation()}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  updatePageData((page) => ({
-                                    ...page,
-                                    existingTexts: page.existingTexts.map((item) =>
-                                      item.id === it.id
-                                        ? { ...item, currentText: val, isEdited: true }
-                                        : item
-                                    ),
-                                  }));
-                                }}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    setEditingTextId(null);
-                                  }
-                                }}
-                                autoFocus
-                                style={{
-                                  fontSize: `${toPx(it.fontSize || 14)}px`,
-                                  color: it.color || '#0f172a',
-                                  fontWeight: it.bold ? 'bold' : 'normal',
-                                  fontStyle: it.italic ? 'italic' : 'normal',
-                                  fontFamily:
-                                    it.fontFamily === 'TimesRoman'
-                                      ? 'serif'
-                                      : it.fontFamily === 'Courier'
-                                      ? 'monospace'
-                                      : 'sans-serif',
-                                }}
-                                className="w-full bg-white outline-none border-b border-blue-500 py-0.5 px-0.5 cursor-text"
-                              />
+                              {it.currentText.includes('\n') ? (
+                                <textarea
+                                  data-pdf-editor="inline-text-input"
+                                  value={it.currentText}
+                                  onPointerDown={(e) => e.stopPropagation()}
+                                  onMouseDown={(e) => e.stopPropagation()}
+                                  rows={Math.max(1, it.currentText.split('\n').length)}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    const newW = Math.max(10, Math.round(val.length * (it.fontSize || 12) * 0.55));
+                                    updatePageData((page) => ({
+                                      ...page,
+                                      existingTexts: page.existingTexts.map((item) =>
+                                        item.id === it.id
+                                          ? { ...item, currentText: val, width: Math.max(item.width, newW), isEdited: true }
+                                          : item
+                                      ),
+                                    }));
+                                  }}
+                                  autoFocus
+                                  style={{
+                                    fontSize: `${toPx(it.fontSize || 14)}px`,
+                                    color: it.color || '#0f172a',
+                                    fontWeight: it.bold ? 'bold' : 'normal',
+                                    fontStyle: it.italic ? 'italic' : 'normal',
+                                    fontFamily:
+                                      it.fontFamily === 'TimesRoman'
+                                        ? 'serif'
+                                        : it.fontFamily === 'Courier'
+                                        ? 'monospace'
+                                        : 'sans-serif',
+                                    lineHeight: 1.25,
+                                  }}
+                                  className="w-full bg-white outline-none border-b border-blue-500 py-0 px-0.5 cursor-text resize-none"
+                                />
+                              ) : (
+                                <input
+                                  type="text"
+                                  data-pdf-editor="inline-text-input"
+                                  value={it.currentText}
+                                  onPointerDown={(e) => e.stopPropagation()}
+                                  onMouseDown={(e) => e.stopPropagation()}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    const newW = Math.max(10, Math.round(val.length * (it.fontSize || 12) * 0.55));
+                                    updatePageData((page) => ({
+                                      ...page,
+                                      existingTexts: page.existingTexts.map((item) =>
+                                        item.id === it.id
+                                          ? { ...item, currentText: val, width: Math.max(item.width, newW), isEdited: true }
+                                          : item
+                                      ),
+                                    }));
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      setEditingTextId(null);
+                                    }
+                                  }}
+                                  autoFocus
+                                  style={{
+                                    fontSize: `${toPx(it.fontSize || 14)}px`,
+                                    color: it.color || '#0f172a',
+                                    fontWeight: it.bold ? 'bold' : 'normal',
+                                    fontStyle: it.italic ? 'italic' : 'normal',
+                                    fontFamily:
+                                      it.fontFamily === 'TimesRoman'
+                                        ? 'serif'
+                                        : it.fontFamily === 'Courier'
+                                        ? 'monospace'
+                                        : 'sans-serif',
+                                    lineHeight: 1.15,
+                                  }}
+                                  className="w-full bg-white outline-none border-b border-blue-500 py-0 px-0.5 cursor-text"
+                                />
+                              )}
                             </div>
                           ) : (
                             <div
@@ -2527,8 +2719,9 @@ export default function EditPdfClient() {
                                     : it.fontFamily === 'Courier'
                                     ? 'monospace'
                                     : 'sans-serif',
+                                lineHeight: 1.15,
                               }}
-                              className="cursor-move py-0.5 whitespace-pre select-none touch-none"
+                              className="cursor-move py-0 whitespace-pre select-none touch-none"
                               title={`Click to edit or drag to move "${it.currentText}"`}
                             >
                               {it.currentText}
