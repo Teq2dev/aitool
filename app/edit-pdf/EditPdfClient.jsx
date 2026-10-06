@@ -158,10 +158,11 @@ export default function EditPdfClient() {
   const bgCanvasRef = useRef(null);
   const drawCanvasRef = useRef(null);
   const containerRef = useRef(null);
+  const pageContainerRef = useRef(null);
   const imageInputRef = useRef(null);
   const renderTaskRef = useRef(null);
 
-  // Interaction Refs (to avoid stale state during mouse drag events)
+  // Interaction Refs (to avoid stale state during mouse & pointer drag events)
   const isPenDrawingRef = useRef(false);
   const penPointsRef = useRef([]);
   const isDraggingObjRef = useRef(false);
@@ -169,6 +170,31 @@ export default function EditPdfClient() {
   const isCreatingRectRef = useRef(false);
   const rectStartPtRef = useRef({ x: 0, y: 0 });
   const dragStartRef = useRef({ mouseX: 0, mouseY: 0, objX: 0, objY: 0, objW: 0, objH: 0 });
+
+  // Unified Pointer & Drag Engine Ref
+  const zoomRef = useRef(zoom);
+  useEffect(() => {
+    zoomRef.current = zoom;
+  }, [zoom]);
+
+  const rafIdRef = useRef(null);
+  const dragRef = useRef({
+    active: false,
+    mode: 'move', // 'move' | 'resize'
+    type: null,
+    id: null,
+    pageIndex: 1,
+    pointerId: null,
+    startPointerX: 0,
+    startPointerY: 0,
+    startObjX: 0,
+    startObjY: 0,
+    startObjW: 0,
+    startObjH: 0,
+    origFontSize: 12,
+    hasMoved: false,
+    pageRectAtStart: null,
+  });
 
   // Get or initialize active page data
   const getPageData = useCallback(
@@ -447,7 +473,31 @@ export default function EditPdfClient() {
     };
   }, [pdfDoc, currentPage]);
 
-  // Render current PDF page onto background canvas & redraw freehand pen strokes
+  // Redraw freehand pen drawings onto drawCanvas
+  const redrawDrawings = useCallback(() => {
+    const drawCanvas = drawCanvasRef.current;
+    if (!drawCanvas) return;
+    const drawCtx = drawCanvas.getContext('2d');
+    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    const curDrawings = annotations[currentPage]?.drawings;
+    if (curDrawings?.length > 0) {
+      for (const dr of curDrawings) {
+        if (!dr.points || dr.points.length < 2) continue;
+        drawCtx.beginPath();
+        drawCtx.moveTo(dr.points[0].x * zoom, dr.points[0].y * zoom);
+        for (let i = 1; i < dr.points.length; i++) {
+          drawCtx.lineTo(dr.points[i].x * zoom, dr.points[i].y * zoom);
+        }
+        drawCtx.strokeStyle = dr.color || '#0f172a';
+        drawCtx.lineWidth = (dr.strokeWidth || 2) * (zoom / 1.25);
+        drawCtx.lineCap = 'round';
+        drawCtx.lineJoin = 'round';
+        drawCtx.stroke();
+      }
+    }
+  }, [annotations, currentPage, zoom]);
+
+  // Render current PDF page onto background canvas
   const renderCurrentPage = useCallback(async () => {
     if (!pdfDoc || !bgCanvasRef.current || !drawCanvasRef.current) return;
 
@@ -517,35 +567,23 @@ export default function EditPdfClient() {
         console.warn('Post-render background sampling error:', e);
       }
 
-      // Redraw freehand pen drawings onto drawCanvas
-      const drawCtx = drawCanvas.getContext('2d');
-      drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-      const curPageData = annotations[currentPage];
-      if (curPageData?.drawings?.length > 0) {
-        for (const dr of curPageData.drawings) {
-          if (!dr.points || dr.points.length < 2) continue;
-          drawCtx.beginPath();
-          drawCtx.moveTo(dr.points[0].x * zoom, dr.points[0].y * zoom);
-          for (let i = 1; i < dr.points.length; i++) {
-            drawCtx.lineTo(dr.points[i].x * zoom, dr.points[i].y * zoom);
-          }
-          drawCtx.strokeStyle = dr.color || '#0f172a';
-          drawCtx.lineWidth = (dr.strokeWidth || 2) * (zoom / 1.25);
-          drawCtx.lineCap = 'round';
-          drawCtx.lineJoin = 'round';
-          drawCtx.stroke();
-        }
-      }
+      redrawDrawings();
     } catch (err) {
       if (err?.name !== 'RenderingCancelledException') {
         console.error('Render page error:', err);
       }
     }
-  }, [pdfDoc, currentPage, zoom, annotations]);
+  }, [pdfDoc, currentPage, zoom, redrawDrawings]);
 
   useEffect(() => {
     renderCurrentPage();
   }, [renderCurrentPage]);
+
+  // Sync drawings to drawCanvas when drawing strokes update
+  const drawingsLength = annotations[currentPage]?.drawings?.length || 0;
+  useEffect(() => {
+    redrawDrawings();
+  }, [drawingsLength, redrawDrawings]);
 
   // Convert mouse/touch screen coordinates to PDF points (pt)
   const getCanvasPdfPt = (e) => {
@@ -714,59 +752,311 @@ export default function EditPdfClient() {
     setToolMode('select');
   };
 
-  // Drag & Move handlers for objects
-  const handleObjectMouseDown = (e, type, id) => {
+  const justFinishedDragRef = useRef(false);
+
+  // Global window listeners for drag & resize
+  useEffect(() => {
+    const handleGlobalPointerMove = (e) => {
+      const drag = dragRef.current;
+      if (!drag || !drag.active) return;
+
+      const deltaPointerX = e.clientX - drag.startPointerX;
+      const deltaPointerY = e.clientY - drag.startPointerY;
+      if (!drag.hasMoved && Math.hypot(deltaPointerX, deltaPointerY) > 3) {
+        drag.hasMoved = true;
+      }
+
+      if (!drag.hasMoved) return;
+
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+
+      const curZoom = zoomRef.current || 1;
+      const canvasEl = drawCanvasRef.current;
+      const currentRect = canvasEl ? canvasEl.getBoundingClientRect() : drag.pageRectAtStart;
+      const scrollShiftX = currentRect && drag.pageRectAtStart ? currentRect.left - drag.pageRectAtStart.left : 0;
+      const scrollShiftY = currentRect && drag.pageRectAtStart ? currentRect.top - drag.pageRectAtStart.top : 0;
+
+      const deltaX = (e.clientX - drag.startPointerX - scrollShiftX) / curZoom;
+      const deltaY = (e.clientY - drag.startPointerY - scrollShiftY) / curZoom;
+
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+
+      rafIdRef.current = requestAnimationFrame(() => {
+        if (!drag.active) return;
+
+        if (drag.mode === 'move') {
+          const newX = Math.round((drag.startObjX + deltaX) * 10) / 10;
+          const newY = Math.round((drag.startObjY + deltaY) * 10) / 10;
+
+          updatePageData((page) => {
+            const { type, id } = drag;
+            if (type === 'existingText') {
+              return {
+                ...page,
+                existingTexts: page.existingTexts.map((it) =>
+                  it.id === id ? { ...it, x: newX, y: newY, isMoved: true, isEdited: true } : it
+                ),
+              };
+            }
+            if (type === 'addedText') {
+              return {
+                ...page,
+                addedTexts: page.addedTexts.map((t) => (t.id === id ? { ...t, x: newX, y: newY } : t)),
+              };
+            }
+            if (type === 'highlight') {
+              return {
+                ...page,
+                highlights: page.highlights.map((h) => (h.id === id ? { ...h, x: newX, y: newY } : h)),
+              };
+            }
+            if (type === 'whiteout') {
+              return {
+                ...page,
+                whiteouts: page.whiteouts.map((w) => (w.id === id ? { ...w, x: newX, y: newY } : w)),
+              };
+            }
+            if (type === 'shape') {
+              return {
+                ...page,
+                shapes: page.shapes.map((s) => (s.id === id ? { ...s, x: newX, y: newY } : s)),
+              };
+            }
+            if (type === 'image') {
+              return {
+                ...page,
+                images: page.images.map((img) => (img.id === id ? { ...img, x: newX, y: newY } : img)),
+              };
+            }
+            if (type === 'signature') {
+              return {
+                ...page,
+                signatures: page.signatures.map((sig) => (sig.id === id ? { ...sig, x: newX, y: newY } : sig)),
+              };
+            }
+            if (type === 'stamp') {
+              return {
+                ...page,
+                stamps: page.stamps.map((st) => (st.id === id ? { ...st, x: newX, y: newY } : st)),
+              };
+            }
+            return page;
+          }, false);
+        } else if (drag.mode === 'resize') {
+          const newW = Math.max(20, Math.round((drag.startObjW + deltaX) * 10) / 10);
+          const newH = Math.max(14, Math.round((drag.startObjH + deltaY) * 10) / 10);
+
+          updatePageData((page) => {
+            const { type, id } = drag;
+            if (type === 'existingText') {
+              return {
+                ...page,
+                existingTexts: page.existingTexts.map((it) =>
+                  it.id === id ? { ...it, width: newW, height: newH, isEdited: true } : it
+                ),
+              };
+            }
+            if (type === 'addedText') {
+              return {
+                ...page,
+                addedTexts: page.addedTexts.map((t) => (t.id === id ? { ...t, width: newW, height: newH } : t)),
+              };
+            }
+            if (type === 'highlight') {
+              return {
+                ...page,
+                highlights: page.highlights.map((h) => (h.id === id ? { ...h, width: newW, height: newH } : h)),
+              };
+            }
+            if (type === 'whiteout') {
+              return {
+                ...page,
+                whiteouts: page.whiteouts.map((w) => (w.id === id ? { ...w, width: newW, height: newH } : w)),
+              };
+            }
+            if (type === 'shape') {
+              return {
+                ...page,
+                shapes: page.shapes.map((s) => (s.id === id ? { ...s, width: newW, height: newH } : s)),
+              };
+            }
+            if (type === 'image') {
+              return {
+                ...page,
+                images: page.images.map((img) => (img.id === id ? { ...img, width: newW, height: newH } : img)),
+              };
+            }
+            if (type === 'signature') {
+              return {
+                ...page,
+                signatures: page.signatures.map((sig) => (sig.id === id ? { ...sig, width: newW, height: newH } : sig)),
+              };
+            }
+            if (type === 'stamp') {
+              return {
+                ...page,
+                stamps: page.stamps.map((st) => (st.id === id ? { ...st, width: newW, height: newH } : st)),
+              };
+            }
+            return page;
+          }, false);
+        }
+      });
+    };
+
+    const handleGlobalPointerUp = (e) => {
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+
+      const drag = dragRef.current;
+      if (!drag || !drag.active) return;
+
+      const wasMoved = drag.hasMoved;
+      drag.active = false;
+      isDraggingObjRef.current = false;
+      isResizingObjRef.current = false;
+
+      if (wasMoved) {
+        justFinishedDragRef.current = true;
+        setTimeout(() => {
+          justFinishedDragRef.current = false;
+        }, 100);
+
+        // Commit single history snapshot for the move/resize operation
+        const currentIdx = historyIdxRef.current >= 0 ? historyIdxRef.current : 0;
+        const nextHist = historyRef.current.slice(0, currentIdx + 1);
+        nextHist.push(JSON.parse(JSON.stringify(annotationsRef.current)));
+        if (nextHist.length > 30) nextHist.shift();
+        const newIdx = nextHist.length - 1;
+        historyRef.current = nextHist;
+        historyIdxRef.current = newIdx;
+        setHistory(nextHist);
+        setHistoryIdx(newIdx);
+      }
+    };
+
+    window.addEventListener('pointermove', handleGlobalPointerMove, { passive: false });
+    window.addEventListener('pointerup', handleGlobalPointerUp);
+    window.addEventListener('pointercancel', handleGlobalPointerUp);
+
+    return () => {
+      window.removeEventListener('pointermove', handleGlobalPointerMove);
+      window.removeEventListener('pointerup', handleGlobalPointerUp);
+      window.removeEventListener('pointercancel', handleGlobalPointerUp);
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+    };
+  }, [updatePageData]);
+
+  // Unified Pointer Down for draggable elements
+  const handleObjectPointerDown = (e, type, id) => {
+    const tag = e.target.tagName ? e.target.tagName.toLowerCase() : '';
+    if (tag === 'input' || tag === 'textarea' || tag === 'button') {
+      return;
+    }
+
     e.stopPropagation();
+    if (e.cancelable && e.pointerType === 'mouse') {
+      e.preventDefault();
+    }
+
+    try {
+      if (e.currentTarget?.setPointerCapture) {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      }
+    } catch (_) {}
+
     setSelectedObj({ type, id });
 
+    const pageData = annotationsRef.current[currentPage] || curPageData;
     let item = null;
-    if (type === 'existingText') item = curPageData.existingTexts.find((t) => t.id === id);
-    else if (type === 'addedText') item = curPageData.addedTexts.find((t) => t.id === id);
-    else if (type === 'highlight') item = curPageData.highlights.find((h) => h.id === id);
-    else if (type === 'whiteout') item = curPageData.whiteouts.find((w) => w.id === id);
-    else if (type === 'shape') item = curPageData.shapes.find((s) => s.id === id);
-    else if (type === 'image') item = curPageData.images.find((img) => img.id === id);
-    else if (type === 'signature') item = curPageData.signatures.find((sig) => sig.id === id);
-    else if (type === 'stamp') item = curPageData.stamps.find((st) => st.id === id);
+    if (type === 'existingText') item = pageData.existingTexts?.find((t) => t.id === id);
+    else if (type === 'addedText') item = pageData.addedTexts?.find((t) => t.id === id);
+    else if (type === 'highlight') item = pageData.highlights?.find((h) => h.id === id);
+    else if (type === 'whiteout') item = pageData.whiteouts?.find((w) => w.id === id);
+    else if (type === 'shape') item = pageData.shapes?.find((s) => s.id === id);
+    else if (type === 'image') item = pageData.images?.find((img) => img.id === id);
+    else if (type === 'signature') item = pageData.signatures?.find((sig) => sig.id === id);
+    else if (type === 'stamp') item = pageData.stamps?.find((st) => st.id === id);
 
     if (!item) return;
 
     isDraggingObjRef.current = true;
-    dragStartRef.current = {
-      mouseX: e.clientX,
-      mouseY: e.clientY,
-      objX: item.x,
-      objY: item.y,
-      objW: item.width,
-      objH: item.height,
+    dragRef.current = {
+      active: true,
+      mode: 'move',
+      type,
+      id,
+      pageIndex: currentPage,
+      pointerId: e.pointerId,
+      startPointerX: e.clientX,
+      startPointerY: e.clientY,
+      startObjX: item.x,
+      startObjY: item.y,
+      startObjW: item.width || 100,
+      startObjH: item.height || 30,
+      origFontSize: item.origFontSize || item.fontSize || 12,
+      hasMoved: false,
+      pageRectAtStart: drawCanvasRef.current ? drawCanvasRef.current.getBoundingClientRect() : null,
     };
   };
 
-  // Resize handler for bottom-right handle
-  const handleResizeMouseDown = (e, type, id) => {
+  // Unified Pointer Down for resize handles
+  const handleResizePointerDown = (e, type, id) => {
     e.stopPropagation();
-    isResizingObjRef.current = true;
+    if (e.cancelable) e.preventDefault();
+
+    try {
+      if (e.currentTarget?.setPointerCapture) {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      }
+    } catch (_) {}
+
+    setSelectedObj({ type, id });
+
+    const pageData = annotationsRef.current[currentPage] || curPageData;
     let item = null;
-    if (type === 'existingText') item = curPageData.existingTexts.find((t) => t.id === id);
-    else if (type === 'addedText') item = curPageData.addedTexts.find((t) => t.id === id);
-    else if (type === 'highlight') item = curPageData.highlights.find((h) => h.id === id);
-    else if (type === 'whiteout') item = curPageData.whiteouts.find((w) => w.id === id);
-    else if (type === 'shape') item = curPageData.shapes.find((s) => s.id === id);
-    else if (type === 'image') item = curPageData.images.find((img) => img.id === id);
-    else if (type === 'signature') item = curPageData.signatures.find((sig) => sig.id === id);
-    else if (type === 'stamp') item = curPageData.stamps.find((st) => st.id === id);
+    if (type === 'existingText') item = pageData.existingTexts?.find((t) => t.id === id);
+    else if (type === 'addedText') item = pageData.addedTexts?.find((t) => t.id === id);
+    else if (type === 'highlight') item = pageData.highlights?.find((h) => h.id === id);
+    else if (type === 'whiteout') item = pageData.whiteouts?.find((w) => w.id === id);
+    else if (type === 'shape') item = pageData.shapes?.find((s) => s.id === id);
+    else if (type === 'image') item = pageData.images?.find((img) => img.id === id);
+    else if (type === 'signature') item = pageData.signatures?.find((sig) => sig.id === id);
+    else if (type === 'stamp') item = pageData.stamps?.find((st) => st.id === id);
 
     if (!item) return;
 
-    dragStartRef.current = {
-      mouseX: e.clientX,
-      mouseY: e.clientY,
-      objX: item.x,
-      objY: item.y,
-      objW: item.width,
-      objH: item.height,
+    isResizingObjRef.current = true;
+    dragRef.current = {
+      active: true,
+      mode: 'resize',
+      type,
+      id,
+      pageIndex: currentPage,
+      pointerId: e.pointerId,
+      startPointerX: e.clientX,
+      startPointerY: e.clientY,
+      startObjX: item.x,
+      startObjY: item.y,
+      startObjW: item.width || 100,
+      startObjH: item.height || 30,
+      origFontSize: item.origFontSize || item.fontSize || 12,
+      hasMoved: false,
+      pageRectAtStart: drawCanvasRef.current ? drawCanvasRef.current.getBoundingClientRect() : null,
     };
   };
+
+  // Backwards compatibility aliases
+  const handleObjectMouseDown = handleObjectPointerDown;
+  const handleResizeMouseDown = handleResizePointerDown;
 
   // Main canvas mouse handlers
   const handleCanvasMouseDown = (e) => {
@@ -815,140 +1105,6 @@ export default function EditPdfClient() {
       return;
     }
 
-    // Dragging an object
-    if (isDraggingObjRef.current && selectedObj) {
-      const dx = (e.clientX - dragStartRef.current.mouseX) / zoom;
-      const dy = (e.clientY - dragStartRef.current.mouseY) / zoom;
-      const newX = Math.round((dragStartRef.current.objX + dx) * 10) / 10;
-      const newY = Math.round((dragStartRef.current.objY + dy) * 10) / 10;
-
-      const { type, id } = selectedObj;
-      updatePageData(
-        (page) => {
-          if (type === 'existingText') {
-            return {
-              ...page,
-              existingTexts: page.existingTexts.map((it) =>
-                it.id === id ? { ...it, x: newX, y: newY, isMoved: true, isEdited: true } : it
-              ),
-            };
-          }
-          if (type === 'addedText') {
-            return {
-              ...page,
-              addedTexts: page.addedTexts.map((t) => (t.id === id ? { ...t, x: newX, y: newY } : t)),
-            };
-          }
-          if (type === 'highlight') {
-            return {
-              ...page,
-              highlights: page.highlights.map((h) => (h.id === id ? { ...h, x: newX, y: newY } : h)),
-            };
-          }
-          if (type === 'whiteout') {
-            return {
-              ...page,
-              whiteouts: page.whiteouts.map((w) => (w.id === id ? { ...w, x: newX, y: newY } : w)),
-            };
-          }
-          if (type === 'shape') {
-            return {
-              ...page,
-              shapes: page.shapes.map((s) => (s.id === id ? { ...s, x: newX, y: newY } : s)),
-            };
-          }
-          if (type === 'image') {
-            return {
-              ...page,
-              images: page.images.map((img) => (img.id === id ? { ...img, x: newX, y: newY } : img)),
-            };
-          }
-          if (type === 'signature') {
-            return {
-              ...page,
-              signatures: page.signatures.map((sig) => (sig.id === id ? { ...sig, x: newX, y: newY } : sig)),
-            };
-          }
-          if (type === 'stamp') {
-            return {
-              ...page,
-              stamps: page.stamps.map((st) => (st.id === id ? { ...st, x: newX, y: newY } : st)),
-            };
-          }
-          return page;
-        },
-        false // don't push each mouse move step to undo stack
-      );
-      return;
-    }
-
-    // Resizing an object
-    if (isResizingObjRef.current && selectedObj) {
-      const dx = (e.clientX - dragStartRef.current.mouseX) / zoom;
-      const dy = (e.clientY - dragStartRef.current.mouseY) / zoom;
-      const newW = Math.max(20, Math.round((dragStartRef.current.objW + dx) * 10) / 10);
-      const newH = Math.max(14, Math.round((dragStartRef.current.objH + dy) * 10) / 10);
-
-      const { type, id } = selectedObj;
-      updatePageData(
-        (page) => {
-          if (type === 'existingText') {
-            return {
-              ...page,
-              existingTexts: page.existingTexts.map((it) =>
-                it.id === id ? { ...it, width: newW, height: newH, isEdited: true } : it
-              ),
-            };
-          }
-          if (type === 'addedText') {
-            return {
-              ...page,
-              addedTexts: page.addedTexts.map((t) => (t.id === id ? { ...t, width: newW, height: newH } : t)),
-            };
-          }
-          if (type === 'highlight') {
-            return {
-              ...page,
-              highlights: page.highlights.map((h) => (h.id === id ? { ...h, width: newW, height: newH } : h)),
-            };
-          }
-          if (type === 'whiteout') {
-            return {
-              ...page,
-              whiteouts: page.whiteouts.map((w) => (w.id === id ? { ...w, width: newW, height: newH } : w)),
-            };
-          }
-          if (type === 'shape') {
-            return {
-              ...page,
-              shapes: page.shapes.map((s) => (s.id === id ? { ...s, width: newW, height: newH } : s)),
-            };
-          }
-          if (type === 'image') {
-            return {
-              ...page,
-              images: page.images.map((img) => (img.id === id ? { ...img, width: newW, height: newH } : img)),
-            };
-          }
-          if (type === 'signature') {
-            return {
-              ...page,
-              signatures: page.signatures.map((sig) => (sig.id === id ? { ...sig, width: newW, height: newH } : sig)),
-            };
-          }
-          if (type === 'stamp') {
-            return {
-              ...page,
-              stamps: page.stamps.map((st) => (st.id === id ? { ...st, width: newW, height: newH } : st)),
-            };
-          }
-          return page;
-        },
-        false
-      );
-      return;
-    }
-
     // Preview rectangle/shape while dragging
     if (isCreatingRectRef.current) {
       const start = rectStartPtRef.current;
@@ -960,7 +1116,7 @@ export default function EditPdfClient() {
       const canvas = drawCanvasRef.current;
       const ctx = canvas.getContext('2d');
       // Redraw existing strokes
-      renderCurrentPage();
+      redrawDrawings();
 
       if (toolMode === 'highlight') {
         ctx.fillStyle = highlightColor;
@@ -1008,23 +1164,6 @@ export default function EditPdfClient() {
         }));
       }
       penPointsRef.current = [];
-      return;
-    }
-
-    // Finish object move or resize
-    if (isDraggingObjRef.current || isResizingObjRef.current) {
-      isDraggingObjRef.current = false;
-      isResizingObjRef.current = false;
-      // Push snapshot to undo stack
-      const currentIdx = historyIdxRef.current >= 0 ? historyIdxRef.current : 0;
-      const nextHist = historyRef.current.slice(0, currentIdx + 1);
-      nextHist.push(JSON.parse(JSON.stringify(annotations)));
-      if (nextHist.length > 30) nextHist.shift();
-      const newIdx = nextHist.length - 1;
-      historyRef.current = nextHist;
-      historyIdxRef.current = newIdx;
-      setHistory(nextHist);
-      setHistoryIdx(newIdx);
       return;
     }
 
@@ -1261,7 +1400,7 @@ export default function EditPdfClient() {
               let drawY = item.pdfTy;
               if (item.isMoved) {
                 drawX = item.x;
-                drawY = pHeight - item.y - item.height + item.fontSize * 0.25;
+                drawY = pHeight - item.y - (item.origFontSize || item.fontSize || 12) * 0.85;
               }
               const font = getFont(item.fontFamily, item.bold, item.italic);
               const txtRgb = hexToRgb(item.color || '#000000') || rgb(0, 0, 0);
@@ -2100,6 +2239,7 @@ export default function EditPdfClient() {
             className="relative overflow-auto max-h-[760px] border border-slate-200 rounded-2xl bg-slate-200/60 p-4 sm:p-6 flex justify-center items-start shadow-inner select-none"
           >
             <div
+              ref={pageContainerRef}
               className="relative shadow-2xl bg-white transition-transform"
               style={{
                 width: toPx(pageDimensions[currentPage]?.width || 595),
@@ -2134,7 +2274,7 @@ export default function EditPdfClient() {
                   return (
                     <div
                       key={wo.id}
-                      onMouseDown={(e) => handleObjectMouseDown(e, 'whiteout', wo.id)}
+                      onPointerDown={(e) => handleObjectPointerDown(e, 'whiteout', wo.id)}
                       style={{
                         left: `${toPx(wo.x)}px`,
                         top: `${toPx(wo.y)}px`,
@@ -2142,14 +2282,14 @@ export default function EditPdfClient() {
                         height: `${toPx(wo.height)}px`,
                         backgroundColor: wo.color || '#ffffff',
                       }}
-                      className={`absolute pointer-events-auto cursor-move ${
+                      className={`absolute pointer-events-auto cursor-move touch-none ${
                         isSelected ? 'ring-2 ring-blue-500 shadow-md' : 'border border-slate-200'
                       }`}
                     >
                       {isSelected && (
                         <div
-                          onMouseDown={(e) => handleResizeMouseDown(e, 'whiteout', wo.id)}
-                          className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full cursor-nwse-resize"
+                          onPointerDown={(e) => handleResizePointerDown(e, 'whiteout', wo.id)}
+                          className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full cursor-nwse-resize touch-none"
                         />
                       )}
                     </div>
@@ -2162,7 +2302,7 @@ export default function EditPdfClient() {
                   return (
                     <div
                       key={hl.id}
-                      onMouseDown={(e) => handleObjectMouseDown(e, 'highlight', hl.id)}
+                      onPointerDown={(e) => handleObjectPointerDown(e, 'highlight', hl.id)}
                       style={{
                         left: `${toPx(hl.x)}px`,
                         top: `${toPx(hl.y)}px`,
@@ -2171,14 +2311,14 @@ export default function EditPdfClient() {
                         backgroundColor: hl.color || '#fef08a',
                         opacity: hl.opacity || 0.4,
                       }}
-                      className={`absolute pointer-events-auto cursor-move mix-blend-multiply ${
+                      className={`absolute pointer-events-auto cursor-move mix-blend-multiply touch-none ${
                         isSelected ? 'ring-2 ring-blue-500' : ''
                       }`}
                     >
                       {isSelected && (
                         <div
-                          onMouseDown={(e) => handleResizeMouseDown(e, 'highlight', hl.id)}
-                          className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full cursor-nwse-resize"
+                          onPointerDown={(e) => handleResizePointerDown(e, 'highlight', hl.id)}
+                          className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full cursor-nwse-resize touch-none"
                         />
                       )}
                     </div>
@@ -2191,18 +2331,18 @@ export default function EditPdfClient() {
                   return (
                     <div
                       key={sh.id}
-                      onMouseDown={(e) => handleObjectMouseDown(e, 'shape', sh.id)}
+                      onPointerDown={(e) => handleObjectPointerDown(e, 'shape', sh.id)}
                       style={{
                         left: `${toPx(sh.x)}px`,
                         top: `${toPx(sh.y)}px`,
                         width: `${toPx(sh.width)}px`,
                         height: `${toPx(sh.height)}px`,
                       }}
-                      className={`absolute pointer-events-auto cursor-move ${
+                      className={`absolute pointer-events-auto cursor-move touch-none ${
                         isSelected ? 'ring-2 ring-blue-500' : ''
                       }`}
                     >
-                      <svg className="w-full h-full overflow-visible">
+                      <svg className="w-full h-full overflow-visible pointer-events-none">
                         {sh.shapeType === 'rectangle' && (
                           <rect
                             x={0}
@@ -2225,7 +2365,7 @@ export default function EditPdfClient() {
                             fill={sh.fillColor || 'transparent'}
                           />
                         )}
-                        {(sh.shapeType === 'line' || sh.shapeType === 'arrow') && (
+                        {(sh.shapeType === 'line' || shapeType === 'arrow') && (
                           <>
                             <line
                               x1={0}
@@ -2246,8 +2386,8 @@ export default function EditPdfClient() {
                       </svg>
                       {isSelected && (
                         <div
-                          onMouseDown={(e) => handleResizeMouseDown(e, 'shape', sh.id)}
-                          className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full cursor-nwse-resize"
+                          onPointerDown={(e) => handleResizePointerDown(e, 'shape', sh.id)}
+                          className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full cursor-nwse-resize touch-none"
                         />
                       )}
                     </div>
@@ -2294,25 +2434,29 @@ export default function EditPdfClient() {
 
                         {/* Render active or modified replacement text box */}
                         <div
-                          onMouseDown={(e) => handleObjectMouseDown(e, 'existingText', it.id)}
+                          onPointerDown={(e) => handleObjectPointerDown(e, 'existingText', it.id)}
                           style={{
                             left: `${toPx(it.x - 2)}px`,
                             top: `${toPx(it.y - 2)}px`,
                             minWidth: `${toPx(it.width + 4)}px`,
                             backgroundColor: it.bgColor || '#ffffff',
                           }}
-                          className={`absolute pointer-events-auto rounded px-1 py-0.5 transition-shadow ${
+                          className={`absolute pointer-events-auto rounded px-1 py-0.5 transition-shadow touch-none cursor-move ${
                             isSelected ? 'ring-2 ring-blue-500 shadow-md z-30' : 'z-20'
                           }`}
                         >
                           {isEditing ? (
                             <div className="flex flex-col">
-                              <div className="flex items-center justify-between text-2xs text-blue-500 font-mono select-none cursor-move mb-0.5 pb-0.5 border-b border-blue-100">
-                                <span className="flex items-center gap-1 font-bold">
+                              <div
+                                onPointerDown={(e) => handleObjectPointerDown(e, 'existingText', it.id)}
+                                className="flex items-center justify-between text-2xs text-blue-500 font-mono select-none cursor-move mb-0.5 pb-0.5 border-b border-blue-100 touch-none"
+                              >
+                                <span className="flex items-center gap-1 font-bold pointer-events-none">
                                   <Move className="w-2.5 h-2.5" /> Drag
                                 </span>
                                 <button
                                   type="button"
+                                  onPointerDown={(e) => e.stopPropagation()}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setEditingTextId(null);
@@ -2326,6 +2470,7 @@ export default function EditPdfClient() {
                                 type="text"
                                 data-pdf-editor="inline-text-input"
                                 value={it.currentText}
+                                onPointerDown={(e) => e.stopPropagation()}
                                 onMouseDown={(e) => e.stopPropagation()}
                                 onChange={(e) => {
                                   const val = e.target.value;
@@ -2356,12 +2501,13 @@ export default function EditPdfClient() {
                                       ? 'monospace'
                                       : 'sans-serif',
                                 }}
-                                className="w-full bg-white outline-none border-b border-blue-500 py-0.5 px-0.5"
+                                className="w-full bg-white outline-none border-b border-blue-500 py-0.5 px-0.5 cursor-text"
                               />
                             </div>
                           ) : (
                             <div
                               onClick={() => {
+                                if (justFinishedDragRef.current) return;
                                 setSelectedObj({ type: 'existingText', id: it.id });
                                 setEditingTextId(it.id);
                                 setFontSize(it.fontSize);
@@ -2382,8 +2528,8 @@ export default function EditPdfClient() {
                                     ? 'monospace'
                                     : 'sans-serif',
                               }}
-                              className="cursor-text py-0.5 whitespace-pre"
-                              title={`Click to edit "${it.currentText}"`}
+                              className="cursor-move py-0.5 whitespace-pre select-none touch-none"
+                              title={`Click to edit or drag to move "${it.currentText}"`}
                             >
                               {it.currentText}
                             </div>
@@ -2391,8 +2537,8 @@ export default function EditPdfClient() {
 
                           {isSelected && (
                             <div
-                              onMouseDown={(e) => handleResizeMouseDown(e, 'existingText', it.id)}
-                              className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full cursor-nwse-resize"
+                              onPointerDown={(e) => handleResizePointerDown(e, 'existingText', it.id)}
+                              className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full cursor-nwse-resize touch-none"
                             />
                           )}
                         </div>
@@ -2404,7 +2550,13 @@ export default function EditPdfClient() {
                   return (
                     <div
                       key={it.id}
+                      onPointerDown={(e) => {
+                        if (toolMode === 'editText' || toolMode === 'select') {
+                          handleObjectPointerDown(e, 'existingText', it.id);
+                        }
+                      }}
                       onClick={() => {
+                        if (justFinishedDragRef.current) return;
                         if (toolMode === 'editText' || toolMode === 'select') {
                           setSelectedObj({ type: 'existingText', id: it.id });
                           setEditingTextId(it.id);
@@ -2421,14 +2573,14 @@ export default function EditPdfClient() {
                         width: `${toPx(it.width + 4)}px`,
                         height: `${toPx(it.height + 4)}px`,
                       }}
-                      className={`absolute pointer-events-auto rounded transition-all ${
+                      className={`absolute pointer-events-auto rounded transition-all touch-none ${
                         toolMode === 'editText' || toolMode === 'select'
-                          ? 'hover:ring-2 hover:ring-blue-400 hover:bg-blue-400/20 cursor-pointer z-10'
+                          ? 'hover:ring-2 hover:ring-blue-400 hover:bg-blue-400/20 cursor-move z-10'
                           : 'pointer-events-none'
                       }`}
                       title={
                         toolMode === 'editText' || toolMode === 'select'
-                          ? `Click to edit "${it.origText}"`
+                          ? `Click to edit or drag to move "${it.origText}"`
                           : undefined
                       }
                     />
@@ -2443,25 +2595,29 @@ export default function EditPdfClient() {
                   return (
                     <div
                       key={txt.id}
-                      onMouseDown={(e) => handleObjectMouseDown(e, 'addedText', txt.id)}
+                      onPointerDown={(e) => handleObjectPointerDown(e, 'addedText', txt.id)}
                       style={{
                         left: `${toPx(txt.x)}px`,
                         top: `${toPx(txt.y)}px`,
                         minWidth: `${toPx(txt.width)}px`,
                         backgroundColor: txt.bgColor || 'transparent',
                       }}
-                      className={`absolute pointer-events-auto rounded px-1.5 py-0.5 cursor-move ${
+                      className={`absolute pointer-events-auto rounded px-1.5 py-0.5 cursor-move touch-none ${
                         isSelected ? 'ring-2 ring-blue-500 shadow-md bg-white z-30' : 'z-20'
                       }`}
                     >
                       {isEditing ? (
                         <div className="flex flex-col">
-                          <div className="flex items-center justify-between text-2xs text-blue-500 font-mono select-none cursor-move mb-0.5 pb-0.5 border-b border-blue-100">
-                            <span className="flex items-center gap-1 font-bold">
+                          <div
+                            onPointerDown={(e) => handleObjectPointerDown(e, 'addedText', txt.id)}
+                            className="flex items-center justify-between text-2xs text-blue-500 font-mono select-none cursor-move mb-0.5 pb-0.5 border-b border-blue-100 touch-none"
+                          >
+                            <span className="flex items-center gap-1 font-bold pointer-events-none">
                               <Move className="w-2.5 h-2.5" /> Drag
                             </span>
                             <button
                               type="button"
+                              onPointerDown={(e) => e.stopPropagation()}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setEditingTextId(null);
@@ -2474,6 +2630,7 @@ export default function EditPdfClient() {
                           <textarea
                             data-pdf-editor="added-text-input"
                             value={txt.text}
+                            onPointerDown={(e) => e.stopPropagation()}
                             onMouseDown={(e) => e.stopPropagation()}
                             onChange={(e) => {
                               const val = e.target.value;
@@ -2498,12 +2655,13 @@ export default function EditPdfClient() {
                                   ? 'monospace'
                                   : 'sans-serif',
                             }}
-                            className="w-full bg-white outline-none border-b border-blue-500 py-0.5 px-0.5 resize-none"
+                            className="w-full bg-white outline-none border-b border-blue-500 py-0.5 px-0.5 resize-none cursor-text"
                           />
                         </div>
                       ) : (
                         <div
                           onClick={() => {
+                            if (justFinishedDragRef.current) return;
                             setSelectedObj({ type: 'addedText', id: txt.id });
                             setEditingTextId(txt.id);
                           }}
@@ -2519,7 +2677,7 @@ export default function EditPdfClient() {
                                 ? 'monospace'
                                 : 'sans-serif',
                           }}
-                          className="cursor-text whitespace-pre-wrap select-text"
+                          className="cursor-move whitespace-pre-wrap select-none touch-none"
                         >
                           {txt.text}
                         </div>
@@ -2527,8 +2685,8 @@ export default function EditPdfClient() {
 
                       {isSelected && (
                         <div
-                          onMouseDown={(e) => handleResizeMouseDown(e, 'addedText', txt.id)}
-                          className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full cursor-nwse-resize"
+                          onPointerDown={(e) => handleResizePointerDown(e, 'addedText', txt.id)}
+                          className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full cursor-nwse-resize touch-none"
                         />
                       )}
                     </div>
@@ -2541,14 +2699,14 @@ export default function EditPdfClient() {
                   return (
                     <div
                       key={img.id}
-                      onMouseDown={(e) => handleObjectMouseDown(e, 'image', img.id)}
+                      onPointerDown={(e) => handleObjectPointerDown(e, 'image', img.id)}
                       style={{
                         left: `${toPx(img.x)}px`,
                         top: `${toPx(img.y)}px`,
                         width: `${toPx(img.width)}px`,
                         height: `${toPx(img.height)}px`,
                       }}
-                      className={`absolute pointer-events-auto cursor-move ${
+                      className={`absolute pointer-events-auto cursor-move touch-none ${
                         isSelected ? 'ring-2 ring-blue-500 shadow-md' : ''
                       }`}
                     >
@@ -2559,8 +2717,8 @@ export default function EditPdfClient() {
                       />
                       {isSelected && (
                         <div
-                          onMouseDown={(e) => handleResizeMouseDown(e, 'image', img.id)}
-                          className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full cursor-nwse-resize"
+                          onPointerDown={(e) => handleResizePointerDown(e, 'image', img.id)}
+                          className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full cursor-nwse-resize touch-none"
                         />
                       )}
                     </div>
@@ -2573,14 +2731,14 @@ export default function EditPdfClient() {
                   return (
                     <div
                       key={sig.id}
-                      onMouseDown={(e) => handleObjectMouseDown(e, 'signature', sig.id)}
+                      onPointerDown={(e) => handleObjectPointerDown(e, 'signature', sig.id)}
                       style={{
                         left: `${toPx(sig.x)}px`,
                         top: `${toPx(sig.y)}px`,
                         width: `${toPx(sig.width)}px`,
                         height: `${toPx(sig.height)}px`,
                       }}
-                      className={`absolute pointer-events-auto cursor-move ${
+                      className={`absolute pointer-events-auto cursor-move touch-none ${
                         isSelected ? 'ring-2 ring-blue-500 shadow-md' : ''
                       }`}
                     >
@@ -2591,8 +2749,8 @@ export default function EditPdfClient() {
                       />
                       {isSelected && (
                         <div
-                          onMouseDown={(e) => handleResizeMouseDown(e, 'signature', sig.id)}
-                          className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full cursor-nwse-resize"
+                          onPointerDown={(e) => handleResizePointerDown(e, 'signature', sig.id)}
+                          className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full cursor-nwse-resize touch-none"
                         />
                       )}
                     </div>
@@ -2605,7 +2763,7 @@ export default function EditPdfClient() {
                   return (
                     <div
                       key={st.id}
-                      onMouseDown={(e) => handleObjectMouseDown(e, 'stamp', st.id)}
+                      onPointerDown={(e) => handleObjectPointerDown(e, 'stamp', st.id)}
                       style={{
                         left: `${toPx(st.x)}px`,
                         top: `${toPx(st.y)}px`,
@@ -2615,15 +2773,15 @@ export default function EditPdfClient() {
                         borderColor: st.color || '#16a34a',
                         color: st.color || '#16a34a',
                       }}
-                      className={`absolute pointer-events-auto cursor-move border-3 border-dashed rounded-lg flex items-center justify-center font-black tracking-widest uppercase select-none transition-transform ${
+                      className={`absolute pointer-events-auto cursor-move touch-none border-3 border-dashed rounded-lg flex items-center justify-center font-black tracking-widest uppercase select-none transition-transform ${
                         isSelected ? 'ring-2 ring-blue-500 shadow-lg' : ''
                       }`}
                     >
                       <span className="text-base sm:text-lg">{st.text}</span>
                       {isSelected && (
                         <div
-                          onMouseDown={(e) => handleResizeMouseDown(e, 'stamp', st.id)}
-                          className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full cursor-nwse-resize"
+                          onPointerDown={(e) => handleResizePointerDown(e, 'stamp', st.id)}
+                          className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full cursor-nwse-resize touch-none"
                         />
                       )}
                     </div>
