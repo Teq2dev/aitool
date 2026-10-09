@@ -8,8 +8,41 @@ import { notFound } from 'next/navigation';
 
 import { getLocalizedDescription } from '@/lib/languages';
 import { getTranslation } from '@/lib/translations';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 export const revalidate = 86400;
+
+function sanitizeTool(tool) {
+  if (!tool) return tool;
+  const sanitized = {
+    ...tool,
+    description: tool.description ? sanitizeHtml(tool.description) : tool.description,
+    fullDescription: tool.fullDescription ? sanitizeHtml(tool.fullDescription) : tool.fullDescription,
+    shortDescription: tool.shortDescription ? sanitizeHtml(tool.shortDescription) : tool.shortDescription,
+    pricingDetails: tool.pricingDetails ? sanitizeHtml(tool.pricingDetails) : tool.pricingDetails,
+    faqs: Array.isArray(tool.faqs)
+      ? tool.faqs.map(f => ({ ...f, answer: f.answer ? sanitizeHtml(f.answer) : f.answer }))
+      : tool.faqs,
+  };
+
+  if (tool.translations && typeof tool.translations === 'object') {
+    sanitized.translations = {};
+    for (const [langKey, trans] of Object.entries(tool.translations)) {
+      if (!trans) continue;
+      sanitized.translations[langKey] = {
+        ...trans,
+        description: trans.description ? sanitizeHtml(trans.description) : trans.description,
+        fullDescription: trans.fullDescription ? sanitizeHtml(trans.fullDescription) : trans.fullDescription,
+        shortDescription: trans.shortDescription ? sanitizeHtml(trans.shortDescription) : trans.shortDescription,
+        pricingDetails: trans.pricingDetails ? sanitizeHtml(trans.pricingDetails) : trans.pricingDetails,
+        faqs: Array.isArray(trans.faqs)
+          ? trans.faqs.map(f => ({ ...f, answer: f.answer ? sanitizeHtml(f.answer) : f.answer }))
+          : trans.faqs,
+      };
+    }
+  }
+  return sanitized;
+}
 
 export async function generateMetadata({ params, searchParams }) {
   const resolvedParams = await params;
@@ -87,12 +120,14 @@ export async function generateMetadata({ params, searchParams }) {
 export default async function ToolPage({ params, searchParams }) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
-  const tool = await getToolBySlug(resolvedParams?.slug);
+  const rawTool = await getToolBySlug(resolvedParams?.slug);
   const lang = resolvedSearchParams?.lang || 'en';
 
-  if (!tool) {
+  if (!rawTool) {
     return notFound();
   }
+
+  const tool = sanitizeTool(rawTool);
 
   // Fetch all related data concurrently for faster loading and better SEO
   // unstable_cache is keyed per slug to avoid cross-tool cache pollution

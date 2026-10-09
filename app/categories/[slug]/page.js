@@ -5,6 +5,37 @@ import { serializeData } from '@/lib/utils';
 import CategoryDetailClient from './CategoryDetailClient';
 import { notFound } from 'next/navigation';
 import { getTranslation } from '@/lib/translations';
+import { sanitizeHtml } from '@/lib/sanitize';
+
+function sanitizeCategory(cat) {
+  if (!cat) return cat;
+  const sanitized = {
+    ...cat,
+    description: cat.description ? sanitizeHtml(cat.description) : cat.description,
+    longDescription: cat.longDescription ? sanitizeHtml(cat.longDescription) : cat.longDescription,
+    buyingGuide: cat.buyingGuide ? sanitizeHtml(cat.buyingGuide) : cat.buyingGuide,
+    faqs: Array.isArray(cat.faqs)
+      ? cat.faqs.map(f => ({ ...f, answer: f.answer ? sanitizeHtml(f.answer) : f.answer }))
+      : cat.faqs,
+  };
+
+  if (cat.translations && typeof cat.translations === 'object') {
+    sanitized.translations = {};
+    for (const [langKey, trans] of Object.entries(cat.translations)) {
+      if (!trans) continue;
+      sanitized.translations[langKey] = {
+        ...trans,
+        description: trans.description ? sanitizeHtml(trans.description) : trans.description,
+        longDescription: trans.longDescription ? sanitizeHtml(trans.longDescription) : trans.longDescription,
+        buyingGuide: trans.buyingGuide ? sanitizeHtml(trans.buyingGuide) : trans.buyingGuide,
+        faqs: Array.isArray(trans.faqs)
+          ? trans.faqs.map(f => ({ ...f, answer: f.answer ? sanitizeHtml(f.answer) : f.answer }))
+          : trans.faqs,
+      };
+    }
+  }
+  return sanitized;
+}
 
 // Strip HTML tags and decode basic entities for safe use in meta tags
 function stripHtml(html) {
@@ -93,11 +124,13 @@ export default async function CategoryPage({ params, searchParams }) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
   const allCategories = await getCategories();
-  const category = allCategories.find(c => c.slug === resolvedParams?.slug);
+  const rawCategory = allCategories.find(c => c.slug === resolvedParams?.slug);
 
-  if (!category) {
+  if (!rawCategory) {
     notFound();
   }
+
+  const category = sanitizeCategory(rawCategory);
 
   // Fetch tools for this category (Popular, Free, All)
   // Since getTools has a limit of 12 by default, we can fetch all or specific ones

@@ -4,9 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Star, ExternalLink, ArrowLeft, Share2, Edit2, Trash2, X, Check, ThumbsUp, ThumbsDown, HelpCircle, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import DOMPurify from 'dompurify';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { useLanguage } from '@/context/LanguageContext';
@@ -15,18 +13,12 @@ import {
   getLocalizedBadge,
   getLocalizedProsList,
   getLocalizedConsList,
-  getLocalizedDescription
+  getLocalizedDescription,
+  normalizeFeatures
 } from '@/lib/languages';
+import { Star, ExternalLink, ArrowLeft, Share2, Edit2, Trash2, X, Check, ThumbsUp, ThumbsDown, HelpCircle, ChevronRight } from 'lucide-react';
 import ToolSemanticClusters from '@/components/seo/ToolSemanticClusters';
 import Breadcrumbs from '@/components/seo/Breadcrumbs';
-
-const sanitizeHtml = (html) => {
-  if (!html) return '';
-  if (typeof window === 'undefined') {
-    return html;
-  }
-  return DOMPurify.sanitize(html);
-};
 
 export default function ToolDetailClient({ initialTool, initialStrongSimilar = [], initialRelatedTools = [], initialLang = 'en', relatedBlogs = [], relatedCats = [], breadcrumbData }) {
   const { data: session } = useSession();
@@ -52,10 +44,11 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
     displayFaqs = translationOverride.faqs;
   }
 
-  let displayFeatures = tool.features;
+  let rawFeatures = tool.features;
   if (effectiveLang !== 'en' && translationOverride.features && translationOverride.features.length > 0) {
-    displayFeatures = translationOverride.features;
+    rawFeatures = translationOverride.features;
   }
+  const displayFeatures = normalizeFeatures(rawFeatures);
   let prosList = (tool.pros && Array.isArray(tool.pros) && tool.pros.length > 0)
     ? tool.pros
     : getLocalizedProsList(primaryCategory, tool.rating, effectiveLang);
@@ -191,7 +184,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                 <CardContent>
                   <div
                     className="prose prose-blue max-w-none text-gray-700 text-lg leading-relaxed whitespace-pre-wrap"
-                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(displayFullDescription) }}
+                    dangerouslySetInnerHTML={{ __html: displayFullDescription }}
                   />
         <ToolSemanticClusters
           relatedCats={relatedCats}
@@ -212,12 +205,24 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {displayFeatures.map((feature, index) => (
-                        <div key={index} className="flex items-center p-4 rounded-xl bg-blue-50/50 border border-blue-100/50">
-                          <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center mr-4 flex-shrink-0 shadow-sm">
+                      {displayFeatures.map((item, index) => (
+                        <div
+                          key={index}
+                          className={`flex ${item.description ? 'items-start' : 'items-center'} p-4 rounded-xl bg-blue-50/50 border border-blue-100/50`}
+                        >
+                          <div
+                            className={`w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center mr-4 rtl:mr-0 rtl:ml-4 flex-shrink-0 shadow-sm ${
+                              item.description ? 'mt-0.5' : ''
+                            }`}
+                          >
                             <span className="text-sm font-bold">✓</span>
                           </div>
-                          <span className="text-gray-800 font-medium">{feature}</span>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-gray-800 font-medium block">{item.title}</span>
+                            {item.description && (
+                              <p className="text-gray-600 text-sm mt-1 leading-relaxed">{item.description}</p>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -263,7 +268,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                       <h3 className="text-sm font-bold text-blue-900 mb-2 uppercase tracking-wider">{t('detailedPricingInfo')}</h3>
                       <div
                         className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap"
-                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(displayPricingDetails) }}
+                        dangerouslySetInnerHTML={{ __html: displayPricingDetails }}
                       />
                     </div>
                   )}
@@ -330,7 +335,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                           <h3 className="font-bold text-gray-900 mb-2 text-base">{faq.question}</h3>
                           <div
                             className="text-gray-700 text-sm leading-relaxed prose prose-sm max-w-none"
-                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(faq.answer) }}
+                            dangerouslySetInnerHTML={{ __html: faq.answer }}
                           />
                         </div>
                       ))

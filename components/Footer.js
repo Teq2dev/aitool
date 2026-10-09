@@ -43,6 +43,8 @@ export default function Footer({ topCategories }) {
               <li><Link href={getLangUrl('/tools?sort=trending')} className="hover:text-blue-600">Trending Tools</Link></li>
               <li><Link href={getLangUrl('/pdf-tools')} className="hover:text-blue-600">PDF Tools</Link></li>
               <li><Link href={getLangUrl('/image-tools')} className="hover:text-blue-600">Image Tools</Link></li>
+              <li><Link href={getLangUrl('/calculators')} className="hover:text-blue-600 font-medium text-blue-600">Free Calculators (24)</Link></li>
+              <li><Link href={getLangUrl('/events')} className="hover:text-blue-600 font-medium text-blue-600">AI Events & Conferences</Link></li>
             </ul>
           </div>
           

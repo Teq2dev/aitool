@@ -1,6 +1,7 @@
 import { getBlogBySlug } from '@/lib/getBlogs';
 import BlogDetailClient from './BlogDetailClient';
 import { notFound } from 'next/navigation';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
@@ -57,5 +58,11 @@ export default async function BlogPage({ params }) {
     notFound();
   }
 
-  return <BlogDetailClient initialBlog={blog} />;
+  const sanitizedBlog = {
+    ...blog,
+    content: blog.content ? sanitizeHtml(blog.content) : blog.content,
+  };
+
+  return <BlogDetailClient initialBlog={sanitizedBlog} />;
 }
+

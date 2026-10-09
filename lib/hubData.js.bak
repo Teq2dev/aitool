@@ -1,0 +1,862 @@
+export const PDF_HUB_DATA = {
+  "en": {
+    "seoTitle": "Free Online PDF Tools: Edit, Convert, Merge & Secure PDFs",
+    "seoDescription": "Access 17 free online PDF tools for professionals & students. Merge, split, convert, compress, and secure your PDFs with privacy-first, client-side processing.",
+    "h1": "Free PDF Tools",
+    "subtitle": "Secure, fast, and 100% free online PDF processing.",
+    "whyChooseTitle": "Why Choose Our PDF Tools?",
+    "whyChooseItems": [
+      {
+        "title": "100% Private (Browser Processing)",
+        "description": "Most tools execute entirely in your local browser using modern web technologies. Your files never touch our servers."
+      },
+      {
+        "title": "No Sign Up Required",
+        "description": "Skip the registration walls. Access all 17 premium tools immediately with no account creation necessary."
+      },
+      {
+        "title": "Lightning Fast Engine",
+        "description": "Powered by WebAssembly and optimized JavaScript, we deliver desktop-grade performance instantly on the web."
+      }
+    ],
+    "categories": {
+      "organize": {
+        "label": "Organize PDFs",
+        "description": "Merge, split, rotate, unlock, and manage PDF pages"
+      },
+      "convert": {
+        "label": "Convert PDFs",
+        "description": "Convert between PDF and Word, PowerPoint, Excel, or images"
+      },
+      "edit": {
+        "label": "Edit & Annotate",
+        "description": "Add text, draw, insert shapes, and annotate PDF documents"
+      },
+      "optimize": {
+        "label": "Optimize",
+        "description": "Reduce PDF file size in your browser"
+      }
+    }
+  },
+  "es": {
+    "seoTitle": "Herramientas PDF Gratis Online: Editar, Convertir, Unir y Proteger PDFs",
+    "seoDescription": "Accede a 17 herramientas PDF online gratuitas para profesionales y estudiantes. Une, divide, convierte, comprime y protege tus PDFs con procesamiento local que prioriza tu privacidad.",
+    "h1": "Herramientas PDF Gratis",
+    "subtitle": "Procesamiento de PDF online seguro, rápido y 100% gratis.",
+    "whyChooseTitle": "¿Por Qué Elegir Nuestras Herramientas PDF?",
+    "whyChooseItems": [
+      {
+        "title": "100% Privado (Procesamiento en el Navegador)",
+        "description": "La mayoría de las herramientas se ejecutan completamente en tu navegador local usando tecnologías web modernas. Tus archivos nunca llegan a nuestros servidores."
+      },
+      {
+        "title": "Sin Necesidad de Registro",
+        "description": "Evita las barreras de registro. Accede a las 17 herramientas premium de inmediato sin necesidad de crear una cuenta."
+      },
+      {
+        "title": "Motor Ultrarrápido",
+        "description": "Potenciado por WebAssembly y JavaScript optimizado, ofrecemos un rendimiento de nivel de escritorio al instante en la web."
+      }
+    ],
+    "categories": {
+      "organize": {
+        "label": "Organizar PDFs",
+        "description": "Unir, dividir, rotar, desbloquear y gestionar páginas de PDF"
+      },
+      "convert": {
+        "label": "Convertir PDFs",
+        "description": "Convertir entre PDF y Word, PowerPoint, Excel o imágenes"
+      },
+      "edit": {
+        "label": "Editar y Anotar",
+        "description": "Añadir texto, dibujar, insertar formas y anotar documentos PDF"
+      },
+      "optimize": {
+        "label": "Optimizar",
+        "description": "Reducir el tamaño de archivos PDF en tu navegador"
+      }
+    }
+  },
+  "fr": {
+    "seoTitle": "Outils PDF Gratuits en Ligne : Modifier, Convertir, Fusionner et Sécuriser des PDF",
+    "seoDescription": "Accédez à 17 outils PDF en ligne gratuits pour professionnels et étudiants. Fusionnez, divisez, convertissez, compressez et sécurisez vos PDF avec un traitement côté client axé sur la confidentialité.",
+    "h1": "Outils PDF Gratuits",
+    "subtitle": "Traitement de PDF en ligne sécurisé, rapide et 100% gratuit.",
+    "whyChooseTitle": "Pourquoi choisir nos outils PDF ?",
+    "whyChooseItems": [
+      {
+        "title": "100% Confidentiel (Traitement dans le navigateur)",
+        "description": "La plupart des outils s'exécutent entièrement dans votre navigateur local grâce aux technologies web modernes. Vos fichiers ne touchent jamais nos serveurs."
+      },
+      {
+        "title": "Aucune Inscription Requise",
+        "description": "Évitez les inscriptions obligatoires. Accédez immédiatement à tous les 17 outils premium sans avoir à créer de compte."
+      },
+      {
+        "title": "Moteur Ultra-Rapide",
+        "description": "Propulsé par WebAssembly et du JavaScript optimisé, nous offrons des performances de niveau bureau, instantanément sur le web."
+      }
+    ],
+    "categories": {
+      "organize": {
+        "label": "Organiser les PDF",
+        "description": "Fusionner, diviser, pivoter, déverrouiller et gérer les pages PDF."
+      },
+      "convert": {
+        "label": "Convertir les PDF",
+        "description": "Convertir entre PDF et Word, PowerPoint, Excel, ou des images."
+      },
+      "edit": {
+        "label": "Modifier & Annoter",
+        "description": "Ajouter du texte, dessiner, insérer des formes et annoter des documents PDF."
+      },
+      "optimize": {
+        "label": "Optimiser",
+        "description": "Réduire la taille des fichiers PDF dans votre navigateur."
+      }
+    }
+  },
+  "de": {
+    "seoTitle": "Kostenlose Online-PDF-Tools: PDFs bearbeiten, konvertieren, zusammenfügen & sichern",
+    "seoDescription": "Greifen Sie auf 17 kostenlose Online-PDF-Tools für Berufstätige & Studenten zu. Fügen Sie PDFs zusammen, teilen, konvertieren, komprimieren und sichern Sie sie mit datenschutzfreundlicher, clientseitiger Verarbeitung.",
+    "h1": "Kostenlose PDF-Tools",
+    "subtitle": "Sichere, schnelle und 100% kostenlose Online-PDF-Verarbeitung.",
+    "whyChooseTitle": "Warum unsere PDF-Tools wählen?",
+    "whyChooseItems": [
+      {
+        "title": "100% Privat (Verarbeitung im Browser)",
+        "description": "Die meisten Tools werden vollständig in Ihrem lokalen Browser mit modernen Web-Technologien ausgeführt. Ihre Dateien gelangen niemals auf unsere Server."
+      },
+      {
+        "title": "Keine Anmeldung erforderlich",
+        "description": "Überspringen Sie die Anmeldepflicht. Greifen Sie sofort auf alle 17 Premium-Tools zu, ohne ein Konto erstellen zu müssen."
+      },
+      {
+        "title": "Blitzschnelle Engine",
+        "description": "Angetrieben durch WebAssembly und optimiertes JavaScript, liefern wir Leistung auf Desktop-Niveau sofort im Web."
+      }
+    ],
+    "categories": {
+      "organize": {
+        "label": "PDFs organisieren",
+        "description": "PDF-Seiten zusammenfügen, teilen, drehen, entsperren und verwalten"
+      },
+      "convert": {
+        "label": "PDFs konvertieren",
+        "description": "Zwischen PDF und Word, PowerPoint, Excel oder Bildern konvertieren"
+      },
+      "edit": {
+        "label": "Bearbeiten & Kommentieren",
+        "description": "Text hinzufügen, zeichnen, Formen einfügen und PDF-Dokumente kommentieren"
+      },
+      "optimize": {
+        "label": "Optimieren",
+        "description": "PDF-Dateigröße in Ihrem Browser reduzieren"
+      }
+    }
+  },
+  "pt": {
+    "seoTitle": "Ferramentas de PDF Online Grátis: Edite, Converta, Junte e Proteja PDFs",
+    "seoDescription": "Acesse 17 ferramentas de PDF online gratuitas para profissionais e estudantes. Junte, divida, converta, comprima e proteja seus PDFs com processamento no lado do cliente que prioriza a privacidade.",
+    "h1": "Ferramentas de PDF Grátis",
+    "subtitle": "Processamento de PDF online seguro, rápido e 100% gratuito.",
+    "whyChooseTitle": "Por que escolher nossas ferramentas de PDF?",
+    "whyChooseItems": [
+      {
+        "title": "100% Privado (Processamento no Navegador)",
+        "description": "A maioria das ferramentas é executada inteiramente no seu navegador local usando tecnologias web modernas. Seus arquivos nunca tocam nossos servidores."
+      },
+      {
+        "title": "Sem Necessidade de Cadastro",
+        "description": "Pule as barreiras de registro. Acesse todas as 17 ferramentas premium imediatamente, sem necessidade de criar uma conta."
+      },
+      {
+        "title": "Mecanismo Ultrarrápido",
+        "description": "Potencializado por WebAssembly e JavaScript otimizado, oferecemos desempenho de nível de desktop instantaneamente na web."
+      }
+    ],
+    "categories": {
+      "organize": {
+        "label": "Organizar PDFs",
+        "description": "Juntar, dividir, girar, desbloquear e gerenciar páginas de PDF"
+      },
+      "convert": {
+        "label": "Converter PDFs",
+        "description": "Converter entre PDF e Word, PowerPoint, Excel ou imagens"
+      },
+      "edit": {
+        "label": "Editar e Anotar",
+        "description": "Adicionar texto, desenhar, inserir formas e anotar documentos PDF"
+      },
+      "optimize": {
+        "label": "Otimizar",
+        "description": "Reduzir o tamanho do arquivo PDF no seu navegador"
+      }
+    }
+  },
+  "ar": {
+    "seoTitle": "أدوات PDF مجانية: تعديل ودمج وتحويل وتأمين ملفات PDF أونلاين",
+    "seoDescription": "استخدم 17 أداة PDF مجانية عبر الإنترنت للمحترفين والطلاب. يمكنك دمج وتقسيم وتحويل وضغط وتأمين ملفات PDF الخاصة بك، مع معالجة آمنة تحافظ على الخصوصية وتتم بالكامل في متصفحك.",
+    "h1": "أدوات PDF مجانية",
+    "subtitle": "معالجة ملفات PDF عبر الإنترنت بشكل آمن وسريع ومجاني 100%.",
+    "whyChooseTitle": "لماذا تختار أدوات PDF الخاصة بنا؟",
+    "whyChooseItems": [
+      {
+        "title": "خصوصية 100% (معالجة في المتصفح)",
+        "description": "تعمل معظم الأدوات بالكامل في متصفحك المحلي باستخدام تقنيات الويب الحديثة. ملفاتك لا تصل إلى خوادمنا أبدًا."
+      },
+      {
+        "title": "لا يتطلب التسجيل",
+        "description": "تجاوز خطوات التسجيل. استخدم جميع الأدوات الـ 17 المميزة فورًا دون الحاجة إلى إنشاء حساب."
+      },
+      {
+        "title": "محرك فائق السرعة",
+        "description": "مدعومة بتقنية WebAssembly و JavaScript المحسّنة، نقدم أداءً يضاهي برامج سطح المكتب مباشرة على الويب."
+      }
+    ],
+    "categories": {
+      "organize": {
+        "label": "تنظيم ملفات PDF",
+        "description": "دمج وتقسيم وتدوير وفتح وإدارة صفحات PDF"
+      },
+      "convert": {
+        "label": "تحويل ملفات PDF",
+        "description": "التحويل بين PDF و Word و PowerPoint و Excel أو الصور"
+      },
+      "edit": {
+        "label": "تعديل وإضافة تعليقات",
+        "description": "إضافة نصوص ورسم وإدراج أشكال وإضافة تعليقات توضيحية على مستندات PDF"
+      },
+      "optimize": {
+        "label": "تحسين وضغط",
+        "description": "تقليل حجم ملف PDF في متصفحك"
+      }
+    }
+  },
+  "ru": {
+    "seoTitle": "Бесплатные онлайн-инструменты для PDF: редактирование, конвертация, объединение и защита PDF",
+    "seoDescription": "17 бесплатных онлайн-инструментов для PDF для профессионалов и студентов. Объединяйте, разделяйте, конвертируйте, сжимайте и защищайте ваши PDF-файлы с помощью обработки на стороне клиента, обеспечивающей полную конфиденциальность.",
+    "h1": "Бесплатные PDF-инструменты",
+    "subtitle": "Безопасная, быстрая и 100% бесплатная онлайн-обработка PDF.",
+    "whyChooseTitle": "Почему стоит выбрать наши PDF-инструменты?",
+    "whyChooseItems": [
+      {
+        "title": "100% Конфиденциальность (обработка в браузере)",
+        "description": "Большинство инструментов выполняют все операции прямо в вашем браузере, используя современные веб-технологии. Ваши файлы никогда не отправляются на наши серверы."
+      },
+      {
+        "title": "Без регистрации",
+        "description": "Не требуется регистрация. Получите мгновенный доступ ко всем 17 премиум-инструментам без необходимости создавать аккаунт."
+      },
+      {
+        "title": "Молниеносный движок",
+        "description": "Благодаря WebAssembly и оптимизированному JavaScript, мы обеспечиваем производительность на уровне десктопных приложений, доступную мгновенно в вебе."
+      }
+    ],
+    "categories": {
+      "organize": {
+        "label": "Организация PDF",
+        "description": "Объединение, разделение, поворот, разблокировка и управление страницами PDF"
+      },
+      "convert": {
+        "label": "Конвертация PDF",
+        "description": "Конвертация между PDF и Word, PowerPoint, Excel или изображениями"
+      },
+      "edit": {
+        "label": "Редактирование и аннотации",
+        "description": "Добавление текста, рисование, вставка фигур и аннотирование PDF-документов"
+      },
+      "optimize": {
+        "label": "Оптимизация",
+        "description": "Уменьшение размера PDF-файлов в вашем браузере"
+      }
+    }
+  },
+  "ja": {
+    "seoTitle": "PDF 編集・変換・結合・保護 | 無料オンラインツール",
+    "seoDescription": "社会人や学生向けの17種類の無料オンラインPDFツール。プライバシーを重視したクライアントサイド処理で、PDFの結合、分割、変換、圧縮、保護を安全に行えます。",
+    "h1": "無料PDFツール",
+    "subtitle": "安全、高速、完全無料のオンラインPDF処理。",
+    "whyChooseTitle": "選ばれる理由",
+    "whyChooseItems": [
+      {
+        "title": "100%プライベート（ブラウザ処理）",
+        "description": "ほとんどのツールは最新のウェブ技術を使用し、お使いのブラウザ内で完全に実行されます。あなたのファイルがサーバーに送信されることはありません。"
+      },
+      {
+        "title": "登録不要",
+        "description": "面倒な会員登録は不要です。アカウントを作成することなく、17種類の高機能なツールをすぐに利用できます。"
+      },
+      {
+        "title": "超高速エンジン",
+        "description": "WebAssemblyと最適化されたJavaScriptにより、デスクトップアプリ級のパフォーマンスをウェブ上で瞬時に実現します。"
+      }
+    ],
+    "categories": {
+      "organize": {
+        "label": "PDFを整理",
+        "description": "PDFの結合、分割、回転、ロック解除、ページの管理"
+      },
+      "convert": {
+        "label": "PDFを変換",
+        "description": "PDFとWord、PowerPoint、Excel、画像ファイル間の相互変換"
+      },
+      "edit": {
+        "label": "編集と注釈",
+        "description": "PDF文書にテキストの追加、描画、図形の挿入、注釈の追加"
+      },
+      "optimize": {
+        "label": "最適化",
+        "description": "ブラウザでPDFのファイルサイズを圧縮"
+      }
+    }
+  },
+  "zh": {
+    "seoTitle": "免费在线PDF工具：编辑、转换、合并和加密PDF",
+    "seoDescription": "为专业人士和学生提供17款免费在线PDF工具。通过优先保护隐私的客户端处理，合并、拆分、转换、压缩和保护您的PDF文件。",
+    "h1": "免费PDF工具",
+    "subtitle": "安全、快速、100%免费的在线PDF处理。",
+    "whyChooseTitle": "为什么选择我们的PDF工具？",
+    "whyChooseItems": [
+      {
+        "title": "100%隐私保护（浏览器端处理）",
+        "description": "大多数工具使用现代网络技术，完全在您的本地浏览器中执行。您的文件绝不会上传到我们的服务器。"
+      },
+      {
+        "title": "无需注册",
+        "description": "跳过注册步骤。无需创建账户，立即使用所有17款高级工具。"
+      },
+      {
+        "title": "闪电般的处理速度",
+        "description": "由WebAssembly和优化的JavaScript驱动，我们在网页上即时提供桌面级的性能。"
+      }
+    ],
+    "categories": {
+      "organize": {
+        "label": "整理PDF",
+        "description": "合并、拆分、旋转、解锁和管理PDF页面"
+      },
+      "convert": {
+        "label": "转换PDF",
+        "description": "在PDF与Word、PowerPoint、Excel或图片之间进行转换"
+      },
+      "edit": {
+        "label": "编辑与注释",
+        "description": "添加文本、绘制、插入形状以及注释PDF文档"
+      },
+      "optimize": {
+        "label": "优化PDF",
+        "description": "在浏览器中减小PDF文件大小"
+      }
+    }
+  },
+  "it": {
+    "seoTitle": "Strumenti PDF Online Gratuiti: Modifica, Converti, Unisci e Proteggi PDF",
+    "seoDescription": "Accedi a 17 strumenti PDF online gratuiti per professionisti e studenti. Unisci, dividi, converti, comprimi e proteggi i tuoi PDF con un'elaborazione sicura lato client che rispetta la tua privacy.",
+    "h1": "Strumenti PDF Gratuiti",
+    "subtitle": "Elaborazione PDF online sicura, veloce e 100% gratuita.",
+    "whyChooseTitle": "Perché Scegliere i Nostri Strumenti PDF?",
+    "whyChooseItems": [
+      {
+        "title": "100% Privato (Elaborazione nel Browser)",
+        "description": "La maggior parte degli strumenti viene eseguita interamente nel tuo browser locale utilizzando moderne tecnologie web. I tuoi file non raggiungono mai i nostri server."
+      },
+      {
+        "title": "Nessuna Registrazione Richiesta",
+        "description": "Salta la richiesta di registrazione. Accedi subito a tutti i 17 strumenti premium senza dover creare un account."
+      },
+      {
+        "title": "Motore Velocissimo",
+        "description": "Grazie a WebAssembly e JavaScript ottimizzato, offriamo prestazioni paragonabili a quelle di un software desktop, istantaneamente sul web."
+      }
+    ],
+    "categories": {
+      "organize": {
+        "label": "Organizza PDF",
+        "description": "Unisci, dividi, ruota, sblocca e gestisci le pagine dei PDF"
+      },
+      "convert": {
+        "label": "Converti PDF",
+        "description": "Converti da e verso PDF, Word, PowerPoint, Excel o immagini"
+      },
+      "edit": {
+        "label": "Modifica e Annota",
+        "description": "Aggiungi testo, disegna, inserisci forme e annota documenti PDF"
+      },
+      "optimize": {
+        "label": "Ottimizza",
+        "description": "Riduci la dimensione dei file PDF nel tuo browser"
+      }
+    }
+  },
+  "nl": {
+    "seoTitle": "Gratis Online PDF Tools: PDF's Bewerken, Converteren, Samenvoegen & Beveiligen",
+    "seoDescription": "Krijg toegang tot 17 gratis online PDF-tools voor professionals en studenten. Voeg PDF's samen, splits, converteer, comprimeer en beveilig ze met privacygerichte verwerking in je browser.",
+    "h1": "Gratis PDF Tools",
+    "subtitle": "Veilige, snelle en 100% gratis online PDF-verwerking.",
+    "whyChooseTitle": "Waarom kiezen voor onze PDF Tools?",
+    "whyChooseItems": [
+      {
+        "title": "100% Privé (Verwerking in je browser)",
+        "description": "De meeste tools werken volledig in je lokale browser met moderne webtechnologieën. Je bestanden komen nooit op onze servers terecht."
+      },
+      {
+        "title": "Geen registratie vereist",
+        "description": "Sla de registratiemuren over. Krijg direct toegang tot alle 17 premium tools zonder een account aan te maken."
+      },
+      {
+        "title": "Razendsnelle Engine",
+        "description": "Aangedreven door WebAssembly en geoptimaliseerd JavaScript, leveren we prestaties van desktopkwaliteit, direct in je browser."
+      }
+    ],
+    "categories": {
+      "organize": {
+        "label": "PDF's Organiseren",
+        "description": "PDF-pagina's samenvoegen, splitsen, roteren, ontgrendelen en beheren"
+      },
+      "convert": {
+        "label": "PDF's Converteren",
+        "description": "Converteren tussen PDF en Word, PowerPoint, Excel of afbeeldingen"
+      },
+      "edit": {
+        "label": "Bewerken & Annoteren",
+        "description": "Tekst toevoegen, tekenen, vormen invoegen en PDF-documenten annoteren"
+      },
+      "optimize": {
+        "label": "Optimaliseren",
+        "description": "PDF-bestandsgrootte verkleinen in je browser"
+      }
+    }
+  }
+};
+export const IMG_HUB_DATA = {
+  "en": {
+    "seoTitle": "Free Online Image Tools: Optimize, Convert, Resize, Crop Photos",
+    "seoDescription": "Access 11 free online image tools for optimization, resizing, cropping, and format conversion. Process JPG, PNG, WebP files securely in your browser with zero uploads. Fast & private.",
+    "h1": "Free Image Tools",
+    "subtitle": "High-performance, privacy-first photo editing & format conversion in your browser.",
+    "whyChooseTitle": "Why Choose Our Image Suite?",
+    "whyChooseItems": [
+      {
+        "title": "Zero Server Uploads",
+        "description": "All processing occurs securely in your browser. Your images never leave your device, ensuring total privacy."
+      },
+      {
+        "title": "Hardware Accelerated",
+        "description": "Harnessing HTML5 Canvas and Web Workers to process massive images instantly without freezing your browser."
+      },
+      {
+        "title": "No Watermarks",
+        "description": "Export full-resolution, uncompressed outputs completely free. We never watermark or throttle your downloads."
+      }
+    ],
+    "categories": {
+      "optimization": {
+        "label": "Compression & Web Performance",
+        "description": "Shrink image payloads by up to 80% without visible loss in browser memory."
+      },
+      "dimensions": {
+        "label": "Dimensions & Layout",
+        "description": "Resize, crop, flip, and rotate images visually in real-time."
+      },
+      "format": {
+        "label": "Format Conversion",
+        "description": "Swap between next-gen WebP, universal JPG, and transparent PNG formats securely."
+      },
+      "ocr": {
+        "label": "Data Extraction",
+        "description": "Convert image tables and text directly into Excel spreadsheets."
+      }
+    }
+  },
+  "es": {
+    "seoTitle": "Herramientas de Imagen Gratuitas Online: Optimiza, Convierte, Redimensiona y Recorta Fotos",
+    "seoDescription": "Accede a 11 herramientas de imagen gratuitas online para optimización, redimensionamiento, recorte y conversión de formato. Procesa archivos JPG, PNG, WebP de forma segura en tu navegador sin subir archivos. Rápido y privado.",
+    "h1": "Herramientas de Imagen Gratuitas",
+    "subtitle": "Edición de fotos y conversión de formato de alto rendimiento en tu navegador, priorizando tu privacidad.",
+    "whyChooseTitle": "¿Por qué elegir nuestra suite de herramientas para imágenes?",
+    "whyChooseItems": [
+      {
+        "title": "Sin Subidas al Servidor",
+        "description": "Todo el procesamiento ocurre de forma segura en tu navegador. Tus imágenes nunca salen de tu dispositivo, garantizando total privacidad."
+      },
+      {
+        "title": "Acelerado por Hardware",
+        "description": "Aprovechando HTML5 Canvas y Web Workers para procesar imágenes de gran tamaño al instante sin bloquear tu navegador."
+      },
+      {
+        "title": "Sin Marcas de Agua",
+        "description": "Exporta resultados en máxima resolución y sin comprimir, completamente gratis. Nunca añadimos marcas de agua ni limitamos tus descargas."
+      }
+    ],
+    "categories": {
+      "optimization": {
+        "label": "Compresión y Rendimiento Web",
+        "description": "Reduce el peso de las imágenes hasta un 80% sin pérdida de calidad visible, directamente en la memoria del navegador."
+      },
+      "dimensions": {
+        "label": "Dimensiones y Disposición",
+        "description": "Redimensiona, recorta, voltea y rota imágenes visualmente en tiempo real."
+      },
+      "format": {
+        "label": "Conversión de Formato",
+        "description": "Convierte de forma segura entre los formatos de nueva generación WebP, el universal JPG y el transparente PNG."
+      },
+      "ocr": {
+        "label": "Extracción de Datos",
+        "description": "Convierte tablas y texto de imágenes directamente en hojas de cálculo de Excel."
+      }
+    }
+  },
+  "fr": {
+    "seoTitle": "Outils d'Image Gratuits en Ligne : Optimiser, Convertir, Redimensionner, Recadrer des Photos",
+    "seoDescription": "Accédez à 11 outils d'image gratuits en ligne pour l'optimisation, le redimensionnement, le recadrage et la conversion de format. Traitez les fichiers JPG, PNG, WebP en toute sécurité dans votre navigateur, sans aucun téléversement. Rapide et confidentiel.",
+    "h1": "Outils d'Image Gratuits",
+    "subtitle": "Édition photo et conversion de format performantes et confidentielles, dans votre navigateur.",
+    "whyChooseTitle": "Pourquoi choisir notre suite d'outils d'image ?",
+    "whyChooseItems": [
+      {
+        "title": "Aucun envoi sur le serveur",
+        "description": "Tout le traitement s'effectue en toute sécurité dans votre navigateur. Vos images ne quittent jamais votre appareil, garantissant une confidentialité totale."
+      },
+      {
+        "title": "Accélération Matérielle",
+        "description": "Utilisation de HTML5 Canvas et des Web Workers pour traiter instantanément des images volumineuses sans bloquer votre navigateur."
+      },
+      {
+        "title": "Sans Filigrane",
+        "description": "Exportez des fichiers en pleine résolution, non compressés et entièrement gratuits. Nous n'ajoutons jamais de filigrane ni ne limitons vos téléchargements."
+      }
+    ],
+    "categories": {
+      "optimization": {
+        "label": "Compression et Performance Web",
+        "description": "Réduisez le poids des images jusqu'à 80% sans perte de qualité visible, le tout traité dans votre navigateur."
+      },
+      "dimensions": {
+        "label": "Dimensions et Mise en Page",
+        "description": "Redimensionnez, recadrez, retournez et faites pivoter les images visuellement en temps réel."
+      },
+      "format": {
+        "label": "Conversion de Format",
+        "description": "Convertissez en toute sécurité entre les formats nouvelle génération WebP, universel JPG et transparent PNG."
+      },
+      "ocr": {
+        "label": "Extraction de Données",
+        "description": "Convertissez les tableaux et le texte des images directement en feuilles de calcul Excel."
+      }
+    }
+  },
+  "de": {
+    "seoTitle": "Kostenlose Online-Tools für Bilder: Fotos optimieren, umwandeln, Größe ändern & zuschneiden",
+    "seoDescription": "Nutzen Sie 11 kostenlose Online-Bildtools zur Optimierung, Größenänderung, zum Zuschneiden und zur Formatkonvertierung. Verarbeiten Sie JPG-, PNG-, WebP-Dateien sicher in Ihrem Browser, ganz ohne Uploads. Schnell & privat.",
+    "h1": "Kostenlose Bild-Tools",
+    "subtitle": "Leistungsstarke, datenschutzfreundliche Bildbearbeitung & Formatkonvertierung direkt in Ihrem Browser.",
+    "whyChooseTitle": "Warum unsere Bild-Tools wählen?",
+    "whyChooseItems": [
+      {
+        "title": "Keine Server-Uploads",
+        "description": "Die gesamte Verarbeitung findet sicher in Ihrem Browser statt. Ihre Bilder verlassen niemals Ihr Gerät, was absolute Privatsphäre gewährleistet."
+      },
+      {
+        "title": "Hardwarebeschleunigt",
+        "description": "Nutzt HTML5 Canvas und Web Workers, um riesige Bilder sofort zu verarbeiten, ohne Ihren Browser einzufrieren."
+      },
+      {
+        "title": "Keine Wasserzeichen",
+        "description": "Exportieren Sie Ergebnisse in voller Auflösung und unkomprimiert, völlig kostenlos. Wir fügen niemals Wasserzeichen hinzu oder drosseln Ihre Downloads."
+      }
+    ],
+    "categories": {
+      "optimization": {
+        "label": "Komprimierung & Web-Performance",
+        "description": "Reduzieren Sie die Bilddateigröße um bis zu 80 % ohne sichtbaren Qualitätsverlust im Browserspeicher."
+      },
+      "dimensions": {
+        "label": "Abmessungen & Layout",
+        "description": "Größe ändern, zuschneiden, spiegeln und drehen Sie Bilder visuell in Echtzeit."
+      },
+      "format": {
+        "label": "Formatkonvertierung",
+        "description": "Wechseln Sie sicher zwischen dem modernen WebP-, dem universellen JPG- und dem transparenten PNG-Format."
+      },
+      "ocr": {
+        "label": "Datenextraktion",
+        "description": "Wandeln Sie Tabellen und Text aus Bildern direkt in Excel-Tabellen um."
+      }
+    }
+  },
+  "pt": {
+    "seoTitle": "Ferramentas de Imagem Online Grátis: Otimizar, Converter, Redimensionar e Cortar Fotos",
+    "seoDescription": "Acesse 11 ferramentas de imagem online grátis para otimização, redimensionamento, corte e conversão de formato. Processe arquivos JPG, PNG, WebP com segurança no seu navegador, sem precisar fazer upload. Rápido e privado.",
+    "h1": "Ferramentas de Imagem Grátis",
+    "subtitle": "Edição de fotos e conversão de formato de alto desempenho, com foco na privacidade, direto no seu navegador.",
+    "whyChooseTitle": "Por que escolher nossas ferramentas de imagem?",
+    "whyChooseItems": [
+      {
+        "title": "Sem Uploads para Servidores",
+        "description": "Todo o processamento ocorre com segurança no seu navegador. Suas imagens nunca saem do seu dispositivo, garantindo privacidade total."
+      },
+      {
+        "title": "Aceleração por Hardware",
+        "description": "Utilizando HTML5 Canvas e Web Workers para processar imagens enormes instantaneamente, sem travar seu navegador."
+      },
+      {
+        "title": "Sem Marcas d'Água",
+        "description": "Exporte resultados em resolução total e sem compressão, de forma totalmente gratuita. Nós nunca adicionamos marcas d'água ou limitamos seus downloads."
+      }
+    ],
+    "categories": {
+      "optimization": {
+        "label": "Compressão e Desempenho Web",
+        "description": "Reduza o tamanho dos arquivos de imagem em até 80% sem perda visível de qualidade, na memória do navegador."
+      },
+      "dimensions": {
+        "label": "Dimensões e Layout",
+        "description": "Redimensione, corte, vire e rotacione imagens visualmente em tempo real."
+      },
+      "format": {
+        "label": "Conversão de Formato",
+        "description": "Alterne com segurança entre os formatos de nova geração WebP, o universal JPG e o transparente PNG."
+      },
+      "ocr": {
+        "label": "Extração de Dados",
+        "description": "Converta tabelas e textos de imagens diretamente em planilhas do Excel."
+      }
+    }
+  },
+  "ar": {
+    "seoTitle": "أدوات صور مجانية: تحسين وتحويل وتغيير حجم وقص الصور أونلاين",
+    "seoDescription": "استخدم 11 أداة صور مجانية عبر الإنترنت لتحسين الصور وتغيير حجمها وقصها وتحويل صيغتها. عالج ملفات JPG, PNG, WebP بأمان في متصفحك بدون رفع أي ملفات. سريع ويحفظ خصوصيتك.",
+    "h1": "أدوات صور مجانية",
+    "subtitle": "تعديل صور وتحويل صيغ عالي الأداء في متصفحك مع الحفاظ الكامل على خصوصيتك.",
+    "whyChooseTitle": "لماذا تختار مجموعة أدواتنا للصور؟",
+    "whyChooseItems": [
+      {
+        "title": "بدون رفع للملفات",
+        "description": "تتم جميع المعالجة بأمان في متصفحك. صورك لا تغادر جهازك أبداً، مما يضمن خصوصية تامة."
+      },
+      {
+        "title": "معالجة معززة بالهاردوير",
+        "description": "نستغل تقنيات HTML5 Canvas و Web Workers لمعالجة الصور الضخمة فورياً دون تجميد متصفحك."
+      },
+      {
+        "title": "بدون علامات مائية",
+        "description": "صدّر صورك بدقة كاملة وبدون ضغط مجاناً تماماً. لا نضع علامات مائية أو نحد من سرعة تنزيلاتك أبداً."
+      }
+    ],
+    "categories": {
+      "optimization": {
+        "label": "ضغط الصور وأداء الويب",
+        "description": "تقليص حجم الصور بنسبة تصل إلى 80% دون فقدان ملحوظ للجودة في ذاكرة المتصفح."
+      },
+      "dimensions": {
+        "label": "الأبعاد والتخطيط",
+        "description": "تغيير الحجم والقص والقلب والتدوير للصور بشكل مرئي وفي الوقت الفعلي."
+      },
+      "format": {
+        "label": "تحويل الصيغ",
+        "description": "التحويل بأمان بين صيغ WebP الحديثة، و JPG العالمية، و PNG الشفافة."
+      },
+      "ocr": {
+        "label": "استخراج البيانات",
+        "description": "تحويل الجداول والنصوص في الصور مباشرة إلى جداول بيانات Excel."
+      }
+    }
+  },
+  "ru": {
+    "seoTitle": "Бесплатные онлайн-инструменты для изображений: оптимизация, конвертация, изменение размера и обрезка фото",
+    "seoDescription": "Воспользуйтесь 11 бесплатными онлайн-инструментами для оптимизации, изменения размера, обрезки и конвертации форматов. Обрабатывайте файлы JPG, PNG, WebP безопасно в браузере без загрузки на сервер. Быстро и конфиденциально.",
+    "h1": "Бесплатные инструменты для обработки изображений",
+    "subtitle": "Высокопроизводительное и конфиденциальное редактирование фото и конвертация форматов прямо в вашем браузере.",
+    "whyChooseTitle": "Почему стоит выбрать наши инструменты?",
+    "whyChooseItems": [
+      {
+        "title": "Без загрузки на сервер",
+        "description": "Вся обработка происходит безопасно в вашем браузере. Ваши изображения никогда не покидают ваше устройство, что обеспечивает полную конфиденциальность."
+      },
+      {
+        "title": "Аппаратное ускорение",
+        "description": "Использование HTML5 Canvas и Web Workers для мгновенной обработки больших изображений без зависания браузера."
+      },
+      {
+        "title": "Без водяных знаков",
+        "description": "Экспортируйте результаты в полном разрешении без сжатия и совершенно бесплатно. Мы никогда не добавляем водяные знаки и не ограничиваем скорость скачивания."
+      }
+    ],
+    "categories": {
+      "optimization": {
+        "label": "Сжатие и веб-производительность",
+        "description": "Уменьшайте размер изображений до 80% без видимой потери качества прямо в браузере."
+      },
+      "dimensions": {
+        "label": "Размеры и компоновка",
+        "description": "Изменяйте размер, обрезайте, отражайте и поворачивайте изображения в режиме реального времени."
+      },
+      "format": {
+        "label": "Конвертация форматов",
+        "description": "Безопасно конвертируйте изображения между современным форматом WebP, универсальным JPG и PNG с поддержкой прозрачности."
+      },
+      "ocr": {
+        "label": "Извлечение данных",
+        "description": "Преобразуйте таблицы и текст с изображений напрямую в таблицы Excel."
+      }
+    }
+  },
+  "ja": {
+    "seoTitle": "無料オンライン画像ツール：画像の圧縮・変換・リサイズ・切り抜き",
+    "seoDescription": "11種類の無料オンライン画像ツール。画像の最適化、リサイズ、切り抜き、フォーマット変換が可能です。JPG, PNG, WebPファイルをアップロードなしでブラウザ上で安全に処理。高速でプライバシーも安心です。",
+    "h1": "無料画像ツール",
+    "subtitle": "高性能でプライバシーを重視した、ブラウザ完結型の写真編集＆フォーマット変換ツール。",
+    "whyChooseTitle": "このツールが選ばれる理由",
+    "whyChooseItems": [
+      {
+        "title": "サーバーへのアップロード不要",
+        "description": "すべての処理はブラウザ内で安全に行われます。画像がデバイスから外部に送信されることはなく、完全なプライバシーが保証されます。"
+      },
+      {
+        "title": "ハードウェアアクセラレーション",
+        "description": "HTML5 CanvasとWeb Workerを活用し、ブラウザをフリーズさせることなく、巨大な画像も瞬時に処理します。"
+      },
+      {
+        "title": "ウォーターマーク（透かし）なし",
+        "description": "フル解像度、無圧縮の画像を完全に無料で書き出せます。ウォーターマークの追加やダウンロード速度の制限は一切ありません。"
+      }
+    ],
+    "categories": {
+      "optimization": {
+        "label": "圧縮とウェブパフォーマンス",
+        "description": "ブラウザのメモリ内で、見た目の品質を損なうことなく画像サイズを最大80%削減します。"
+      },
+      "dimensions": {
+        "label": "サイズとレイアウト",
+        "description": "画像のサイズ変更、切り抜き、反転、回転をリアルタイムで視覚的に行います。"
+      },
+      "format": {
+        "label": "フォーマット変換",
+        "description": "次世代フォーマットのWebP、汎用的なJPG、透過PNG形式間で安全に変換します。"
+      },
+      "ocr": {
+        "label": "データ抽出",
+        "description": "画像内の表やテキストを直接Excelスプレッドシートに変換します。"
+      }
+    }
+  },
+  "zh": {
+    "seoTitle": "免费在线图片工具：优化、转换、调整大小、裁剪照片",
+    "seoDescription": "使用11款免费在线图片工具，进行优化、调整大小、裁剪和格式转换。在您的浏览器中安全处理JPG、PNG、WebP文件，无需上传。快速且保护隐私。",
+    "h1": "免费图片工具",
+    "subtitle": "在浏览器中进行高性能、隐私优先的照片编辑和格式转换。",
+    "whyChooseTitle": "为什么选择我们的图片工具套件？",
+    "whyChooseItems": [
+      {
+        "title": "零服务器上传",
+        "description": "所有处理都在您的浏览器中安全进行。您的图片绝不会离开您的设备，确保完全的隐私安全。"
+      },
+      {
+        "title": "硬件加速",
+        "description": "利用HTML5 Canvas和Web Workers技术，即时处理海量图片，不会造成浏览器卡顿。"
+      },
+      {
+        "title": "无水印",
+        "description": "完全免费导出全分辨率、无压缩的图片。我们绝不添加水印或限制您的下载速度。"
+      }
+    ],
+    "categories": {
+      "optimization": {
+        "label": "压缩与网络性能",
+        "description": "在浏览器内存中处理，图片体积最多可缩小80%，且无肉眼可见的质量损失。"
+      },
+      "dimensions": {
+        "label": "尺寸与布局",
+        "description": "实时、可视化地调整图片大小、裁剪、翻转和旋转。"
+      },
+      "format": {
+        "label": "格式转换",
+        "description": "安全地在下一代WebP、通用JPG和透明PNG格式之间进行转换。"
+      },
+      "ocr": {
+        "label": "数据提取",
+        "description": "将图片中的表格和文本直接转换为Excel电子表格。"
+      }
+    }
+  },
+  "it": {
+    "seoTitle": "Strumenti Immagine Online Gratuiti: Ottimizza, Converti, Ridimensiona e Ritaglia Foto",
+    "seoDescription": "Accedi a 11 strumenti immagine online gratuiti per ottimizzare, ridimensionare, ritagliare e convertire formati. Elabora file JPG, PNG, WebP in sicurezza nel tuo browser, senza upload. Veloce e privato.",
+    "h1": "Strumenti Immagine Gratuiti",
+    "subtitle": "Editing foto e conversione di formato ad alte prestazioni, direttamente nel tuo browser e nel rispetto della tua privacy.",
+    "whyChooseTitle": "Perché Scegliere i Nostri Strumenti per Immagini?",
+    "whyChooseItems": [
+      {
+        "title": "Nessun Upload su Server",
+        "description": "Tutta l'elaborazione avviene in modo sicuro nel tuo browser. Le tue immagini non lasciano mai il tuo dispositivo, garantendo una privacy totale."
+      },
+      {
+        "title": "Accelerazione Hardware",
+        "description": "Sfruttiamo HTML5 Canvas e Web Workers per elaborare istantaneamente immagini di grandi dimensioni senza bloccare il browser."
+      },
+      {
+        "title": "Nessuna Filigrana",
+        "description": "Esporta gratuitamente file a piena risoluzione e non compressi. Non applichiamo mai filigrane né limitiamo i tuoi download."
+      }
+    ],
+    "categories": {
+      "optimization": {
+        "label": "Compressione e Prestazioni Web",
+        "description": "Riduci il peso delle immagini fino all'80% senza perdita di qualità visibile, con elaborazione nel browser."
+      },
+      "dimensions": {
+        "label": "Dimensioni e Layout",
+        "description": "Ridimensiona, ritaglia, capovolgi e ruota le immagini visivamente in tempo reale."
+      },
+      "format": {
+        "label": "Conversione Formato",
+        "description": "Converti in modo sicuro tra i formati di nuova generazione WebP, l'universale JPG e il trasparente PNG."
+      },
+      "ocr": {
+        "label": "Estrazione Dati",
+        "description": "Converti tabelle e testo da immagini direttamente in fogli di calcolo Excel."
+      }
+    }
+  },
+  "nl": {
+    "seoTitle": "Gratis Online Afbeeldingstools: Optimaliseer, Converteer, Formaat Wijzigen, Foto's Bijsnijden",
+    "seoDescription": "Krijg toegang tot 11 gratis online afbeeldingstools voor optimalisatie, formaat wijzigen, bijsnijden en formaatconversie. Verwerk JPG, PNG, WebP-bestanden veilig in uw browser zonder uploads. Snel & privé.",
+    "h1": "Gratis Afbeeldingstools",
+    "subtitle": "Krachtige, privacygerichte fotobewerking & formaatconversie in uw browser.",
+    "whyChooseTitle": "Waarom Kiezen Voor Onze Afbeeldingstools?",
+    "whyChooseItems": [
+      {
+        "title": "Geen Server Uploads",
+        "description": "Alle verwerking gebeurt veilig in uw browser. Uw afbeeldingen verlaten nooit uw apparaat, wat volledige privacy garandeert."
+      },
+      {
+        "title": "Hardwareversnelling",
+        "description": "Maakt gebruik van HTML5 Canvas en Web Workers om grote afbeeldingen direct te verwerken zonder uw browser te blokkeren."
+      },
+      {
+        "title": "Geen Watermerken",
+        "description": "Exporteer ongecomprimeerde bestanden in volledige resolutie, volledig gratis. We plaatsen nooit watermerken of beperken uw downloads."
+      }
+    ],
+    "categories": {
+      "optimization": {
+        "label": "Compressie & Webprestaties",
+        "description": "Verklein de bestandsgrootte van afbeeldingen tot 80% zonder zichtbaar kwaliteitsverlies, direct in de browser."
+      },
+      "dimensions": {
+        "label": "Afmetingen & Lay-out",
+        "description": "Formaat wijzigen, bijsnijden, spiegelen en roteren van afbeeldingen, visueel en in real-time."
+      },
+      "format": {
+        "label": "Formaatconversie",
+        "description": "Wissel veilig tussen het moderne WebP, het universele JPG en het transparante PNG-formaat."
+      },
+      "ocr": {
+        "label": "Data-extractie",
+        "description": "Zet tabellen en tekst uit afbeeldingen direct om naar Excel-spreadsheets."
+      }
+    }
+  }
+};

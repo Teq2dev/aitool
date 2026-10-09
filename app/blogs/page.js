@@ -76,13 +76,22 @@ function BlogsContent() {
   const safeBlogs = Array.isArray(blogs) ? blogs : [];
   const safeFeaturedBlogs = Array.isArray(featuredBlogs) ? featuredBlogs : [];
 
+  // Exclude blogs already displayed in Featured Articles to prevent duplicate cards
+  const displayedFeaturedSlugs = new Set((!search ? safeFeaturedBlogs : []).map(b => b.slug));
+  const latestBlogs = search ? safeBlogs : safeBlogs.filter(b => !displayedFeaturedSlugs.has(b.slug));
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-black mb-2">AI Tools Blog</h1>
-          <p className="text-gray-600">Insights, tutorials, and news about AI tools</p>
+        <div className="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-center sm:text-left">
+            <h1 className="text-4xl font-bold text-black mb-2">AI Tools Blog</h1>
+            <p className="text-gray-600">Insights, tutorials, and news about AI tools</p>
+          </div>
+          <Link href={getLangUrl('/submit-blog')}>
+            <Button className="bg-blue-600 hover:bg-blue-700">Write a Blog</Button>
+          </Link>
         </div>
 
         {/* Search */}
@@ -107,7 +116,7 @@ function BlogsContent() {
         </form>
 
         {/* Featured Blogs */}
-        {safeFeaturedBlogs.length > 0 && (
+        {!search && safeFeaturedBlogs.length > 0 && (
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-black mb-6">Featured Articles</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -147,14 +156,12 @@ function BlogsContent() {
           </section>
         )}
 
-        {/* All Blogs */}
-        <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-black">Latest Articles</h2>
-            <Link href={getLangUrl('/submit-blog')}>
-              <Button className="bg-blue-600 hover:bg-blue-700">Write a Blog</Button>
-            </Link>
-          </div>
+        {/* Latest Blogs / Search Results */}
+        {(latestBlogs.length > 0 || search || (safeFeaturedBlogs.length === 0 && !loading)) && (
+          <section>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-black">{search ? 'Search Results' : 'Latest Articles'}</h2>
+            </div>
 
           {loading ? (
             <div className="flex items-center justify-center py-20">
@@ -163,14 +170,14 @@ function BlogsContent() {
                 <p className="text-gray-600">Loading blogs...</p>
               </div>
             </div>
-          ) : safeBlogs.length === 0 ? (
+          ) : latestBlogs.length === 0 ? (
             <div className="text-center py-20">
               <p className="text-xl text-gray-600">No blogs found</p>
             </div>
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                {safeBlogs.map((blog) => (
+                {latestBlogs.map((blog) => (
                   <Link key={blog._id || blog.slug} href={getLangUrl(`/blogs/${blog.slug}`)}>
                     <Card className="group hover:shadow-lg transition-all duration-300 border hover:border-blue-300 h-full cursor-pointer">
                       <div className="aspect-video overflow-hidden rounded-t-lg">
@@ -235,6 +242,7 @@ function BlogsContent() {
             </>
           )}
         </section>
+        )}
       </div>
     </div>
   );

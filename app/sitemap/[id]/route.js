@@ -1,5 +1,6 @@
 import { getCollection } from '@/lib/db';
 import { LANGUAGES } from '@/lib/languages';
+import { EVENTS_DATA } from '@/lib/events/eventData.js';
 
 const escapeXml = (unsafe) => {
   if (!unsafe) return '';
@@ -57,6 +58,7 @@ export async function GET(request, { params }) {
         { url: '/privacy', priority: '0.5', changefreq: 'monthly' },
         { url: '/terms', priority: '0.5', changefreq: 'monthly' },
         { url: '/faq', priority: '0.7', changefreq: 'monthly' },
+        { url: '/events', priority: '0.85', changefreq: 'daily' },
       ];
 
       const utilityPages = [
@@ -65,7 +67,32 @@ export async function GET(request, { params }) {
         '/pdf-to-word', '/pdf-to-powerpoint', '/pdf-to-excel', '/word-to-pdf', '/powerpoint-to-pdf', '/excel-to-pdf',
         '/pdf-to-jpg', '/pdf-to-png', '/jpg-to-pdf', '/png-to-pdf',
         '/image-compressor', '/image-resizer', '/image-cropper', '/image-rotator', '/image-converter',
-        '/jpg-to-png', '/png-to-jpg', '/jpg-to-webp', '/png-to-webp', '/webp-to-jpg', '/webp-to-png'
+        '/jpg-to-png', '/png-to-jpg', '/jpg-to-webp', '/png-to-webp', '/webp-to-jpg', '/webp-to-png',
+        '/calculators',
+        '/calculators/percentage-calculator',
+        '/calculators/age-calculator',
+        '/calculators/bmi-calculator',
+        '/calculators/loan-calculator',
+        '/calculators/emi-calculator',
+        '/calculators/mortgage-calculator',
+        '/calculators/compound-interest-calculator',
+        '/calculators/simple-interest-calculator',
+        '/calculators/gst-calculator',
+        '/calculators/tax-calculator',
+        '/calculators/discount-calculator',
+        '/calculators/profit-margin-calculator',
+        '/calculators/salary-calculator',
+        '/calculators/time-calculator',
+        '/calculators/date-calculator',
+        '/calculators/hours-calculator',
+        '/calculators/pace-calculator',
+        '/calculators/fuel-cost-calculator',
+        '/calculators/electricity-cost-calculator',
+        '/calculators/currency-calculator',
+        '/calculators/ratio-calculator',
+        '/calculators/fraction-calculator',
+        '/calculators/gpa-calculator',
+        '/calculators/grade-calculator'
       ];
 
       staticPages.forEach(page => {
@@ -138,6 +165,35 @@ export async function GET(request, { params }) {
             xml += `\n    <xhtml:link rel="alternate" hreflang="x-default" href="${formatUrl(getSubpathUrl(`/tools/${tool.slug}`, 'en'))}" />\n  </url>`;
           });
         }
+      });
+    } else if (id === 'events.xml') {
+      // 1. Hub page /events across all languages
+      LANGUAGES.forEach(lang => {
+        const fullUrl = getSubpathUrl('/events', lang.code);
+        xml += `\n  <url>\n    <loc>${formatUrl(fullUrl)}</loc>\n    <changefreq>daily</changefreq>\n    <priority>${lang.code === 'en' ? '0.9' : '0.75'}</priority>`;
+        LANGUAGES.forEach(alt => {
+          xml += `\n    <xhtml:link rel="alternate" hreflang="${alt.code}" href="${formatUrl(getSubpathUrl('/events', alt.code))}" />`;
+        });
+        xml += `\n    <xhtml:link rel="alternate" hreflang="x-default" href="${formatUrl(getSubpathUrl('/events', 'en'))}" />\n  </url>`;
+      });
+
+      // 2. All verified events across all languages
+      EVENTS_DATA.forEach(event => {
+        const path = `/events/${event.slug}`;
+        LANGUAGES.forEach(lang => {
+          const fullUrl = getSubpathUrl(path, lang.code);
+          const priority = event.status === 'upcoming'
+            ? (lang.code === 'en' ? '0.85' : '0.7')
+            : (lang.code === 'en' ? '0.7' : '0.6');
+          const changefreq = event.status === 'upcoming' ? 'weekly' : 'monthly';
+          const lastmod = formatDate(event.source?.lastVerified);
+
+          xml += `\n  <url>\n    <loc>${formatUrl(fullUrl)}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>`;
+          LANGUAGES.forEach(alt => {
+            xml += `\n    <xhtml:link rel="alternate" hreflang="${alt.code}" href="${formatUrl(getSubpathUrl(path, alt.code))}" />`;
+          });
+          xml += `\n    <xhtml:link rel="alternate" hreflang="x-default" href="${formatUrl(getSubpathUrl(path, 'en'))}" />\n  </url>`;
+        });
       });
     } else {
       return new Response('Not Found', { status: 404 });

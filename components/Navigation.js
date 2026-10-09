@@ -21,7 +21,9 @@ import {
   Shield, 
   Search,
   FileText,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Calculator,
+  Calendar
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import FlagIcon from '@/components/FlagIcon';
@@ -168,22 +170,22 @@ export default function Navigation() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85 shadow-2xs">
-      <div className="container mx-auto px-3 sm:px-5">
+      <div className="container mx-auto px-2 min-[380px]:px-3 sm:px-5">
         {/* Height reduced by ~20% from h-16 (64px) to h-[52px] */}
         <div className="flex h-[52px] items-center justify-between gap-2">
           
           {/* Logo */}
           <Link 
             href={getLangUrl('/')} 
-            className="flex items-center space-x-2 hover:opacity-85 transition-opacity flex-shrink-0" 
+            className="flex items-center space-x-1.5 sm:space-x-2 hover:opacity-85 transition-opacity min-w-0" 
             prefetch={true}
           >
             <img 
               src="/logo.png" 
               alt="Best AI Tools Free" 
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-contain" 
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-contain flex-shrink-0" 
             />
-            <span className="font-bold text-base sm:text-lg text-slate-900 tracking-tight inline-block">
+            <span className="font-bold text-sm sm:text-lg text-slate-900 tracking-tight truncate max-w-[130px] min-[380px]:max-w-none inline-block">
               Best AI Tools Free
             </span>
           </Link>
@@ -281,6 +283,15 @@ export default function Navigation() {
                 </div>
               )}
             </div>
+            <Link 
+              href={getLangUrl('/calculators')} 
+              className={`transition-colors font-medium text-sm py-1 ${
+                pathname?.includes('/calculators') ? 'text-blue-600 font-semibold' : 'text-slate-700 hover:text-blue-600'
+              }`}
+              prefetch={true}
+            >
+              {t('calculators') || 'Calculators'}
+            </Link>
 <Link 
               href={getLangUrl('/categories')} 
               className={`transition-colors font-medium text-sm py-1 ${
@@ -300,10 +311,20 @@ export default function Navigation() {
             >
               {t('blogs') || 'Blogs'}
             </Link>
+
+            <Link 
+              href={getLangUrl('/events')} 
+              className={`transition-colors font-medium text-sm py-1 ${
+                pathname?.includes('/events') ? 'text-blue-600 font-semibold' : 'text-slate-700 hover:text-blue-600'
+              }`}
+              prefetch={true}
+            >
+              {t('events') === 'events' ? 'AI Events' : (t('events') || 'AI Events')}
+            </Link>
           </nav>
 
           {/* Header Right Actions */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5">
+          <div className="flex items-center gap-1 min-[380px]:gap-1.5 sm:gap-2.5 flex-shrink-0">
             
             {/* Task 2: Collapsible Header Search */}
             <div className="relative flex items-center" ref={searchContainerRef}>
@@ -636,6 +657,16 @@ export default function Navigation() {
                 )}
               </div>
               <Link
+                href={getLangUrl('/calculators')}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                  pathname?.includes('/calculators') ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-50 hover:text-blue-600'
+                }`}
+              >
+                <Calculator className="w-4 h-4 text-emerald-500 flex-shrink-0" aria-hidden="true" />
+                <span>{t('calculators') || 'Calculators'}</span>
+              </Link>
+              <Link
                 href={getLangUrl('/categories')}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
@@ -655,6 +686,17 @@ export default function Navigation() {
               >
                 <BookOpen className="w-4 h-4 text-emerald-500 flex-shrink-0" aria-hidden="true" />
                 <span>{t('blogs') || 'Blogs'}</span>
+              </Link>
+
+              <Link
+                href={getLangUrl('/events')}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                  pathname?.includes('/events') ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-50 hover:text-blue-600'
+                }`}
+              >
+                <Calendar className="w-4 h-4 text-blue-500 flex-shrink-0" aria-hidden="true" />
+                <span>{t('events') === 'events' ? 'AI Events' : (t('events') || 'AI Events')}</span>
               </Link>
 
               {isSignedIn && (
