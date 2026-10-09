@@ -19,6 +19,7 @@ import {
 import { Star, ExternalLink, ArrowLeft, Share2, Edit2, Trash2, X, Check, ThumbsUp, ThumbsDown, HelpCircle, ChevronRight } from 'lucide-react';
 import ToolSemanticClusters from '@/components/seo/ToolSemanticClusters';
 import Breadcrumbs from '@/components/seo/Breadcrumbs';
+import ToolLogo from '@/components/ToolLogo';
 
 export default function ToolDetailClient({ initialTool, initialStrongSimilar = [], initialRelatedTools = [], initialLang = 'en', relatedBlogs = [], relatedCats = [], breadcrumbData }) {
   const { data: session } = useSession();
@@ -126,10 +127,10 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                 <CardHeader className="bg-white pb-8">
                   <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                     <div className="w-32 h-32 rounded-2xl overflow-hidden bg-gray-100 flex-shrink-0 border-4 border-blue-50 shadow-md">
-                      <img
+                      <ToolLogo
                         src={tool.logo}
                         alt={`${tool.name} - Free AI Tool`}
-                        className="w-full h-full object-cover"
+                        name={tool.name}
                       />
                     </div>
                     <div className="flex-1 text-center md:text-left">
@@ -467,11 +468,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                           <Link key={similarTool.slug} href={getLangUrl(`/tools/${similarTool.slug}`)}>
                             <div className="flex items-center gap-4 p-4 rounded-xl hover:bg-blue-50/50 transition-all cursor-pointer border border-transparent hover:border-blue-100 group">
                               <div className="w-14 h-14 rounded-xl overflow-hidden bg-white shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform">
-                                {similarTool.logo ? (
-                                  <img src={similarTool.logo} alt={similarTool.name} className="w-full h-full object-cover" />
-                                ) : (
-                                  <div className="w-full h-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-400">{similarTool.name.charAt(0)}</div>
-                                )}
+                                <ToolLogo src={similarTool.logo} alt={similarTool.name} name={similarTool.name} />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="font-bold text-gray-900 group-hover:text-blue-700 transition-colors truncate">{similarTool.name}</p>
@@ -503,11 +500,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                           <Link key={relatedTool.slug} href={getLangUrl(`/tools/${relatedTool.slug}`)}>
                             <div className="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50/50 transition-all cursor-pointer border border-transparent hover:border-gray-200 group">
                               <div className="w-14 h-14 rounded-xl overflow-hidden bg-white shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform">
-                                {relatedTool.logo ? (
-                                  <img src={relatedTool.logo} alt={relatedTool.name} className="w-full h-full object-cover" />
-                                ) : (
-                                  <div className="w-full h-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-400">{relatedTool.name.charAt(0)}</div>
-                                )}
+                                <ToolLogo src={relatedTool.logo} alt={relatedTool.name} name={relatedTool.name} />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="font-bold text-gray-900 group-hover:text-gray-700 transition-colors truncate">{relatedTool.name}</p>

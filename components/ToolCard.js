@@ -7,6 +7,7 @@ import { Star, TrendingUp, ExternalLink, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 import { getLocalizedDescription } from '@/lib/languages';
+import ToolLogo from '@/components/ToolLogo';
 
 export default function ToolCard({ tool }) {
   const isFree = tool.pricing === 'Free';
@@ -44,14 +45,11 @@ export default function ToolCard({ tool }) {
         <CardHeader className="pt-8 pb-4 relative">
           <div className="flex items-start gap-5">
             <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-50 flex-shrink-0 border border-slate-100 shadow-sm group-hover:shadow-md transition-all duration-300">
-              <img
-                src={tool.logo || '/placeholder-logo.png'}
+              <ToolLogo
+                src={tool.logo}
                 alt={`${tool.name} logo`}
-                width={80}
-                height={80}
-                loading="lazy"
-                decoding="async"
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                name={tool.name}
+                className="group-hover:scale-110 transition-transform duration-500"
               />
             </div>
             <div className="flex-1 min-w-0 pt-1">

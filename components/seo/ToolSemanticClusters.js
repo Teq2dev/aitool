@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ExternalLink, Edit2, Star } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import ToolLogo from '@/components/ToolLogo';
 
 export default function ToolSemanticClusters({ relatedCats, relatedBlogs, strongSimilar, relatedTools, effectiveLang }) {
   const { t } = useLanguage();
@@ -56,7 +57,9 @@ export default function ToolSemanticClusters({ relatedCats, relatedBlogs, strong
           <div className="grid sm:grid-cols-2 gap-4">
             {(strongSimilar || []).concat(relatedTools || []).slice(0, 10).map((st, i) => (
               <Link key={st.slug + i} href={getLangUrl(`/tools/${st.slug}`)} className="flex items-center p-3 rounded-xl border border-gray-100 hover:border-purple-200 hover:shadow-md transition bg-white group">
-                {st.logo && <img src={st.logo} alt={st.name} className="w-10 h-10 rounded-lg mr-3 object-cover" />}
+                <div className="w-10 h-10 rounded-lg mr-3 flex-shrink-0 overflow-hidden">
+                  <ToolLogo src={st.logo} alt={st.name} name={st.name} />
+                </div>
                 <div>
                   <h4 className="font-semibold text-gray-900 group-hover:text-purple-700 transition">{st.name}</h4>
                   <p className="text-xs text-gray-500 line-clamp-1">{st.shortDescription}</p>
