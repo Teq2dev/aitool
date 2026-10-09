@@ -201,7 +201,6 @@ export default function ToolEditorForm({
     }
   };
 
-  // Upload logo to Google Cloud Storage via /api/upload
   const uploadLogo = async () => {
     if (!logoFile) return logoPreview;
     setUploading(true);
@@ -209,12 +208,11 @@ export default function ToolEditorForm({
     form.append('file', logoFile);
     try {
       const res = await fetch('/api/upload', { method: 'POST', body: form });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.url) throw new Error(data.error || 'Upload failed');
       return data.url;
-    } catch {
-      alert('Failed to upload logo');
-      return null;
+    } catch (err) {
+      throw new Error(err.message || 'Failed to upload logo');
     } finally {
       setUploading(false);
     }
@@ -302,9 +300,7 @@ export default function ToolEditorForm({
     try {
       let logoUrl = formData.logo || logoPreview;
       if (logoOption === 'upload' && logoFile) {
-        const uploaded = await uploadLogo();
-        if (!uploaded) { setSubmitting(false); return; }
-        logoUrl = uploaded;
+        logoUrl = await uploadLogo();
       }
 
       const payload = {
