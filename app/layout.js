@@ -112,7 +112,7 @@ export default async function RootLayout({ children }) {
 
   return (
     <AuthProvider>
-      <html lang="en">
+      <html lang={invokeLang} dir={invokeLang === 'ar' ? 'rtl' : 'ltr'}>
         <head>
           {/* Cookiebot Consent Management */}
           <Script 
