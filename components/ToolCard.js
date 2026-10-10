@@ -56,14 +56,18 @@ export default function ToolCard({ tool }) {
               <CardTitle className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1 mb-2">
                 {tool.name}
               </CardTitle>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
-                  <span className="text-sm font-bold text-slate-700">{tool.rating || '0.0'}</span>
-                </div>
-                <span className="text-xs font-medium text-slate-500">
-                  {tool.votes || 0} {t('reviews')}
-                </span>
+              <div className="flex items-center gap-3 h-7">
+                {tool.rating && tool.votes > 0 && (
+                  <>
+                    <div className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
+                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
+                      <span className="text-sm font-bold text-slate-700">{tool.rating}</span>
+                    </div>
+                    <span className="text-xs font-medium text-slate-500">
+                      {tool.votes} {t('reviews')}
+                    </span>
+                  </>
+                )}
               </div>
             </div>
           </div>

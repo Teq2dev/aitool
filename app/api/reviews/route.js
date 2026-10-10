@@ -48,23 +48,13 @@ async function updateToolStats(toolId) {
     ]).toArray();
 
     const writtenStats = stats[0] || { averageRating: 0, totalVotes: 0 };
-    const baseVotes = tool.baseVotes || 150;
-    const baseRating = tool.baseRating || 4.5;
-
-    const writtenVotes = writtenStats.totalVotes;
-    const writtenRatingSum = writtenStats.averageRating * writtenVotes;
-
-    const finalVotes = baseVotes + writtenVotes;
-    let finalRating = baseRating;
+    const writtenVotes = writtenStats.totalVotes || 0;
+    const finalRating = writtenStats.averageRating || 0;
     
-    if (finalVotes > 0) {
-      finalRating = ((baseRating * baseVotes) + writtenRatingSum) / finalVotes;
-    }
-
     await toolsCollection.updateOne(query, {
       $set: {
         rating: Number(finalRating.toFixed(1)),
-        votes: finalVotes,
+        votes: writtenVotes,
         updatedAt: new Date()
       }
     });
