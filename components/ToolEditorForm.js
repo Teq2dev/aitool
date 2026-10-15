@@ -209,10 +209,10 @@ export default function ToolEditorForm({
     try {
       const res = await fetch('/api/upload', { method: 'POST', body: form });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.url) throw new Error(data.error || 'Upload failed');
+      if (!res.ok || !data.url) throw new Error(data.error || 'Your logo upload failed. Please try again or auto-fetch the favicon.');
       return data.url;
     } catch (err) {
-      throw new Error(err.message || 'Failed to upload logo');
+      throw new Error(err.message || 'Your logo upload failed. Please try again or auto-fetch the favicon.');
     } finally {
       setUploading(false);
     }
@@ -303,6 +303,13 @@ export default function ToolEditorForm({
         logoUrl = await uploadLogo();
       }
 
+      if (logoUrl && typeof logoUrl === 'string' && logoUrl.startsWith('data:')) {
+        setServerError('Please upload an image file or auto-fetch the favicon before submitting.');
+        document.getElementById('form-top')?.scrollIntoView({ behavior: 'smooth' });
+        setSubmitting(false);
+        return;
+      }
+
       const payload = {
         ...formData,
         linkedinProfile: formData.linkedinProfile ? normalizeLinkedInUrl(formData.linkedinProfile) : '',
@@ -381,11 +388,16 @@ export default function ToolEditorForm({
           } else {
             setTimeout(() => router.push(getLangUrl('/dashboard')), 2000);
           }
+        } else if (res.status === 400 && data.errors) {
+          setErrors(data.errors);
+          setServerError(data.error || 'Please check the required fields.');
+          document.getElementById('form-top')?.scrollIntoView({ behavior: 'smooth' });
         } else if (res.status === 409) {
-          setServerError(`This tool already exists: "${data.existingTool?.name || 'Unknown'}". Status: ${data.existingTool?.status || 'unknown'}`);
+          setServerError(data.message || data.error || (data.existingTool ? `This tool already exists: "${data.existingTool.name}". Status: ${data.existingTool.status}` : 'This tool already exists.'));
           document.getElementById('form-top')?.scrollIntoView({ behavior: 'smooth' });
         } else {
-          setServerError(data.error || data.message || 'Failed to submit tool. Please try again.');
+          const ref = data.reqId ? ` (Ref: ${data.reqId})` : '';
+          setServerError((data.error || data.message || "We couldn't save your submission. Please try again later.") + ref);
           document.getElementById('form-top')?.scrollIntoView({ behavior: 'smooth' });
         }
       }

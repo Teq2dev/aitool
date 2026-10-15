@@ -4,6 +4,7 @@ import { getCollection } from '@/lib/db';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { v4 as uuidv4 } from 'uuid';
+import { generateUniqueToolSlug } from '@/lib/toolSlug';
 
 // Helper to get authenticated user from session
 async function getAuthUser() {
@@ -940,63 +941,194 @@ export async function POST(request, { params }) {
   try {
     // POST /api/tools - Submit tool
     if (pathname === '/api/tools' || pathname === '/api/tools/') {
+      const reqId = request.headers.get('x-request-id') || `tool_sub_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      console.log(`[ToolSubmit] reqId=${reqId} Incoming tool submission request`);
+
       const authUser = await getAuthUser();
       if (!authUser || !authUser.email) {
+        console.warn(`[ToolSubmit] reqId=${reqId} Unauthorized submission attempt`);
         return NextResponse.json({ 
-          error: 'Unauthorized. You must sign in with an authenticated account to submit a tool.' 
+          error: 'Unauthorized. You must sign in with an authenticated account to submit a tool.',
+          reqId
         }, { status: 401 });
       }
 
-      const body = await request.json();
+      let body;
+      try {
+        body = await request.json();
+      } catch (err) {
+        console.warn(`[ToolSubmit] reqId=${reqId} Malformed JSON body:`, err.message);
+        return NextResponse.json({ 
+          error: 'Invalid JSON request payload.',
+          reqId
+        }, { status: 400 });
+      }
 
-      // Check required LinkedIn Profile URL
-      const rawLinkedIn = (body.linkedinProfile || '').trim();
+      const userId = authUser.id;
+      const submitterEmail = authUser.email.toLowerCase();
+
+      // --- SERVER-SIDE VALIDATION ---
+      const validationErrors = {};
+
+      // 1. Tool Name
+      const name = (body.name || '').toString().trim();
+      if (!name) {
+        validationErrors.name = 'Tool name is required.';
+      } else if (name.length < 2 || name.length > 80) {
+        validationErrors.name = 'Tool name must be between 2 and 80 characters.';
+      }
+
+      // 2. Website URL
+      const website = (body.website || '').toString().trim();
+      let parsedUrl = null;
+      if (!website) {
+        validationErrors.website = 'Website URL is required.';
+      } else {
+        try {
+          parsedUrl = new URL(website);
+          if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+            validationErrors.website = 'Website URL must begin with http:// or https://.';
+          }
+        } catch {
+          validationErrors.website = 'Please provide a valid website URL.';
+        }
+      }
+
+      // 3. LinkedIn Profile (Required for submitter verification)
+      const rawLinkedIn = (body.linkedinProfile || '').toString().trim();
       const { isValidLinkedInUrl, normalizeLinkedInUrl } = await import('@/lib/countries');
       if (!rawLinkedIn || !isValidLinkedInUrl(rawLinkedIn)) {
-        return NextResponse.json({ 
-          error: 'A valid LinkedIn profile URL is required to submit a tool (e.g. https://www.linkedin.com/in/your-profile).' 
+        validationErrors.linkedinProfile = 'A valid LinkedIn profile URL is required (e.g. https://www.linkedin.com/in/your-profile).';
+      }
+
+      // 4. Short Description
+      const shortDescription = (body.shortDescription || '').toString().trim();
+      if (!shortDescription) {
+        validationErrors.shortDescription = 'Short description is required.';
+      } else if (shortDescription.length < 10) {
+        validationErrors.shortDescription = 'Short description must be at least 10 characters.';
+      } else if (shortDescription.length > 300) {
+        validationErrors.shortDescription = 'Short description must not exceed 300 characters.';
+      }
+
+      // 5. Categories
+      const categories = Array.isArray(body.categories) ? body.categories.filter(Boolean).map(c => String(c).trim()) : [];
+      if (categories.length === 0) {
+        validationErrors.categories = 'Please select at least one category.';
+      } else if (categories.length > 5) {
+        validationErrors.categories = 'You may select up to 5 categories.';
+      }
+
+      // 6. Logo
+      const logo = (body.logo || '').toString().trim();
+      if (!logo) {
+        validationErrors.logo = 'A logo image or fetched favicon is required.';
+      } else if (logo.startsWith('data:')) {
+        validationErrors.logo = 'Raw data URLs are not accepted. Please upload the image file or auto-fetch the favicon.';
+      } else {
+        try {
+          const parsedLogo = new URL(logo);
+          if (!['http:', 'https:'].includes(parsedLogo.protocol)) {
+            validationErrors.logo = 'Logo URL must begin with http:// or https://.';
+          }
+        } catch {
+          validationErrors.logo = 'Logo must be a valid image URL.';
+        }
+      }
+
+      if (Object.keys(validationErrors).length > 0) {
+        console.warn(`[ToolSubmit] reqId=${reqId} Validation failed:`, validationErrors);
+        return NextResponse.json({
+          error: 'Please check the required fields.',
+          errors: validationErrors,
+          reqId
         }, { status: 400 });
       }
 
       const normalizedLinkedIn = normalizeLinkedInUrl(rawLinkedIn);
-      const userId = authUser.id;
-      const submitterEmail = authUser.email;
-      
       const toolsCollection = await getCollection('tools');
-      
-      // Check for duplicate domain
-      if (body.website) {
+
+      // --- DUPLICATE & IDEMPOTENCY CHECK ---
+      if (parsedUrl) {
         try {
-          const domain = new URL(body.website).hostname.replace('www.', '');
+          const domain = parsedUrl.hostname.replace(/^www\./i, '');
+          const escapedDomain = domain.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
           const existingTool = await toolsCollection.findOne({
             $or: [
-              { website: { $regex: domain, $options: 'i' } },
-              { website: { $regex: `www.${domain}`, $options: 'i' } }
+              { website: { $regex: `^https?://(www\\.)?${escapedDomain}(:[0-9]+)?(/.*)?$`, $options: 'i' } },
+              { website: { $regex: `(^|://)(www\\.)?${escapedDomain}(:[0-9]+)?(/|$)`, $options: 'i' } }
             ]
           });
-          
+
           if (existingTool) {
-            return NextResponse.json({ 
-              error: 'Duplicate tool detected', 
-              message: `A tool with this domain already exists: "${existingTool.name}"`,
+            // Idempotent retry detection: same user resubmitting the same pending tool within 10 minutes
+            const isSameUser = existingTool.submittedBy === userId || 
+              (existingTool.submitterEmail && existingTool.submitterEmail.toLowerCase() === submitterEmail);
+            const isPending = existingTool.status === 'pending';
+            const isRecent = existingTool.createdAt && (Date.now() - new Date(existingTool.createdAt).getTime()) < 10 * 60 * 1000;
+
+            if (isSameUser && isPending && isRecent) {
+              console.log(`[ToolSubmit] reqId=${reqId} Idempotent retry accepted for existing pending tool id=${existingTool._id}`);
+              return NextResponse.json({
+                success: true,
+                message: 'Tool submission already received and pending review.',
+                tool: {
+                  _id: existingTool._id,
+                  name: existingTool.name,
+                  slug: existingTool.slug,
+                  status: existingTool.status
+                },
+                reqId
+              }, { status: 200 });
+            }
+
+            console.warn(`[ToolSubmit] reqId=${reqId} Duplicate tool detected domain=${domain} existing="${existingTool.name}"`);
+            return NextResponse.json({
+              error: 'Duplicate tool detected',
+              message: `A tool with this website domain already exists: "${existingTool.name}"`,
               existingTool: {
                 name: existingTool.name,
                 slug: existingTool.slug,
                 status: existingTool.status
-              }
+              },
+              reqId
             }, { status: 409 });
           }
         } catch (urlError) {
-          // Invalid URL format, continue with submission
-          console.warn('Invalid URL format for duplicate check:', body.website);
+          console.warn(`[ToolSubmit] reqId=${reqId} Error during duplicate check:`, urlError.message);
         }
       }
-      
+
+      // --- UNIQUE SLUG GENERATION ---
+      const slug = await generateUniqueToolSlug(name, toolsCollection);
+
+      // --- CONSTRUCT NEW TOOL RECORD ---
       const newTool = {
         _id: uuidv4(),
-        ...body,
+        name,
+        slug,
+        website,
         linkedinProfile: normalizedLinkedIn,
-        slug: body.name ? body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : uuidv4(),
+        logo,
+        shortDescription,
+        fullDescription: (body.fullDescription || body.description || '').toString().trim(),
+        categories,
+        tags: Array.isArray(body.tags) ? body.tags.filter(Boolean).map(t => String(t).trim()) : [],
+        features: Array.isArray(body.features) ? body.features.filter(Boolean).map(f => String(f).trim()) : [],
+        pros: Array.isArray(body.pros) ? body.pros.filter(Boolean).map(p => String(p).trim()) : [],
+        cons: Array.isArray(body.cons) ? body.cons.filter(Boolean).map(c => String(c).trim()) : [],
+        pricing: typeof body.pricing === 'string' ? body.pricing : 'Free',
+        pricingModel: typeof body.pricingModel === 'string' ? body.pricingModel : (typeof body.pricing === 'string' ? body.pricing : 'Free'),
+        startingPrice: typeof body.startingPrice === 'string' ? body.startingPrice.trim() : '',
+        hasFreePlan: body.hasFreePlan !== undefined ? Boolean(body.hasFreePlan) : null,
+        hasFreeTrial: body.hasFreeTrial !== undefined ? Boolean(body.hasFreeTrial) : null,
+        billingCycle: typeof body.billingCycle === 'string' ? body.billingCycle.trim() : '',
+        pricingDetails: typeof body.pricingDetails === 'string' ? body.pricingDetails.trim() : '',
+        faqs: Array.isArray(body.faqs)
+          ? body.faqs
+              .filter(f => f && (f.question?.toString().trim() || f.answer?.toString().trim()))
+              .map(f => ({ question: (f.question || '').toString().trim(), answer: (f.answer || '').toString().trim() }))
+          : [],
         status: 'pending',
         featured: false,
         sponsored: false,
@@ -1004,37 +1136,63 @@ export async function POST(request, { params }) {
         rating: 0,
         votes: 0,
         submittedBy: userId,
-        submitterEmail: submitterEmail,
+        submitterEmail,
         createdAt: new Date(),
+        updatedAt: new Date(),
       };
-      
+
+      // --- DATABASE INSERTION ---
       try {
         await toolsCollection.insertOne(newTool);
-
-        // Also persist the submitter's LinkedIn profile in the users collection if missing or empty
-        try {
-          const usersCollection = await getCollection('users');
-          await usersCollection.updateOne(
-            { 
-              email: submitterEmail.toLowerCase(), 
-              $or: [{ linkedinProfile: { $exists: false } }, { linkedinProfile: '' }, { linkedinProfile: null }] 
-            },
-            { $set: { linkedinProfile: normalizedLinkedIn, updatedAt: new Date() } }
-          );
-        } catch (userErr) {
-          console.error('Error syncing user linkedinProfile:', userErr);
-        }
-
-        revalidateTag('tools');
-        revalidateTag('categories');
-        return NextResponse.json({ success: true, tool: newTool });
+        console.log(`[ToolSubmit] reqId=${reqId} Successfully saved tool id=${newTool._id} slug=${newTool.slug}`);
       } catch (dbError) {
-        console.error('Database insertion error for tool submission:', dbError);
+        console.error(`[ToolSubmit] reqId=${reqId} Database insertion error:`, dbError);
+        if (dbError.code === 11000) {
+          return NextResponse.json({
+            error: 'A tool with this name or unique identifier already exists. Please try modifying the tool name.',
+            details: 'Duplicate key constraint',
+            reqId
+          }, { status: 409 });
+        }
         return NextResponse.json({ 
-          error: 'Failed to save tool submission', 
-          details: dbError.message 
+          error: "We couldn't save your submission. Please try again later.",
+          reqId 
         }, { status: 500 });
       }
+
+      // --- USER PROFILE SYNC (Non-blocking) ---
+      try {
+        const usersCollection = await getCollection('users');
+        await usersCollection.updateOne(
+          { 
+            email: submitterEmail, 
+            $or: [{ linkedinProfile: { $exists: false } }, { linkedinProfile: '' }, { linkedinProfile: null }] 
+          },
+          { $set: { linkedinProfile: normalizedLinkedIn, updatedAt: new Date() } }
+        );
+      } catch (userErr) {
+        console.warn(`[ToolSubmit] reqId=${reqId} Non-blocking error syncing user linkedinProfile:`, userErr.message);
+      }
+
+      // --- CACHE REVALIDATION (Non-blocking) ---
+      try {
+        revalidateTag('tools');
+        revalidateTag('categories');
+      } catch (revalidateErr) {
+        console.warn(`[ToolSubmit] reqId=${reqId} Non-blocking error revalidating cache:`, revalidateErr.message);
+      }
+
+      return NextResponse.json({ 
+        success: true, 
+        tool: {
+          _id: newTool._id,
+          name: newTool.name,
+          slug: newTool.slug,
+          status: newTool.status,
+          createdAt: newTool.createdAt
+        },
+        reqId
+      });
     }
     
     // POST /api/blogs - Submit blog
