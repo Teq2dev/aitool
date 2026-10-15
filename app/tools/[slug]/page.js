@@ -61,10 +61,19 @@ export async function generateMetadata({ params, searchParams }) {
   // Localized SEO Tags
   const localizedInfo = getLocalizedDescription(tool, lang);
   const translationOverride = tool.translations?.[lang] || {};
-  const localizedDesc = translationOverride.fullDescription 
-    ? translationOverride.fullDescription.substring(0, 160) 
+  
+  // Use actual stored DB description over boilerplate
+  const localizedDesc = translationOverride.description 
+    ? translationOverride.description.substring(0, 160) 
     : (localizedInfo.description || tool.shortDescription || '').substring(0, 160);
-  const baseTitle = `${tool.name} Review & Alternatives (2026) - Best Free ${categoryName} AI Tool`;
+    
+  // Dynamic localized title
+  const langDict = await getTranslation(lang);
+  const reviewTitleTemplate = langDict['toolReviewTitle'] || "{name} Review & Alternatives (2026) - Best Free {categoryName} AI Tool";
+  const baseTitle = reviewTitleTemplate
+    .replace('{name}', tool.name)
+    .replace('{categoryName}', categoryName);
+    
   const title = translationOverride.title || baseTitle;
   const description = localizedDesc;
   const baseUrl = 'https://www.bestaitoolsfree.com';
@@ -149,11 +158,16 @@ export default async function ToolPage({ params, searchParams }) {
   // Localized Info
   const localizedInfo = getLocalizedDescription(tool, lang);
   const translationOverride = tool.translations?.[lang] || {};
-  const displayFullDescription = translationOverride.fullDescription || localizedInfo.description || tool.shortDescription;
+  const displayFullDescription = translationOverride.description || localizedInfo.description || tool.shortDescription;
   
   let displayFaqs = tool.faqs;
-  if (lang !== 'en' && translationOverride.faqs && translationOverride.faqs.length > 0) {
-    displayFaqs = translationOverride.faqs;
+  let isFaqFallback = false;
+  if (lang !== 'en') {
+    if (translationOverride.faqs && translationOverride.faqs.length > 0) {
+      displayFaqs = translationOverride.faqs;
+    } else {
+      isFaqFallback = true;
+    }
   }
 
   const langDict = await getTranslation(lang);
@@ -231,7 +245,7 @@ export default async function ToolPage({ params, searchParams }) {
       },
       {
         '@type': 'FAQPage',
-        mainEntity: displayFaqs && displayFaqs.length > 0 ? displayFaqs.map(faq => ({
+        mainEntity: (displayFaqs && displayFaqs.length > 0) ? displayFaqs.map(faq => ({
           '@type': 'Question',
           name: faq.question,
           acceptedAnswer: {

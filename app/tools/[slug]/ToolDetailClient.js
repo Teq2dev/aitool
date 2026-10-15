@@ -37,31 +37,71 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
 
   // Apply translation overrides from DB if they exist
   const translationOverride = tool.translations?.[effectiveLang] || {};
-  const displayFullDescription = translationOverride.fullDescription || localizedInfo.description || tool.description || tool.fullDescription || tool.shortDescription;
+  
+  let displayFullDescription = tool.description || tool.fullDescription || tool.shortDescription;
+  let isDescFallback = false;
+  if (effectiveLang !== 'en') {
+    if (translationOverride.description) {
+      displayFullDescription = translationOverride.description;
+    } else {
+      isDescFallback = true;
+      displayFullDescription = tool.description || tool.fullDescription || tool.shortDescription || localizedInfo.description;
+    }
+  }
+
   const displayPricingDetails = translationOverride.pricingDetails || tool.pricingDetails;
 
   let displayFaqs = tool.faqs;
-  if (effectiveLang !== 'en' && translationOverride.faqs && translationOverride.faqs.length > 0) {
-    displayFaqs = translationOverride.faqs;
+  let isFaqFallback = false;
+  if (effectiveLang !== 'en') {
+    if (translationOverride.faqs && translationOverride.faqs.length > 0) {
+      displayFaqs = translationOverride.faqs;
+    } else {
+      isFaqFallback = true;
+    }
   }
 
   let rawFeatures = tool.features;
-  if (effectiveLang !== 'en' && translationOverride.features && translationOverride.features.length > 0) {
-    rawFeatures = translationOverride.features;
+  let isFeaturesFallback = false;
+  if (effectiveLang !== 'en') {
+    if (translationOverride.features && translationOverride.features.length > 0) {
+      rawFeatures = translationOverride.features;
+    } else {
+      isFeaturesFallback = true;
+    }
   }
   const displayFeatures = normalizeFeatures(rawFeatures);
-  let prosList = (tool.pros && Array.isArray(tool.pros) && tool.pros.length > 0)
-    ? tool.pros
-    : getLocalizedProsList(primaryCategory, tool.rating, effectiveLang);
-  if (effectiveLang !== 'en' && translationOverride.pros && Array.isArray(translationOverride.pros) && translationOverride.pros.length > 0) {
-    prosList = translationOverride.pros;
+
+  let prosList = tool.pros && Array.isArray(tool.pros) && tool.pros.length > 0 ? tool.pros : [];
+  let isProsFallback = false;
+  if (effectiveLang !== 'en') {
+    if (translationOverride.pros && Array.isArray(translationOverride.pros) && translationOverride.pros.length > 0) {
+      prosList = translationOverride.pros;
+    } else {
+      isProsFallback = true;
+      if (prosList.length === 0) {
+        prosList = getLocalizedProsList(primaryCategory, tool.rating, effectiveLang);
+        isProsFallback = false;
+      }
+    }
+  } else if (prosList.length === 0) {
+    prosList = getLocalizedProsList(primaryCategory, tool.rating, effectiveLang);
   }
 
-  let consList = (tool.cons && Array.isArray(tool.cons) && tool.cons.length > 0)
-    ? tool.cons
-    : getLocalizedConsList(effectiveLang);
-  if (effectiveLang !== 'en' && translationOverride.cons && Array.isArray(translationOverride.cons) && translationOverride.cons.length > 0) {
-    consList = translationOverride.cons;
+  let consList = tool.cons && Array.isArray(tool.cons) && tool.cons.length > 0 ? tool.cons : [];
+  let isConsFallback = false;
+  if (effectiveLang !== 'en') {
+    if (translationOverride.cons && Array.isArray(translationOverride.cons) && translationOverride.cons.length > 0) {
+      consList = translationOverride.cons;
+    } else {
+      isConsFallback = true;
+      if (consList.length === 0) {
+        consList = getLocalizedConsList(effectiveLang);
+        isConsFallback = false;
+      }
+    }
+  } else if (consList.length === 0) {
+    consList = getLocalizedConsList(effectiveLang);
   }
   const localizedPricing = getLocalizedPricing(tool.pricing, effectiveLang);
 
@@ -186,6 +226,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                   <div
                     className="prose prose-blue max-w-none text-gray-700 text-lg leading-relaxed whitespace-pre-wrap"
                     dangerouslySetInnerHTML={{ __html: displayFullDescription }}
+                    {...(isDescFallback ? { lang: "en", dir: "ltr" } : {})}
                   />
         <ToolSemanticClusters
           relatedCats={relatedCats}
@@ -210,6 +251,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                         <div
                           key={index}
                           className={`flex ${item.description ? 'items-start' : 'items-center'} p-4 rounded-xl bg-blue-50/50 border border-blue-100/50`}
+                          {...(isFeaturesFallback ? { lang: "en", dir: "ltr" } : {})}
                         >
                           <div
                             className={`w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center mr-4 rtl:mr-0 rtl:ml-4 flex-shrink-0 shadow-sm ${
@@ -291,7 +333,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                         <ThumbsUp className="w-5 h-5 text-green-600" />
                         <span>{t('pros')}</span>
                       </div>
-                      <ul className="space-y-3 text-sm text-gray-700">
+                      <ul className="space-y-3 text-sm text-gray-700" {...(isProsFallback ? { lang: "en", dir: "ltr" } : {})}>
                         {prosList.map((proItem, idx) => (
                           <li key={idx} className="flex items-start gap-2">
                             <Check className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
@@ -307,7 +349,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                         <ThumbsDown className="w-5 h-5 text-red-600" />
                         <span>{t('cons')}</span>
                       </div>
-                      <ul className="space-y-3 text-sm text-gray-700">
+                      <ul className="space-y-3 text-sm text-gray-700" {...(isConsFallback ? { lang: "en", dir: "ltr" } : {})}>
                         {consList.map((conItem, idx) => (
                           <li key={idx} className="flex items-start gap-2">
                             <X className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
@@ -332,7 +374,7 @@ export default function ToolDetailClient({ initialTool, initialStrongSimilar = [
                   <div className="space-y-4">
                     {displayFaqs && displayFaqs.length > 0 ? (
                       displayFaqs.map((faq, index) => (
-                        <div key={index} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <div key={index} className="p-4 bg-gray-50 rounded-xl border border-gray-100" {...(isFaqFallback ? { lang: "en", dir: "ltr" } : {})}>
                           <h3 className="font-bold text-gray-900 mb-2 text-base">{faq.question}</h3>
                           <div
                             className="text-gray-700 text-sm leading-relaxed prose prose-sm max-w-none"
