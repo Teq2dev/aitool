@@ -68,7 +68,7 @@ export async function GET(request, { params }) {
         '/pdf-to-jpg', '/pdf-to-png', '/jpg-to-pdf', '/png-to-pdf',
         '/image-compressor', '/image-resizer', '/image-cropper', '/image-rotator', '/image-converter',
         '/jpg-to-png', '/png-to-jpg', '/jpg-to-webp', '/png-to-webp', '/webp-to-jpg', '/webp-to-png',
-        '/image-to-excel',
+        '/image-to-excel', '/jpg-to-excel',
         '/calculators',
         '/calculators/percentage-calculator',
         '/calculators/age-calculator',

@@ -35,6 +35,7 @@ export default function Footer({ topCategories }) {
               <li><Link href={getLangUrl('/calculators/percentage-calculator')} className="hover:text-blue-600 transition-colors">{t('percentageCalculatorTitle')}</Link></li>
               <li><Link href={getLangUrl('/pdf-tools')} className="text-red-600 font-semibold hover:underline">{t('allPdfTools')}</Link></li>
               <li><Link href={getLangUrl('/image-tools')} className="text-blue-600 font-semibold hover:underline">{t('allImageTools')}</Link></li>
+              <li><Link href={getLangUrl('/jpg-to-excel')} className="text-emerald-700 font-semibold hover:underline">AI JPG to Excel</Link></li>
               <li><Link href={getLangUrl('/calculators')} className="text-emerald-600 font-semibold hover:underline">{t('allCalculatorsLink')}</Link></li>
             </ul>
           </div>
@@ -75,8 +76,9 @@ export default function Footer({ topCategories }) {
           </div>
         </div>
         
-        <div className="mt-12 pt-8 border-t text-center text-sm text-gray-600">
+        <div className="mt-12 pt-8 border-t text-center space-y-1 text-sm text-gray-600">
           <p>© 2026 Best AI Tools Free. {t('allRightsReserved')}</p>
+          <p className="text-xs text-gray-500 font-medium">A product by DigiSpark</p>
         </div>
       </div>
     </footer>
