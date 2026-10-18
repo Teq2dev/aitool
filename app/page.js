@@ -7,7 +7,7 @@ const VALID_LANGS = ['es', 'fr', 'de', 'pt', 'ar', 'ru', 'ja', 'zh', 'it', 'nl']
 const BASE_URL = 'https://www.bestaitoolsfree.com';
 
 const HOME_TITLES = {
-  en: 'Best Free Online Tools & AI Directory | BestAIToolsFree',
+  en: 'Free Online Tools & AI Directory | BestAIToolsFree',
   es: 'Mejores Herramientas Online Gratuitas y Directorio de IA | BestAIToolsFree',
   fr: 'Meilleurs Outils en Ligne Gratuits et Annuaire IA | BestAIToolsFree',
   de: 'Beste kostenlose Online-Tools & KI-Verzeichnis | BestAIToolsFree',
@@ -21,7 +21,7 @@ const HOME_TITLES = {
 };
 
 const HOME_DESCRIPTIONS = {
-  en: 'Access 100% free online tools in your browser: compress images, merge PDFs, and calculate finance metrics. Plus explore 1,400+ curated AI tools.',
+  en: 'Discover free online tools for JPG to Excel conversion, images, and PDFs. Explore 1,400+ curated AI tools to find the right tool for your needs.',
   es: 'Accede a herramientas online 100% gratuitas en tu navegador: comprime imágenes, une PDFs y calcula finanzas. Además, explora +1.400 herramientas de IA.',
   fr: 'Accédez à des outils 100% gratuits dans votre navigateur : compressez des images, fusionnez des PDF et calculez vos finances. Plus de 1 400 outils IA.',
   de: '100% kostenlose Browser-Tools: Bilder komprimieren, PDFs zusammenfügen und Finanzen berechnen. Entdecken Sie über 1.400 geprüfte KI-Tools.',

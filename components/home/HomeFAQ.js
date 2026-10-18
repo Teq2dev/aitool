@@ -77,16 +77,16 @@ export default function HomeFAQ() {
                 />
               </button>
 
-              {isOpen && (
-                <div
-                  id={contentId}
-                  role="region"
-                  aria-labelledby={buttonId}
-                  className="px-5 pb-5 pt-1 text-sm text-[#64748B] leading-relaxed border-t border-slate-50"
-                >
-                  <p className="pl-9">{faq.a}</p>
-                </div>
-              )}
+              <div
+                id={contentId}
+                role="region"
+                aria-labelledby={buttonId}
+                className={`px-5 pb-5 pt-1 text-sm text-[#64748B] leading-relaxed border-t border-slate-50 ${
+                  isOpen ? '' : 'hidden'
+                }`}
+              >
+                <p className="pl-9">{faq.a}</p>
+              </div>
             </div>
           );
         })}

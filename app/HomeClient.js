@@ -202,7 +202,7 @@ export default function HomeClient({
                 <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2">
                   <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0F172A] bg-slate-100 px-3 py-1 rounded-lg">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#4338CA]" aria-hidden="true" />
-                    Zero OCR Drift
+                    High-Precision OCR
                   </span>
                   <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0F172A] bg-slate-100 px-3 py-1 rounded-lg">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#4338CA]" aria-hidden="true" />
@@ -210,7 +210,7 @@ export default function HomeClient({
                   </span>
                   <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0F172A] bg-slate-100 px-3 py-1 rounded-lg">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#4338CA]" aria-hidden="true" />
-                    100% Private Processing
+                    Ephemeral In-Memory Processing
                   </span>
                 </div>
               </div>
@@ -289,7 +289,7 @@ export default function HomeClient({
             <div className="text-center md:text-left">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ECFEFF] text-[#0E7490] text-xs font-bold uppercase tracking-wider mb-2 border border-[rgba(6,182,212,0.25)]">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#06B6D4]" aria-hidden="true" />
-                <span>100% In-Browser Privacy • WebAssembly Canvas</span>
+                <span>100% In-Browser Privacy • Client-Side Canvas</span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
                 Free Online Image Utilities
@@ -317,19 +317,19 @@ export default function HomeClient({
                     <ImageIcon className="w-5 h-5" aria-hidden="true" />
                   </div>
                   <span className="font-mono text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    ✦ -90% Lossless
+                    ✦ Up to 80% Savings
                   </span>
                 </div>
                 <h3 className="text-base font-bold text-[#0F172A] group-hover:text-[#0E7490] transition-colors mb-1.5 line-clamp-1">
                   {t('imageCompressorTitle') || 'Smart Image Compressor'}
                 </h3>
                 <p className="text-xs text-[#64748B] line-clamp-2 leading-relaxed">
-                  {t('imageCompressorDesc') || 'Reduce JPEG, PNG, and WebP file sizes directly in your browser with zero visual degradation.'}
+                  {t('imageCompressorDesc') || 'Reduce JPEG, PNG, and WebP file sizes directly in your browser with optimized compression algorithms.'}
                 </p>
                 <div className="mt-3.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-100 text-[11px] font-mono text-slate-600">
-                  <span>WASM Engine</span>
+                  <span>Canvas / UPNG</span>
                   <span className="text-slate-300">•</span>
-                  <span className="text-emerald-600 font-semibold">Zero Uploads</span>
+                  <span className="text-emerald-600 font-semibold">In-Browser RAM</span>
                 </div>
               </div>
               <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#0E7490]">
@@ -616,11 +616,11 @@ export default function HomeClient({
 
                 {/* Visual Reduction Meter Mockup */}
                 <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between gap-3 text-xs font-mono text-slate-700 my-2">
-                  <span className="text-slate-500 line-through">24.5 MB</span>
+                  <span className="text-slate-500 line-through">12.4 MB</span>
                   <div className="flex-1 max-w-[140px] h-2 bg-slate-200 rounded-full overflow-hidden">
-                    <div className="w-[12%] h-full bg-gradient-to-r from-orange-400 to-emerald-500 rounded-full" />
+                    <div className="w-[35%] h-full bg-gradient-to-r from-orange-400 to-emerald-500 rounded-full" />
                   </div>
-                  <span className="px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[11px]">2.1 MB (-91%)</span>
+                  <span className="px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[11px]">4.1 MB (~67%)</span>
                 </div>
               </div>
 
@@ -1088,7 +1088,7 @@ export default function HomeClient({
                 <span>Most Trusted Software</span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
-                {t('popularToolsTitle') || 'Popular AI Tools'}
+                {t('popularToolsTitle', { name: 'AI' }) || 'Popular AI Tools'}
               </h2>
               <p className="text-base sm:text-lg text-[#64748B] mt-1 font-normal">
                 High-adoption artificial intelligence solutions recognized across developer and creative communities.
@@ -1410,7 +1410,7 @@ export default function HomeClient({
                   {t('statsPrivateInBrowser')}
                 </h3>
                 <p className="text-xs text-[#64748B] leading-relaxed">
-                  Processed purely in your device's RAM. Files never upload to remote servers.
+                  Image & PDF utilities run purely in browser RAM. Local files are never uploaded to remote servers.
                 </p>
               </div>
 
@@ -1479,9 +1479,9 @@ export default function HomeClient({
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-4 border border-emerald-500/20">
                 <TrendingUp className="w-5 h-5" aria-hidden="true" />
               </div>
-              <h3 className="text-white font-bold text-base mb-1.5">SEO Dofollow Backlink</h3>
+              <h3 className="text-white font-bold text-base mb-1.5">Dedicated Tool Profile</h3>
               <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">
-                Pass high-authority domain authority and crawl equity straight to your project’s homepage.
+                Gain an indexable showcase page with feature breakdowns, category tagging, and direct links to your product.
               </p>
             </div>
 
