@@ -31,18 +31,18 @@ function SearchInput({ placeholder, className = '' }) {
   return (
     <form onSubmit={handleSearch} role="search" className={`relative ${className}`}>
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" aria-hidden="true" />
+        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#94A3B8] w-5 h-5 pointer-events-none" aria-hidden="true" />
         <Input
           type="text"
           placeholder={activePlaceholder}
           aria-label={activePlaceholder || "Search AI tools"}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-12 pr-4 py-6 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-full shadow-sm"
+          className="pl-12 pr-28 sm:pr-32 py-5 sm:py-6 text-base sm:text-lg bg-white border border-[#E2E8F0] focus:border-[#4338CA] focus:ring-2 focus:ring-[#4338CA]/20 rounded-full shadow-xs hover:border-[#CBD5E1] transition-all text-[#0F172A] placeholder:text-[#94A3B8]"
         />
         <Button
           type="submit"
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6"
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#4338CA] hover:bg-[#3730A3] active:bg-[#312E81] text-white font-semibold rounded-full px-5 sm:px-7 py-2 sm:py-2.5 transition-all shadow-xs text-sm sm:text-base"
         >
           {t('searchBtn')}
         </Button>
@@ -55,7 +55,7 @@ export default function SearchBar(props) {
   return (
     <Suspense fallback={
       <div className={`relative ${props.className || ''}`}>
-        <div className="h-14 bg-gray-100 rounded-full animate-pulse"></div>
+        <div className="h-14 bg-slate-100 rounded-full animate-pulse border border-[#E2E8F0]"></div>
       </div>
     }>
       <SearchInput {...props} />
