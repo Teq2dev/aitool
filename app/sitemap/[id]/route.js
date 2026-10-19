@@ -124,17 +124,16 @@ export async function GET(request, { params }) {
         }
       });
     } else if (id === 'categories.xml') {
-      const toolsCollection = await getCollection('tools');
-      const categories = await toolsCollection.aggregate([
-        { $match: { status: 'approved' } },
-        { $unwind: '$categories' },
-        { $group: { _id: '$categories' } }
-      ]).toArray();
+      const categoriesCollection = await getCollection('categories');
+      const categories = await categoriesCollection
+        .find({ contentStatus: { $ne: 'draft' } })
+        .project({ slug: 1, updatedAt: 1, createdAt: 1 })
+        .toArray();
 
       categories.forEach(cat => {
-        if (cat._id) {
+        if (cat.slug) {
           LANGUAGES.forEach(lang => {
-            const path = `/categories/${cat._id}`;
+            const path = `/categories/${cat.slug}`;
             const fullUrl = lang.code === 'en' ? `${baseUrl}${path}` : `${baseUrl}/${lang.code}${path}`;
             xml += `\n  <url>\n    <loc>${formatUrl(fullUrl)}</loc>\n    <changefreq>daily</changefreq>\n    <priority>${lang.code === 'en' ? '0.85' : '0.7'}</priority>`;
             LANGUAGES.forEach(alt => {
