@@ -123,11 +123,17 @@ function BlogsContent() {
               {safeFeaturedBlogs.map((blog) => (
                 <Link key={blog._id || blog.slug} href={getLangUrl(`/blogs/${blog.slug}`)}>
                   <Card className="group hover:shadow-xl transition-all duration-300 border-2 hover:border-blue-500 h-full cursor-pointer">
-                    <div className="aspect-video overflow-hidden rounded-t-lg">
+                    <div className="aspect-video overflow-hidden rounded-t-lg bg-gray-100">
                       <img
                         src={blog.coverImage || '/logo.jpg'}
                         alt={blog.title || 'Blog'}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        onError={(e) => {
+                          if (e.currentTarget.getAttribute('data-fallback') !== 'true') {
+                            e.currentTarget.setAttribute('data-fallback', 'true');
+                            e.currentTarget.src = '/logo.jpg';
+                          }
+                        }}
                       />
                     </div>
                     <CardHeader>
@@ -180,11 +186,17 @@ function BlogsContent() {
                 {latestBlogs.map((blog) => (
                   <Link key={blog._id || blog.slug} href={getLangUrl(`/blogs/${blog.slug}`)}>
                     <Card className="group hover:shadow-lg transition-all duration-300 border hover:border-blue-300 h-full cursor-pointer">
-                      <div className="aspect-video overflow-hidden rounded-t-lg">
+                      <div className="aspect-video overflow-hidden rounded-t-lg bg-gray-100">
                         <img
                           src={blog.coverImage || '/logo.jpg'}
                           alt={blog.title || 'Blog'}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            if (e.currentTarget.getAttribute('data-fallback') !== 'true') {
+                              e.currentTarget.setAttribute('data-fallback', 'true');
+                              e.currentTarget.src = '/logo.jpg';
+                            }
+                          }}
                         />
                       </div>
                       <CardHeader>

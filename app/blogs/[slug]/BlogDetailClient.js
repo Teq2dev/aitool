@@ -71,11 +71,17 @@ export default function BlogDetailClient({ initialBlog }) {
           </Link>
 
           {/* Cover Image */}
-          <div className="aspect-video w-full overflow-hidden rounded-3xl mb-8 shadow-xl border-4 border-white">
+          <div className="aspect-video w-full overflow-hidden rounded-3xl mb-8 shadow-xl border-4 border-white bg-gray-100">
             <img
-              src={blog.coverImage}
+              src={blog.coverImage || '/logo.jpg'}
               alt={blog.title}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                if (e.currentTarget.getAttribute('data-fallback') !== 'true') {
+                  e.currentTarget.setAttribute('data-fallback', 'true');
+                  e.currentTarget.src = '/logo.jpg';
+                }
+              }}
             />
           </div>
 
