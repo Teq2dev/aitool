@@ -183,6 +183,37 @@ const nextConfig = {
         source: '/:lang(es|fr|de|pt|ar|ru|ja|zh|it|nl)/categories/midjourney-image-generator',
         destination: '/tools/midjourney',
         statusCode: 301,
+      },
+      // 10 Verified Category and Tool Redirects from GSC 404 Audit
+      {
+        source: '/:lang(ja|it|fr|zh|pt)/categories/Customer%20Support',
+        destination: '/:lang/categories/customersupport',
+        statusCode: 301,
+      },
+      {
+        source: '/categories/AI%20writing%20assistant',
+        destination: '/categories/ai-writers',
+        statusCode: 301,
+      },
+      {
+        source: '/ja/categories/AI%20Writing%20Assistant',
+        destination: '/ja/categories/ai-writers',
+        statusCode: 301,
+      },
+      {
+        source: '/zh/categories/Presentation',
+        destination: '/zh/categories/presentationmakers',
+        statusCode: 301,
+      },
+      {
+        source: '/fr/redimensionneur-image',
+        destination: '/fr/image-resizer',
+        statusCode: 301,
+      },
+      {
+        source: '/fr/convertisseur-image',
+        destination: '/fr/image-converter',
+        statusCode: 301,
       }
     );
     
