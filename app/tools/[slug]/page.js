@@ -233,7 +233,7 @@ export default async function ToolPage({ params, searchParams }) {
             '@type': 'ListItem',
             position: 3,
             name: primaryCategory.replace(/-/g, ' '),
-            item: `${baseUrl}/tools?category=${encodeURIComponent(primaryCategory)}`
+            item: `${baseUrl}/categories/${encodeURIComponent(primaryCategory)}`
           },
           {
             '@type': 'ListItem',
@@ -277,7 +277,7 @@ export default async function ToolPage({ params, searchParams }) {
   const breadcrumbData = [
     { label: t('home'), href: getLangUrl('/') },
     { label: t('tools'), href: getLangUrl('/tools') },
-    { label: primaryCategory.replace(/-/g, ' '), href: getLangUrl(`/tools?category=${encodeURIComponent(primaryCategory)}`), capitalize: true },
+    { label: primaryCategory.replace(/-/g, ' '), href: getLangUrl(`/categories/${encodeURIComponent(primaryCategory)}`), capitalize: true },
     { label: tool.name }
   ];
 

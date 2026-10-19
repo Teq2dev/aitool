@@ -21,7 +21,7 @@ export const metadata = {
     default: 'Best AI Tools Free - Discover Top AI Tools Directory',
     template: '%s | Best AI Tools Free'
   },
-  description: 'Browse 3000+ Best Free AI Tools across multiple categories. Find the perfect AI tool for your needs. Compare AI tools, read reviews, and discover trending AI solutions.',
+  description: 'Browse 1,400+ curated free and freemium AI tools across multiple categories. Find the perfect AI tool for your needs. Compare AI tools, read reviews, and discover trending AI solutions.',
   keywords: 'best ai tools, free ai tools, ai tools directory, artificial intelligence tools, ai software, machine learning tools, chatgpt alternatives, ai image generators, ai writing tools',
   authors: [{ name: 'Best AI Tools Free' }],
   icons: {
@@ -31,7 +31,7 @@ export const metadata = {
   },
   openGraph: {
     title: 'Best AI Tools Free - Top AI Tools Directory',
-    description: 'Discover 3000+ best free AI tools. Compare and find the perfect AI solution for your needs.',
+    description: 'Discover 1,400+ curated free and freemium AI tools. Compare and find the perfect AI solution for your needs.',
     url: 'https://www.bestaitoolsfree.com',
     siteName: 'Best AI Tools Free',
     images: [
@@ -48,7 +48,7 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Best AI Tools Free - AI Tools Directory',
-    description: 'Browse 3000+ best free AI tools and discover the perfect solution.',
+    description: 'Browse 1,400+ curated free and freemium AI tools and discover the perfect solution.',
     images: ['/logo.jpg'],
   },
   robots: {

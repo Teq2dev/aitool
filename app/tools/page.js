@@ -19,7 +19,8 @@ export async function generateMetadata({ searchParams }) {
     const formattedCat = category.replace(/-/g, ' ');
     title = `15+ Best Free AI ${formattedCat.charAt(0).toUpperCase() + formattedCat.slice(1)} Tools (2026) - Best AI Directory`;
     description = `Explore top-rated free & paid AI ${formattedCat} tools in 2026. Compare key features, user ratings, and alternatives on Best AI Tools Free.`;
-    url = `${baseUrl}/tools?category=${encodeURIComponent(category)}`;
+    // Canonicalize filtered category URL directly to the authoritative dedicated category landing page
+    url = `${baseUrl}/categories/${encodeURIComponent(category)}`;
   } else if (search) {
     title = `Search results for "${search}" - Best AI Tools Free`;
     url = `${baseUrl}/tools?search=${encodeURIComponent(search)}`;
@@ -31,18 +32,18 @@ export async function generateMetadata({ searchParams }) {
     alternates: {
       canonical: url,
       languages: {
-        'x-default': `${baseUrl}/tools`,
-        'en': `${baseUrl}/tools`,
-        'es': `${baseUrl}/es/tools`,
-        'fr': `${baseUrl}/fr/tools`,
-        'de': `${baseUrl}/de/tools`,
-        'pt': `${baseUrl}/pt/tools`,
-        'ar': `${baseUrl}/ar/tools`,
-        'ru': `${baseUrl}/ru/tools`,
-        'ja': `${baseUrl}/ja/tools`,
-        'zh': `${baseUrl}/zh/tools`,
-        'it': `${baseUrl}/it/tools`,
-        'nl': `${baseUrl}/nl/tools`,
+        'x-default': category ? `${baseUrl}/categories/${encodeURIComponent(category)}` : `${baseUrl}/tools`,
+        'en': category ? `${baseUrl}/categories/${encodeURIComponent(category)}` : `${baseUrl}/tools`,
+        'es': category ? `${baseUrl}/es/categories/${encodeURIComponent(category)}` : `${baseUrl}/es/tools`,
+        'fr': category ? `${baseUrl}/fr/categories/${encodeURIComponent(category)}` : `${baseUrl}/fr/tools`,
+        'de': category ? `${baseUrl}/de/categories/${encodeURIComponent(category)}` : `${baseUrl}/de/tools`,
+        'pt': category ? `${baseUrl}/pt/categories/${encodeURIComponent(category)}` : `${baseUrl}/pt/tools`,
+        'ar': category ? `${baseUrl}/ar/categories/${encodeURIComponent(category)}` : `${baseUrl}/ar/tools`,
+        'ru': category ? `${baseUrl}/ru/categories/${encodeURIComponent(category)}` : `${baseUrl}/ru/tools`,
+        'ja': category ? `${baseUrl}/ja/categories/${encodeURIComponent(category)}` : `${baseUrl}/ja/tools`,
+        'zh': category ? `${baseUrl}/zh/categories/${encodeURIComponent(category)}` : `${baseUrl}/zh/tools`,
+        'it': category ? `${baseUrl}/it/categories/${encodeURIComponent(category)}` : `${baseUrl}/it/tools`,
+        'nl': category ? `${baseUrl}/nl/categories/${encodeURIComponent(category)}` : `${baseUrl}/nl/tools`,
       }
     },
     openGraph: {
@@ -50,9 +51,8 @@ export async function generateMetadata({ searchParams }) {
       description,
       url,
     },
-    // Noindex search results to avoid 'thin content' flags from Google
-    // but keep category pages indexed
-    robots: search ? { index: false, follow: true } : undefined,
+    // Noindex search results and filtered category parameter URLs to avoid duplication with dedicated /categories/[slug]
+    robots: (search || category) ? { index: false, follow: true } : undefined,
   };
 }
 

@@ -52,6 +52,17 @@ function stripHtml(html) {
     .trim();
 }
 
+// Truncate cleanly at word boundaries up to maxLength
+function truncateAtWord(text, maxLength = 160) {
+  if (!text || text.length <= maxLength) return text || '';
+  const truncated = text.substring(0, maxLength);
+  const lastSpace = truncated.lastIndexOf(' ');
+  if (lastSpace > maxLength * 0.7) {
+    return truncated.substring(0, lastSpace).trim();
+  }
+  return truncated.trim();
+}
+
 export async function generateMetadata({ params, searchParams }) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
@@ -73,8 +84,8 @@ export async function generateMetadata({ params, searchParams }) {
   const rawMetaDesc = translationOverride.metaDescription || category.metaDescription || null;
   const rawLongDesc = translationOverride.longDescription || translationOverride.description || category.longDescription || category.description || '';
   const description = rawMetaDesc
-    ? stripHtml(rawMetaDesc).substring(0, 160)
-    : stripHtml(rawLongDesc).substring(0, 160);
+    ? truncateAtWord(stripHtml(rawMetaDesc), 160)
+    : truncateAtWord(stripHtml(rawLongDesc), 160);
 
   // Option C: use the custom DB title; fall back to the template for any category without one.
   const titleFromDb = translationOverride.title || category.title || null;
@@ -150,6 +161,15 @@ export default async function CategoryPage({ params, searchParams }) {
 
   const baseUrl = 'https://www.bestaitoolsfree.com';
 
+  // Determine unique tools actually displayed across segments on this category page
+  const displayedToolsMap = new Map();
+  [...popularTools, ...freeTools, ...newTools].forEach(t => {
+    if (t && t.slug && !displayedToolsMap.has(t.slug)) {
+      displayedToolsMap.set(t.slug, t);
+    }
+  });
+  const displayedTools = Array.from(displayedToolsMap.values());
+
   // Server-rendered Graph Schema for Rich Snippets
   const jsonLdGraph = {
     '@context': 'https://schema.org',
@@ -159,6 +179,44 @@ export default async function CategoryPage({ params, searchParams }) {
         name: category.title || `Best Free ${category.name} Tools`,
         description: category.longDescription || category.description,
         url: `${baseUrl}/categories/${category.slug}`,
+        mainEntity: {
+          '@type': 'ItemList',
+          numberOfItems: displayedTools.length,
+          itemListElement: displayedTools.map((tool, index) => {
+            const item = {
+              '@type': 'SoftwareApplication',
+              name: tool.name,
+              description: tool.shortDescription || tool.description || undefined,
+              url: `${baseUrl}/tools/${tool.slug}`,
+              applicationCategory: 'AI Tool',
+            };
+            if (tool.logo) {
+              item.image = tool.logo;
+            }
+            if (tool.pricing) {
+              item.offers = {
+                '@type': 'Offer',
+                price: tool.pricing.toLowerCase() === 'free' ? '0' : undefined,
+                priceCurrency: 'USD',
+                availability: 'https://schema.org/InStock',
+              };
+            }
+            if (tool.rating && tool.votes > 0) {
+              item.aggregateRating = {
+                '@type': 'AggregateRating',
+                ratingValue: tool.rating,
+                ratingCount: tool.votes,
+                bestRating: 5,
+                worstRating: 1,
+              };
+            }
+            return {
+              '@type': 'ListItem',
+              position: index + 1,
+              item,
+            };
+          }),
+        },
       },
       {
         '@type': 'BreadcrumbList',
