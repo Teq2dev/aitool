@@ -78,7 +78,7 @@ export default function Footer({ topCategories }) {
         
         <div className="mt-12 pt-8 border-t text-center space-y-1 text-sm text-gray-600">
           <p>© 2026 Best AI Tools Free. {t('allRightsReserved')}</p>
-          <p className="text-xs text-gray-500 font-medium">A product by DigiSpark</p>
+          <p className="text-xs text-gray-500 font-medium">A product by BestAIToolsFree</p>
         </div>
       </div>
     </footer>

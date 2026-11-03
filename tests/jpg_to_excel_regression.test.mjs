@@ -7,7 +7,7 @@
  * 3. Table extraction response normalization, multi-table separation, and uncertainty preservation.
  * 4. Genuine Excel (.xlsx) workbook generation with multiple worksheets and formula injection safety.
  * 5. End-to-end simulation on 5 real image samples.
- * 6. Homepage promotional banner, DigiSpark footer attribution, and sitemap registration.
+ * 6. Homepage promotional banner, BestAIToolsFree footer attribution, and sitemap registration.
  * 7. Multilingual localization across all 11 locales, canonical URLs, and hreflang reciprocal coverage.
  * 8. Anti-tampering limits and download endpoint validations.
  * 9. In-memory IP rate limiting and concurrency safeguards.
@@ -424,9 +424,9 @@ it('6.1: Homepage promotional card is present in app/HomeClient.js', () => {
   assert.ok(homeClientContent.includes("getLangUrl('/jpg-to-excel')"), 'HomeClient must link to /jpg-to-excel');
 });
 
-it('6.2: DigiSpark footer attribution is present in components/Footer.js', () => {
+it('6.2: BestAIToolsFree footer attribution is present in components/Footer.js', () => {
   const footerContent = fs.readFileSync(path.join(process.cwd(), 'components', 'Footer.js'), 'utf8');
-  assert.ok(footerContent.includes('A product by DigiSpark'), 'Footer must contain DigiSpark attribution');
+  assert.ok(footerContent.includes('A product by BestAIToolsFree'), 'Footer must contain BestAIToolsFree attribution');
   assert.ok(footerContent.includes('/jpg-to-excel'), 'Footer must include link to AI JPG to Excel');
 });
 
