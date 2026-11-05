@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import { useState, useEffect, useId } from 'react';
 import CalculatorShell from './shared/CalculatorShell';
 import CalculatorInput from './shared/CalculatorInput';
@@ -68,8 +71,21 @@ export default function CurrencyCalculator() {
   }));
 
   const handleCalculate = () => {
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: 'currency-calculator',
+      tool_category: 'calculators',
+      operationId,
+    });
     const res = performConversion(amount, fromCurrency, toCurrency, rateData);
     setResult(res);
+    if (res) {
+      trackToolCompleted({
+        tool_name: 'currency-calculator',
+        tool_category: 'calculators',
+        operationId,
+      });
+    }
   };
 
   const handleReset = () => {

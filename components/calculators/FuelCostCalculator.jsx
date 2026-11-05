@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import { useState, useId } from 'react';
 import CalculatorShell from './shared/CalculatorShell';
 import CalculatorInput from './shared/CalculatorInput';
@@ -68,6 +71,12 @@ export default function FuelCostCalculator() {
   };
 
   const handleCalculate = () => {
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: 'fuel-cost-calculator',
+      tool_category: 'calculators',
+      operationId,
+    });
     const res = calculateFuelCost({
       distance,
       distanceUnit,
@@ -77,6 +86,13 @@ export default function FuelCostCalculator() {
       priceUnit
     });
     setResult(res);
+    if (res) {
+      trackToolCompleted({
+        tool_name: 'fuel-cost-calculator',
+        tool_category: 'calculators',
+        operationId,
+      });
+    }
   };
 
   const handleReset = () => {

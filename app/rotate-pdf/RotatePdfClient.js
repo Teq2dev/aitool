@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import { useState, useCallback, useEffect } from 'react';
 import { FileText, RotateCw, Download, RefreshCw, Loader2, Sparkles, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -67,6 +70,12 @@ export default function RotatePdfClient() {
   };
 
   const handleSaveRotations = async () => {
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: 'rotate-pdf',
+      tool_category: 'pdf-tools',
+      operationId,
+    });
     if (!file) return;
 
     setIsProcessing(true);
@@ -80,6 +89,11 @@ export default function RotatePdfClient() {
         perPageRotations: Object.keys(perPageRotations).length > 0 ? perPageRotations : null,
       });
       setRotatedBlob(blob);
+      trackToolCompleted({
+        tool_name: 'rotate-pdf',
+        tool_category: 'pdf-tools',
+        operationId,
+      });
 
       const durationMs = Date.now() - startTime;
       trackPdfProcessingCompleted('rotate-pdf', {

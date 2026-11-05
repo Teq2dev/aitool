@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import {
@@ -50,6 +53,12 @@ export default function UnlockPdfClient() {
   });
 
   const handleUnlock = async () => {
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: 'unlock-pdf',
+      tool_category: 'pdf-tools',
+      operationId,
+    });
     if (!file || isProcessing) return;
     setIsProcessing(true);
     setErrorMsg(null);
@@ -76,6 +85,11 @@ export default function UnlockPdfClient() {
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       setUnlockedBlob(blob);
+      trackToolCompleted({
+        tool_name: 'unlock-pdf',
+        tool_category: 'pdf-tools',
+        operationId,
+      });
       setUnlockedUrl(url);
 
       const outName = `unlocked_${file.name}`;

@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import { useState, useCallback, useEffect } from 'react';
 import { FileText, Minimize2, Download, RefreshCw, Loader2, Sparkles, CheckCircle2, Info, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -66,6 +69,12 @@ export default function CompressPdfClient() {
   }, []);
 
   const handleCompress = async () => {
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: 'compress-pdf',
+      tool_category: 'pdf-tools',
+      operationId,
+    });
     if (!file) return;
 
     setIsProcessing(true);
@@ -77,6 +86,11 @@ export default function CompressPdfClient() {
     try {
       const res = await compressPDF(file, preset, (p) => setProgress(p));
       setResult(res);
+      trackToolCompleted({
+        tool_name: 'compress-pdf',
+        tool_category: 'pdf-tools',
+        operationId,
+      });
 
       const durationMs = Date.now() - startTime;
       trackPdfProcessingCompleted('compress-pdf', {

@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   UploadCloud,
@@ -106,6 +109,12 @@ export default function ImageConverterClient() {
 
   const handleConvertAll = async () => {
     if (items.length === 0 || isProcessing) return;
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: "image-converter",
+      tool_category: "image-tools",
+      operationId,
+    });
     setIsProcessing(true);
     setError(null);
 
@@ -147,6 +156,11 @@ export default function ImageConverterClient() {
     }
 
     setIsProcessing(false);
+    trackToolCompleted({
+      tool_name: "image-converter",
+      tool_category: "image-tools",
+      operationId,
+    });
   };
 
   const handleDownloadItem = (item) => {

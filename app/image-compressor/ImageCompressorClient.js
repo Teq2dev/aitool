@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import { useState, useCallback, useEffect, useRef } from 'react';
 import ImageUploadZone from '@/components/image-tools/ImageUploadZone';
 import ImageCard from '@/components/image-tools/ImageCard';
@@ -80,6 +83,12 @@ export default function ImageCompressorClient({
   const processItem = useCallback(
     async (item, qualityValue, targetMime) => {
       const { file } = item;
+      const operationId = generateOperationId();
+      trackToolStarted({
+        tool_name: toolSlug || "image-compressor",
+        tool_category: "image-tools",
+        operationId,
+      });
       const inputMime = getFileMime(file);
 
       setItems((prev) =>
@@ -96,6 +105,11 @@ export default function ImageCompressorClient({
         });
 
         const { blob, reduced, reductionPct, outputMime: finalMime } = result;
+        trackToolCompleted({
+          tool_name: toolSlug || "image-compressor",
+          tool_category: "image-tools",
+          operationId,
+        });
 
         const compressedUrl = createObjectUrl(blob);
         const durationMs = Date.now() - startTime;

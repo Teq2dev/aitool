@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   UploadCloud,
@@ -120,6 +123,12 @@ export default function ImageResizerClient() {
 
   const handleProcessResize = async () => {
     if (!file || targetWidth <= 0 || targetHeight <= 0) return;
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: "image-resizer",
+      tool_category: "image-tools",
+      operationId,
+    });
     setIsProcessing(true);
     setError(null);
 
@@ -139,6 +148,11 @@ export default function ImageResizerClient() {
       const url = URL.createObjectURL(res.blob);
       setResult(res);
       setResultUrl(url);
+      trackToolCompleted({
+        tool_name: "image-resizer",
+        tool_category: "image-tools",
+        operationId,
+      });
     } catch (err) {
       setError(err.message || 'Resizing failed. Please try again.');
     } finally {

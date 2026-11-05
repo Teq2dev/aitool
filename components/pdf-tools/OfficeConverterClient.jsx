@@ -18,6 +18,7 @@ import {
   Presentation,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
 
 export default function OfficeConverterClient({
   toolSlug = 'pdf-to-word',
@@ -78,6 +79,13 @@ export default function OfficeConverterClient({
   const handleConvert = async () => {
     if (!file || isProcessing) return;
 
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: toolSlug,
+      tool_category: 'pdf-tools',
+      operationId,
+    });
+
     setIsProcessing(true);
     setErrorMsg(null);
     setProcessingStep(1);
@@ -114,6 +122,12 @@ export default function OfficeConverterClient({
       setDownloadFilename(outName);
       setConvertedSize(blob.size);
       setProcessingStep(3);
+
+      trackToolCompleted({
+        tool_name: toolSlug,
+        tool_category: 'pdf-tools',
+        operationId,
+      });
 
       // Auto-trigger download
       const a = document.createElement('a');

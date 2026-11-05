@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   UploadCloud,
@@ -93,6 +96,12 @@ export default function ImageRotatorClient() {
 
   const handleProcessRotation = async () => {
     if (!file) return;
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: "image-rotator",
+      tool_category: "image-tools",
+      operationId,
+    });
     setIsProcessing(true);
     setError(null);
 
@@ -113,6 +122,11 @@ export default function ImageRotatorClient() {
       const url = URL.createObjectURL(res.blob);
       setResult(res);
       setResultUrl(url);
+      trackToolCompleted({
+        tool_name: "image-rotator",
+        tool_category: "image-tools",
+        operationId,
+      });
     } catch (err) {
       setError(err.message || 'Rotation processing failed. Please try again.');
     } finally {

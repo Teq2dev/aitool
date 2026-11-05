@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import { useState, useId } from 'react';
 import CalculatorShell from './shared/CalculatorShell';
 import CalculatorInput from './shared/CalculatorInput';
@@ -27,6 +30,12 @@ export default function LoanCalculator() {
   );
 
   const handleCalculate = () => {
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: 'loan-calculator',
+      tool_category: 'calculators',
+      operationId,
+    });
     const res = calculateLoanOrEmi({
       principal,
       annualRate: rate,
@@ -34,6 +43,13 @@ export default function LoanCalculator() {
       termUnit
     });
     setResult(res);
+    if (res) {
+      trackToolCompleted({
+        tool_name: 'loan-calculator',
+        tool_category: 'calculators',
+        operationId,
+      });
+    }
   };
 
   const handleReset = () => {

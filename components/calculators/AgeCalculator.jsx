@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import { useState, useId } from 'react';
 import CalculatorShell from './shared/CalculatorShell';
 import CalculatorInput from './shared/CalculatorInput';
@@ -17,6 +20,12 @@ export default function AgeCalculator() {
   const [result, setResult] = useState(() => calculateAge('1995-06-15', todayStr));
 
   const handleCalculate = () => {
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: 'age-calculator',
+      tool_category: 'calculators',
+      operationId,
+    });
     setError('');
     if (!birthDate) {
       setError('Please select your date of birth.');
@@ -36,6 +45,13 @@ export default function AgeCalculator() {
       setResult(null);
     } else {
       setResult(res);
+    if (res) {
+      trackToolCompleted({
+        tool_name: 'age-calculator',
+        tool_category: 'calculators',
+        operationId,
+      });
+    }
     }
   };
 

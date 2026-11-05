@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import { useState, useId } from 'react';
 import CalculatorShell from './shared/CalculatorShell';
 import CalculatorSelect from './shared/CalculatorSelect';
@@ -67,6 +70,12 @@ export default function GpaCalculator() {
   };
 
   const handleCalculate = () => {
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: 'gpa-calculator',
+      tool_category: 'calculators',
+      operationId,
+    });
     setResult(calculateGpa(courses, scale));
   };
 

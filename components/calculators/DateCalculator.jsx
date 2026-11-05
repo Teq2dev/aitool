@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import { useState, useId } from 'react';
 import CalculatorShell from './shared/CalculatorShell';
 import CalculatorInput from './shared/CalculatorInput';
@@ -34,6 +37,12 @@ export default function DateCalculator() {
   );
 
   const handleCalculate = () => {
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: 'date-calculator',
+      tool_category: 'calculators',
+      operationId,
+    });
     if (mode === 'diff') {
       setResult(calculateDateDifference(startDate, endDate, includeEndDay));
     } else {

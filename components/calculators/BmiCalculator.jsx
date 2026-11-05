@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import { useState, useId } from 'react';
 import CalculatorShell from './shared/CalculatorShell';
 import CalculatorInput from './shared/CalculatorInput';
@@ -25,6 +28,12 @@ export default function BmiCalculator() {
   );
 
   const handleCalculate = () => {
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: 'bmi-calculator',
+      tool_category: 'calculators',
+      operationId,
+    });
     const res = calculateBmi({
       unitSystem,
       heightCm,
@@ -34,6 +43,13 @@ export default function BmiCalculator() {
       weightLbs
     });
     setResult(res);
+    if (res) {
+      trackToolCompleted({
+        tool_name: 'bmi-calculator',
+        tool_category: 'calculators',
+        operationId,
+      });
+    }
   };
 
   const handleReset = () => {

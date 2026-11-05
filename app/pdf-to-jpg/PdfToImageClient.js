@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import { useState, useCallback, useEffect } from 'react';
 import { FileText, Download, RefreshCw, Loader2, Sparkles, CheckCircle2, Archive, Sliders, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -58,6 +61,12 @@ export default function PdfToImageClient({
   }, [format, defaultFormatLabel]);
 
   const handleRender = async () => {
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: 'pdf-to-jpg',
+      tool_category: 'pdf-tools',
+      operationId,
+    });
     if (!file) return;
 
     const maxPages = format === 'png' ? 10 : 20;
@@ -86,6 +95,11 @@ export default function PdfToImageClient({
       }));
 
       setRenderedPages(enriched);
+      trackToolCompleted({
+        tool_name: 'pdf-to-jpg',
+        tool_category: 'pdf-tools',
+        operationId,
+      });
 
       const durationMs = Date.now() - startTime;
       trackPdfProcessingCompleted(toolSlug, {

@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import { useState, useCallback, useEffect } from 'react';
 import { FileText, ArrowUp, ArrowDown, Trash2, Download, RefreshCw, Loader2, Sparkles, Files } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -60,6 +63,12 @@ export default function MergePdfClient() {
   };
 
   const handleMerge = async () => {
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: 'merge-pdf',
+      tool_category: 'pdf-tools',
+      operationId,
+    });
     if (files.length < 2) {
       setError('Please add at least 2 PDF files to merge.');
       return;
@@ -74,6 +83,11 @@ export default function MergePdfClient() {
       const rawFiles = files.map((f) => f.file);
       const blob = await mergePdfFiles(rawFiles);
       setMergedBlob(blob);
+      trackToolCompleted({
+        tool_name: 'merge-pdf',
+        tool_category: 'pdf-tools',
+        operationId,
+      });
 
       const durationMs = Date.now() - startTime;
       const totalPages = files.reduce((sum, f) => sum + f.pageCount, 0);

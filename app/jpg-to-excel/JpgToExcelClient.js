@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import JpgTablePreview from '@/components/jpg-to-excel/JpgTablePreview';
 import { formatBytes } from '@/lib/utils';
 import { cn } from '@/lib/utils';
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10 MB production limit
 const ACCEPTED_TYPES = new Set(['image/jpeg', 'image/png', 'image/jpg', 'image/webp']);
@@ -133,6 +134,13 @@ export default function JpgToExcelClient() {
   const handleExtractTable = async () => {
     if (!file) return;
 
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: 'jpg-to-excel',
+      tool_category: 'document-conversion',
+      operationId,
+    });
+
     setStatus('processing');
     setProgress(15);
     setStatusMessage('Uploading image to Gemini Vision AI…');
@@ -177,6 +185,12 @@ export default function JpgToExcelClient() {
       });
       setUncertainCellsCount(data.uncertainCellsCount || 0);
       setStatus('success');
+
+      trackToolCompleted({
+        tool_name: 'jpg-to-excel',
+        tool_category: 'document-conversion',
+        operationId,
+      });
     } catch (err) {
       console.error('AI Table Extraction error:', err);
       setStatus('error');

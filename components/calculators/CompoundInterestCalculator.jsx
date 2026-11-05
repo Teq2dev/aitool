@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import { useState, useId } from 'react';
 import CalculatorShell from './shared/CalculatorShell';
 import CalculatorInput from './shared/CalculatorInput';
@@ -29,6 +32,12 @@ export default function CompoundInterestCalculator() {
   );
 
   const handleCalculate = () => {
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: 'compound-interest-calculator',
+      tool_category: 'calculators',
+      operationId,
+    });
     const res = calculateCompoundInterest({
       principal,
       annualRate: rate,
@@ -37,6 +46,13 @@ export default function CompoundInterestCalculator() {
       additionalContribution: contribution
     });
     setResult(res);
+    if (res) {
+      trackToolCompleted({
+        tool_name: 'compound-interest-calculator',
+        tool_category: 'calculators',
+        operationId,
+      });
+    }
   };
 
   const handleReset = () => {

@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   UploadCloud,
@@ -128,6 +131,12 @@ export default function ImageCropperClient() {
 
   const handleProcessCrop = async () => {
     if (!file || cropWidth <= 0 || cropHeight <= 0) return;
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: "image-cropper",
+      tool_category: "image-tools",
+      operationId,
+    });
     setIsProcessing(true);
     setError(null);
 
@@ -149,6 +158,11 @@ export default function ImageCropperClient() {
       const url = URL.createObjectURL(res.blob);
       setResult(res);
       setResultUrl(url);
+      trackToolCompleted({
+        tool_name: "image-cropper",
+        tool_category: "image-tools",
+        operationId,
+      });
     } catch (err) {
       setError(err.message || 'Cropping failed. Please try again.');
     } finally {

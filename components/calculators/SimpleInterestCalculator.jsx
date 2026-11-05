@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import { useState, useId } from 'react';
 import CalculatorShell from './shared/CalculatorShell';
 import CalculatorInput from './shared/CalculatorInput';
@@ -19,8 +22,21 @@ export default function SimpleInterestCalculator() {
   );
 
   const handleCalculate = () => {
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: 'simple-interest-calculator',
+      tool_category: 'calculators',
+      operationId,
+    });
     const res = calculateSimpleInterest({ principal, annualRate: rate, timeYears });
     setResult(res);
+    if (res) {
+      trackToolCompleted({
+        tool_name: 'simple-interest-calculator',
+        tool_category: 'calculators',
+        operationId,
+      });
+    }
   };
 
   const handleReset = () => {

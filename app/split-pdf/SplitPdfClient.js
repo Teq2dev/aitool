@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import { useState, useCallback, useEffect } from 'react';
 import { FileText, Scissors, Download, RefreshCw, Loader2, Sparkles, CheckCircle2, Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -40,6 +43,12 @@ export default function SplitPdfClient() {
   }, []);
 
   const handleSplit = async () => {
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: 'split-pdf',
+      tool_category: 'pdf-tools',
+      operationId,
+    });
     if (!file) return;
 
     setIsProcessing(true);
@@ -54,6 +63,11 @@ export default function SplitPdfClient() {
       } else {
         const blob = await splitPdf(file, { mode: 'ranges', rangeString });
         setResultBlob(blob);
+      trackToolCompleted({
+        tool_name: 'split-pdf',
+        tool_category: 'pdf-tools',
+        operationId,
+      });
       }
 
       const durationMs = Date.now() - startTime;

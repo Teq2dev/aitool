@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import { useState, useCallback, useEffect } from 'react';
 import { FileText, ArrowUp, ArrowDown, Trash2, Download, RefreshCw, Loader2, Sparkles, Image as ImageIcon, Sliders } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -62,6 +65,12 @@ export default function ImageToPdfClient({
   };
 
   const handleConvert = async () => {
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: toolSlug || 'jpg-to-pdf',
+      tool_category: 'pdf-tools',
+      operationId,
+    });
     if (images.length === 0) {
       setError('Please add at least one image to convert.');
       return;
@@ -80,6 +89,11 @@ export default function ImageToPdfClient({
         margin,
       });
       setGeneratedBlob(blob);
+      trackToolCompleted({
+        tool_name: toolSlug || 'jpg-to-pdf',
+        tool_category: 'pdf-tools',
+        operationId,
+      });
 
       const durationMs = Date.now() - startTime;
       trackPdfProcessingCompleted(toolSlug, {

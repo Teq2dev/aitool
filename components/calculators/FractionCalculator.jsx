@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import { useState, useId } from 'react';
 import CalculatorShell from './shared/CalculatorShell';
 import CalculatorInput from './shared/CalculatorInput';
@@ -21,6 +24,12 @@ export default function FractionCalculator() {
   const [result, setResult] = useState(() => calculateFractions(3, 4, 2, 3, 'add'));
 
   const handleCalculate = () => {
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: 'fraction-calculator',
+      tool_category: 'calculators',
+      operationId,
+    });
     setError('');
     if (Number(d1) === 0 || Number(d2) === 0) {
       setError('Denominator cannot be zero.');
@@ -39,6 +48,13 @@ export default function FractionCalculator() {
       setResult(null);
     } else {
       setResult(res);
+    if (res) {
+      trackToolCompleted({
+        tool_name: 'fraction-calculator',
+        tool_category: 'calculators',
+        operationId,
+      });
+    }
     }
   };
 

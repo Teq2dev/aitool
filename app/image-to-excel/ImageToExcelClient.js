@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import { useState, useCallback, useRef } from 'react';
 import {
   UploadCloud,
@@ -128,6 +131,13 @@ export default function ImageToExcelClient() {
   const handleExtractTable = async () => {
     if (!file) return;
 
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: "image-to-excel",
+      tool_category: "document-conversion",
+      operationId,
+    });
+
     setStatus('processing');
     setProgress(15);
     setStatusMessage('Uploading document for AI table recognition…');
@@ -173,6 +183,11 @@ export default function ImageToExcelClient() {
         rows: extractedTables[0].rows || [],
       });
       setStatus('success');
+      trackToolCompleted({
+        tool_name: "image-to-excel",
+        tool_category: "document-conversion",
+        operationId,
+      });
     } catch (err) {
       console.error('OCR Extraction error:', err);
       setStatus('error');

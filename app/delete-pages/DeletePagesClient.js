@@ -1,5 +1,8 @@
 'use client';
 
+import { trackToolStarted, trackToolCompleted, generateOperationId } from '@/lib/analytics';
+
+
 import { useState, useCallback, useEffect } from 'react';
 import { FileText, Trash2, Download, RefreshCw, Loader2, Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -49,6 +52,12 @@ export default function DeletePagesClient() {
   };
 
   const handleDelete = async () => {
+    const operationId = generateOperationId();
+    trackToolStarted({
+      tool_name: 'delete-pages',
+      tool_category: 'pdf-tools',
+      operationId,
+    });
     if (!file) return;
     if (selectedToDelete.length === 0) {
       setError('Please select at least one page to delete.');
@@ -67,6 +76,11 @@ export default function DeletePagesClient() {
     try {
       const { blob, remainingCount } = await deletePages(file, selectedToDelete);
       setCleanedBlob(blob);
+      trackToolCompleted({
+        tool_name: 'delete-pages',
+        tool_category: 'pdf-tools',
+        operationId,
+      });
 
       const durationMs = Date.now() - startTime;
       trackPdfProcessingCompleted('delete-pages', {
