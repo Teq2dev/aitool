@@ -13,7 +13,7 @@ import { getTranslation } from '@/lib/translations';
 import { headers } from 'next/headers';
 import NextTopLoader from 'nextjs-toploader';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 export const metadata = {
   metadataBase: new URL('https://www.bestaitoolsfree.com'),
