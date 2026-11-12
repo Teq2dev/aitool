@@ -4,22 +4,28 @@ import { useState } from 'react';
 import { HelpCircle, ChevronDown } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 
-export default function HomeFAQ() {
+export default function HomeFAQ({ faqs: propsFaqs, badge, title, subtitle }) {
   const { t } = useLanguage();
   const [openIndex, setOpenIndex] = useState(0); // Open first item by default
 
-  const faqs = [
-    { q: t('faqQ1'), a: t('faqA1') },
-    { q: t('faqQ2'), a: t('faqA2') },
-    { q: t('faqQ3'), a: t('faqA3') },
-    { q: t('faqQ4'), a: t('faqA4') },
-    { q: t('faqQ5'), a: t('faqA5') },
-    { q: t('faqQ6'), a: t('faqA6') },
-    { q: t('faqQ7'), a: t('faqA7') },
-    { q: t('faqQ8'), a: t('faqA8') },
-    { q: t('faqQ9'), a: t('faqA9') },
-    { q: t('faqQ10'), a: t('faqA10') }
-  ];
+  const faqs = (Array.isArray(propsFaqs) && propsFaqs.length > 0)
+    ? propsFaqs
+    : [
+        { q: t('faqQ1'), a: t('faqA1') },
+        { q: t('faqQ2'), a: t('faqA2') },
+        { q: t('faqQ3'), a: t('faqA3') },
+        { q: t('faqQ4'), a: t('faqA4') },
+        { q: t('faqQ5'), a: t('faqA5') },
+        { q: t('faqQ6'), a: t('faqA6') },
+        { q: t('faqQ7'), a: t('faqA7') },
+        { q: t('faqQ8'), a: t('faqA8') },
+        { q: t('faqQ9'), a: t('faqA9') },
+        { q: t('faqQ10'), a: t('faqA10') }
+      ];
+
+  const sectionBadge = badge || t('faqSectionBadge') || 'Frequently Asked Questions';
+  const sectionTitle = title || t('faqSectionTitle');
+  const sectionSubtitle = subtitle || t('faqSectionSubtitle');
 
   const toggleFAQ = (index) => {
     setOpenIndex(openIndex === index ? -1 : index);
@@ -30,14 +36,16 @@ export default function HomeFAQ() {
       <div className="max-w-3xl">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#EEF2FF] border border-[rgba(67,56,202,0.15)] text-[#4338CA] text-xs font-bold uppercase tracking-wider mb-4">
           <HelpCircle className="w-3.5 h-3.5" aria-hidden="true" />
-          <span>{t('faqSectionBadge') || 'Frequently Asked Questions'}</span>
+          <span>{sectionBadge}</span>
         </div>
         <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight leading-tight">
-          {t('faqSectionTitle')}
+          {sectionTitle}
         </h2>
-        <p className="mt-3 text-base sm:text-lg text-[#64748B] leading-relaxed">
-          {t('faqSectionSubtitle')}
-        </p>
+        {sectionSubtitle && (
+          <p className="mt-3 text-base sm:text-lg text-[#64748B] leading-relaxed">
+            {sectionSubtitle}
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

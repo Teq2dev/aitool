@@ -35,7 +35,6 @@ import { useLanguage } from '@/context/LanguageContext';
 import SearchBar from '@/components/SearchBar';
 import HomeToolCard from '@/components/home/HomeToolCard';
 import HomeCategoryCard from '@/components/home/HomeCategoryCard';
-import HomeSEOContent from '@/components/HomeSEOContent';
 import styles from '@/components/home/homepage.module.css';
 
 export default function HomeClient({
@@ -1529,11 +1528,6 @@ export default function HomeClient({
           </div>
         </div>
       </section>
-
-      {/* ========================================================= */}
-      {/* SECTION 14: FAQ & IN-DEPTH TOPICAL SEO CONTENT            */}
-      {/* ========================================================= */}
-      <HomeSEOContent />
     </div>
   );
 }

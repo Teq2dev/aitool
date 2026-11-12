@@ -1,5 +1,6 @@
 import { getFeaturedTools, getTrendingTools, getCategories, getTools } from '@/lib/getTools';
 import HomeClient from './HomeClient';
+import HomeSEOContent from '@/components/HomeSEOContent';
 import Script from 'next/script';
 import { getTranslation } from '@/lib/translations';
 
@@ -240,6 +241,7 @@ export default async function HomePage({ searchParams }) {
         initialCategories={categories}
         initialLatest={latestData.tools || []}
       />
+      <HomeSEOContent dict={dict} lang={lang} />
     </>
   );
 }

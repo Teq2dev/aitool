@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import { 
   FileText, 
@@ -22,11 +20,24 @@ import {
   Globe2,
   Check
 } from 'lucide-react';
-import { useLanguage } from '@/context/LanguageContext';
 import HomeFAQ from '@/components/home/HomeFAQ';
 
-export default function HomeSEOContent() {
-  const { getLangUrl, t } = useLanguage();
+export default function HomeSEOContent({ dict = {}, lang = 'en' }) {
+  const t = (key) => dict[key] || '';
+  const getLangUrl = (path) => (lang === 'en' ? path : `/${lang}${path}`);
+
+  const faqs = [
+    { q: t('faqQ1'), a: t('faqA1') },
+    { q: t('faqQ2'), a: t('faqA2') },
+    { q: t('faqQ3'), a: t('faqA3') },
+    { q: t('faqQ4'), a: t('faqA4') },
+    { q: t('faqQ5'), a: t('faqA5') },
+    { q: t('faqQ6'), a: t('faqA6') },
+    { q: t('faqQ7'), a: t('faqA7') },
+    { q: t('faqQ8'), a: t('faqA8') },
+    { q: t('faqQ9'), a: t('faqA9') },
+    { q: t('faqQ10'), a: t('faqA10') }
+  ];
 
   return (
     <section aria-label="AI Tools and In-Browser Utilities Comprehensive Guide and FAQ" className="relative bg-gradient-to-b from-[#F8FAFC] via-[#EEF2FF]/15 to-[#F8FAFC] border-t border-slate-200/80 py-16 sm:py-20 lg:py-24 text-slate-800 overflow-hidden">
@@ -787,7 +798,12 @@ export default function HomeSEOContent() {
         {/* ========================================================= */}
         {/* 7. FREQUENTLY ASKED QUESTIONS (ACCESSIBLE INTERACTIVE)    */}
         {/* ========================================================= */}
-        <HomeFAQ />
+        <HomeFAQ 
+          faqs={faqs}
+          badge={t('faqSectionBadge')}
+          title={t('faqSectionTitle')}
+          subtitle={t('faqSectionSubtitle')}
+        />
 
       </div>
     </section>
