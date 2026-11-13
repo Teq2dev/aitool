@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import { useSession, signIn } from 'next-auth/react';
 import {
   UploadCloud,
   FileSpreadsheet,
@@ -17,6 +18,7 @@ import {
   Layers,
   Eye,
   X,
+  LogIn,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import JpgTablePreview from '@/components/jpg-to-excel/JpgTablePreview';
@@ -46,6 +48,7 @@ export default function JpgToExcelClient() {
   const [uncertainCellsCount, setUncertainCellsCount] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [canLoginForMore, setCanLoginForMore] = useState(false);
 
   // File Validation
   const validateFile = (f) => {
@@ -130,7 +133,7 @@ export default function JpgToExcelClient() {
     setUncertainCellsCount(0);
   }, [previewUrl]);
 
-  // Convert Process — via Vertex AI Google Gemini
+  // Convert Process — via Multimodal AI Table Recognition
   const handleExtractTable = async () => {
     if (!file) return;
 
@@ -143,7 +146,7 @@ export default function JpgToExcelClient() {
 
     setStatus('processing');
     setProgress(15);
-    setStatusMessage('Uploading image to Gemini Vision AI…');
+    setStatusMessage('Analyzing image with Vision AI…');
     setErrorMessage('');
 
     try {
@@ -167,8 +170,15 @@ export default function JpgToExcelClient() {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
+        if (data.canLoginForMore || data.code === 'LOGIN_FOR_MORE_CREDITS') {
+          setCanLoginForMore(true);
+        } else {
+          setCanLoginForMore(false);
+        }
         throw new Error(data.error || "We couldn't detect a table in this image.");
       }
+
+      setCanLoginForMore(false);
 
       setProgress(100);
       setStatusMessage('Table extraction complete!');
@@ -409,7 +419,7 @@ export default function JpgToExcelClient() {
                   {statusMessage || 'Extracting structured table data…'}
                 </h4>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  Google Gemini AI is inspecting table boundaries, headers, cells, and formatting.
+                  Our AI is inspecting table boundaries, headers, cells, and formatting.
                 </p>
               </div>
 
@@ -431,7 +441,7 @@ export default function JpgToExcelClient() {
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-slate-900">
-                    Ready for Gemini AI Extraction
+                    Ready for AI Table Extraction
                   </h4>
                   <p className="text-xs text-slate-500">
                     Extracts headers, numbers, currencies, dates, and empty cells faithfully into .xlsx.
@@ -446,29 +456,41 @@ export default function JpgToExcelClient() {
                 className="w-full sm:w-auto bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-7 py-6 rounded-2xl shadow-md shadow-emerald-700/20 text-sm transition-all hover:scale-105 active:scale-95"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                Extract Table with Gemini
+                Extract Table with AI
               </Button>
             </div>
           )}
 
           {/* Error Message */}
           {status === 'error' && errorMessage && (
-            <div className="p-4 rounded-2xl bg-red-50 border border-red-200 flex items-start gap-3">
+            <div className="p-5 rounded-2xl bg-red-50/80 border border-red-200 flex items-start gap-3.5">
               <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-              <div className="space-y-1">
+              <div className="space-y-2 flex-1">
                 <h5 className="text-sm font-bold text-red-900">Extraction Issue</h5>
                 <p className="text-xs text-red-700 leading-relaxed">{errorMessage}</p>
-                <div className="pt-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={handleExtractTable}
-                    className="text-xs border-red-300 text-red-700 hover:bg-red-100"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5 mr-1" />
-                    Try Again
-                  </Button>
+                <div className="pt-2 flex flex-wrap items-center gap-2">
+                  {canLoginForMore ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => signIn('google', { callbackUrl: '/jpg-to-excel' })}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-sm shadow-emerald-600/20"
+                    >
+                      <LogIn className="w-3.5 h-3.5 mr-1.5" />
+                      Sign In with Google (+2 Free Conversions)
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={handleExtractTable}
+                      className="text-xs border-red-300 text-red-700 hover:bg-red-100"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5 mr-1" />
+                      Try Again
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

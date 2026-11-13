@@ -103,7 +103,10 @@ export async function POST(request) {
       {
         success: false,
         error: quotaCheck.reason,
-        code: 'CONVERSION_LIMIT_REACHED',
+        code: quotaCheck.canLoginForMore ? 'LOGIN_FOR_MORE_CREDITS' : 'CONVERSION_LIMIT_REACHED',
+        canLoginForMore: Boolean(quotaCheck.canLoginForMore),
+        remaining: quotaCheck.remaining,
+        totalAllowed: quotaCheck.totalAllowed,
       },
       { status: 403 }
     );
@@ -205,7 +208,7 @@ export async function POST(request) {
       return NextResponse.json(
         {
           success: false,
-          error: 'An error occurred while analyzing the image table with Gemini AI. Please try again with a clear, high-contrast image.',
+          error: 'An error occurred while analyzing the image table with AI. Please try again with a clear, high-contrast image.',
           details: process.env.NODE_ENV === 'development' ? modelErr.message : undefined,
         },
         { status: 500 }

@@ -189,7 +189,7 @@ export default function HomeClient({
               <div className="space-y-4 max-w-2xl text-center lg:text-left">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ECFEFF] border border-[rgba(6,182,212,0.25)] text-[#0E7490] text-xs font-bold uppercase tracking-wider">
                   <Sparkles className="w-3.5 h-3.5 text-[#06B6D4]" aria-hidden="true" />
-                  <span>Powered by Google Gemini 2.5 Flash</span>
+                  <span>Powered by AI</span>
                 </div>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#0F172A] tracking-tight leading-tight">
                   AI JPG to Excel Converter
@@ -1233,7 +1233,7 @@ export default function HomeClient({
                   Multimodal LLMs Surpass Traditional OCR Engines
                 </h3>
                 <p className="text-sm text-[#64748B] leading-relaxed">
-                  Comparing Google Gemini 2.5 Flash table extraction against legacy optical character recognition pipelines.
+                  Comparing intelligent table extraction against legacy optical character recognition pipelines.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-[#E2E8F0]">
