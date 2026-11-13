@@ -122,9 +122,9 @@ export default async function JpgToExcelPage({ searchParams }) {
                 <span className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 font-mono text-sm font-bold flex items-center justify-center">
                   2
                 </span>
-                <h3 className="font-bold text-slate-900 text-sm">Gemini AI Vision Extraction</h3>
+                <h3 className="font-bold text-slate-900 text-sm">AI Vision Extraction</h3>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  Google Gemini scans the grid layout, rows, columns, and numbers with high precision.
+                  Our advanced AI vision model scans the grid layout, rows, columns, and numbers with high precision.
                 </p>
               </div>
 
@@ -150,7 +150,7 @@ export default async function JpgToExcelPage({ searchParams }) {
                 Engineered for High-Accuracy Table Comprehension
               </h2>
               <p className="text-sm text-slate-500 leading-relaxed">
-                Unlike legacy OCR engines that struggle with borderless tables or misaligned text, Google Gemini understands tabular spatial context directly.
+                Unlike legacy OCR engines that struggle with borderless tables or misaligned text, our AI model understands tabular spatial context directly.
               </p>
             </div>
 

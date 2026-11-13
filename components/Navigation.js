@@ -281,7 +281,7 @@ export default function Navigation() {
                             AI JPG to Excel Converter
                           </span>
                           <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded-full bg-[#ECFEFF] text-[#0E7490] border border-[rgba(6,182,212,0.25)]">
-                            Gemini 2.5 Flash
+                            AI Vision
                           </span>
                         </div>
                         <p className="text-[11px] text-[#64748B]">Extract formatted table data directly into downloadable .xlsx</p>
@@ -771,7 +771,7 @@ export default function Navigation() {
                   <span>AI JPG to Excel</span>
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#ECFEFF] text-[#0E7490] border border-[rgba(6,182,212,0.25)]">
-                  Gemini AI
+                  AI Vision
                 </span>
               </Link>
 

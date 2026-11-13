@@ -271,7 +271,7 @@ export default function JpgTablePreview({
                       return (
                         <td
                           key={colIdx}
-                          title={isUncertain ? `Gemini Note: ${uncertainReason}` : undefined}
+                          title={isUncertain ? `AI Note: ${uncertainReason}` : undefined}
                           className={cn(
                             'p-0 border-r border-slate-200 relative min-w-[130px]',
                             isUncertain && 'bg-amber-50/90'
